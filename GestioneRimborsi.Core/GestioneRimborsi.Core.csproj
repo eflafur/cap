@@ -191,6 +191,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="xsd\01_SGATEH2O_XSD_GESTORI_v1.1.xsd">
       <SubType>Designer</SubType>
