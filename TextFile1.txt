@@ -1,4 +1,4 @@
 commit a  davide
-commit c   davide
+commit c   alessandro
 commit b   davide 
 commit d   davide
