@@ -177,15 +177,15 @@
     <Compile Include="xsd\BonusIdricoModels.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\GruppoCap.Core\GruppoCap.Core.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Core\GruppoCap.Core.csproj">
       <Project>{c87a3dd2-26af-4784-8850-92ac402903f7}</Project>
       <Name>GruppoCap.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.DAL.Oracle\GruppoCap.DAL.Oracle.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.DAL.Oracle\GruppoCap.DAL.Oracle.csproj">
       <Project>{73f97f54-5d25-4f6e-87c7-82d1afbc0775}</Project>
       <Name>GruppoCap.DAL.Oracle</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.Utils\GruppoCap.Utils.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Utils\GruppoCap.Utils.csproj">
       <Project>{578745e5-c348-48a9-9a6d-f7896cb63050}</Project>
       <Name>GruppoCap.Utils</Name>
     </ProjectReference>

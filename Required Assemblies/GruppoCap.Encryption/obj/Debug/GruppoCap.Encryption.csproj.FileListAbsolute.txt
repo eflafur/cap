@@ -3,3 +3,7 @@ C:\Progetti\Revolution\GruppoCap.Encryption\bin\Debug\GruppoCap.Encryption.pdb
 C:\Progetti\Revolution\GruppoCap.Encryption\obj\Debug\GruppoCap.Encryption.csprojResolveAssemblyReference.cache
 C:\Progetti\Revolution\GruppoCap.Encryption\obj\Debug\GruppoCap.Encryption.dll
 C:\Progetti\Revolution\GruppoCap.Encryption\obj\Debug\GruppoCap.Encryption.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Encryption\bin\Debug\GruppoCap.Encryption.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Encryption\bin\Debug\GruppoCap.Encryption.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Encryption\obj\Debug\GruppoCap.Encryption.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Encryption\obj\Debug\GruppoCap.Encryption.pdb

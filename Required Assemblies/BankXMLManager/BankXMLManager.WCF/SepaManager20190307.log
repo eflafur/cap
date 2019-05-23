@@ -1,0 +1,15 @@
+2019-03-07 16:51:07,154 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-07 16:52:17,479 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-07 16:52:19,034 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader msgId 1/13187590156/20190307165219
+2019-03-07 16:52:19,037 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader NbOfTxs 80
+2019-03-07 16:52:19,040 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader CtrlSum 22893.25
+2019-03-07 16:52:19,041 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader InitgPty Nm CAP Holding spa
+2019-03-07 16:52:19,043 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreatePaymentInformationElements PmtInfId 2/13187590156/20190307165219
+2019-03-07 16:53:02,105 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-07 16:53:34,090 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-07 16:53:35,426 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader msgId 1/13187590156/20190307165335
+2019-03-07 16:53:35,429 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader NbOfTxs 80
+2019-03-07 16:53:35,431 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader CtrlSum 22893.25
+2019-03-07 16:53:35,432 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader InitgPty Nm CAP Holding spa
+2019-03-07 16:53:35,434 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreatePaymentInformationElements PmtInfId 2/13187590156/20190307165335
+2019-03-07 16:54:47,805 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
