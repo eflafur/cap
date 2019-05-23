@@ -110,7 +110,7 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\GruppoCap.DAL.Oracle\GruppoCap.DAL.Oracle.csproj">
+    <ProjectReference Include="..\..\GruppoCap.DAL.Oracle\GruppoCap.DAL.Oracle.csproj">
       <Project>{73f97f54-5d25-4f6e-87c7-82d1afbc0775}</Project>
       <Name>GruppoCap.DAL.Oracle</Name>
     </ProjectReference>
