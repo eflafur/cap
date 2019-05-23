@@ -28,10 +28,12 @@ C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\Castle.Windsor.dll
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\FastMember.dll
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\DocumentFormat.OpenXml.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\Castle.Core.dll
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\System.IO.Packaging.dll
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\GruppoCap.Core.pdb
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\GruppoCap.Utils.pdb
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\Castle.Windsor.xml
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\bin\Debug\Castle.Core.xml
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\obj\Debug\GruppoCap.Logger.Log4Net.csprojResolveAssemblyReference.cache
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\obj\Debug\GruppoCap.Logger.Log4Net.dll
 C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Logger.Log4Net\obj\Debug\GruppoCap.Logger.Log4Net.pdb
