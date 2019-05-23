@@ -1,0 +1,3 @@
+C:\Users\a.argentieri\Source\Repos\cap\GestioneRimborsi.Web\obj\Debug\GestioneRimborsi.Web.csprojResolveAssemblyReference.cache
+C:\Users\a.argentieri\Source\Repos\cap\GestioneRimborsi.Web\obj\Debug\RdlCompile.cache
+C:\Users\a.argentieri\Source\Repos\cap\GestioneRimborsi.Web\obj\Debug\RdlCompile.compiled

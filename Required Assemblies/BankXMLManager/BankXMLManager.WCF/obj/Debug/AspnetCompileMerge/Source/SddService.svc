@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="BankXMLManager.WCF.SddService" CodeBehind="SddService.svc.cs" %>

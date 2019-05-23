@@ -756,35 +756,35 @@
     <None Include="Project_Readme.html" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\GruppoCap.Activity.Core\GruppoCap.Activity.Core.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Activity.Core\GruppoCap.Activity.Core.csproj">
       <Project>{edc6f1ea-8ea4-4340-89e7-9ea747c54a0d}</Project>
       <Name>GruppoCap.Activity.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.Authentication.Core\GruppoCap.Authentication.Core.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Authentication.Core\GruppoCap.Authentication.Core.csproj">
       <Project>{60c59c8c-6f1b-4fdf-b37b-1e6acbe95985}</Project>
       <Name>GruppoCap.Authentication.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.Core.Mvc\GruppoCap.Core.Mvc.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Core.Mvc\GruppoCap.Core.Mvc.csproj">
       <Project>{37b6a752-fe03-42ad-9488-817cc64c508b}</Project>
       <Name>GruppoCap.Core.Mvc</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.Core\GruppoCap.Core.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Core\GruppoCap.Core.csproj">
       <Project>{c87a3dd2-26af-4784-8850-92ac402903f7}</Project>
       <Name>GruppoCap.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.DAL.Oracle\GruppoCap.DAL.Oracle.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.DAL.Oracle\GruppoCap.DAL.Oracle.csproj">
       <Project>{73f97f54-5d25-4f6e-87c7-82d1afbc0775}</Project>
       <Name>GruppoCap.DAL.Oracle</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.Logger.Log4Net\GruppoCap.Logger.Log4Net.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Logger.Log4Net\GruppoCap.Logger.Log4Net.csproj">
       <Project>{2c5f8b59-7cab-4ee5-b9de-527be7427c5a}</Project>
       <Name>GruppoCap.Logger.Log4Net</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.Security.PEM\GruppoCap.Security.PEM.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Security.PEM\GruppoCap.Security.PEM.csproj">
       <Project>{ee712c4d-5e09-404b-9348-6531795716be}</Project>
       <Name>GruppoCap.Security.PEM</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\GruppoCap.Utils\GruppoCap.Utils.csproj">
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Utils\GruppoCap.Utils.csproj">
       <Project>{578745e5-c348-48a9-9a6d-f7896cb63050}</Project>
       <Name>GruppoCap.Utils</Name>
     </ProjectReference>

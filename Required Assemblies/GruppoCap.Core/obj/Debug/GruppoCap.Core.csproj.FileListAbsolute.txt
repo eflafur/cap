@@ -16,3 +16,11 @@ C:\Progetti\Revolution\GruppoCap.Core\bin\Debug\FastMember.xml
 C:\Progetti\Revolution\GruppoCap.Core\obj\Debug\GruppoCap.Core.csprojResolveAssemblyReference.cache
 C:\Progetti\Revolution\GruppoCap.Core\obj\Debug\GruppoCap.Core.dll
 C:\Progetti\Revolution\GruppoCap.Core\obj\Debug\GruppoCap.Core.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\bin\Debug\GruppoCap.Core.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\bin\Debug\GruppoCap.Core.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\bin\Debug\GruppoCap.Utils.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\bin\Debug\System.Management.Automation.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\bin\Debug\GruppoCap.Utils.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\obj\Debug\GruppoCap.Core.csprojResolveAssemblyReference.cache
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\obj\Debug\GruppoCap.Core.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Core\obj\Debug\GruppoCap.Core.pdb

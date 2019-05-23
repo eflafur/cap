@@ -3,3 +3,7 @@ C:\Progetti\Revolution\GruppoCap.Utils\bin\Debug\GruppoCap.Utils.pdb
 C:\Progetti\Revolution\GruppoCap.Utils\obj\Debug\GruppoCap.Utils.csprojResolveAssemblyReference.cache
 C:\Progetti\Revolution\GruppoCap.Utils\obj\Debug\GruppoCap.Utils.dll
 C:\Progetti\Revolution\GruppoCap.Utils\obj\Debug\GruppoCap.Utils.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Utils\bin\Debug\GruppoCap.Utils.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Utils\bin\Debug\GruppoCap.Utils.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Utils\obj\Debug\GruppoCap.Utils.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\GruppoCap.Utils\obj\Debug\GruppoCap.Utils.pdb

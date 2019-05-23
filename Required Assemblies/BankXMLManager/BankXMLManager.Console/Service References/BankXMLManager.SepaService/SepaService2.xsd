@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/SepaManager.Base" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/SepaManager.Base" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="BankXMLOutput">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="FileName" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="XmlDocument" nillable="true">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:any minOccurs="0" processContents="lax" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+      <xs:element minOccurs="0" name="XmlStringDocument" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="BankXMLOutput" nillable="true" type="tns:BankXMLOutput" />
+</xs:schema>
