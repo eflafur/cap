@@ -1,0 +1,114 @@
+﻿@model string
+
+<div class="modal fade text-left" id="ristampaMassiva" tabindex="-1" role="dialog" aria-labelledby="ristampaMassivaModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="ristampaMassivaModalTitle">
+                    <i class="fa fa-lg fa-calendar"></i>
+                    <span class="text-after-icon">Ristampa Massiva Rimborsi</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        @{
+                            var attributes = new Dictionary<String, Object>();
+                            attributes.Add("role", "form");
+                            attributes.Add("class", "breath-on-top-8");
+                        }
+                        @Html.Hidden("Utente", Model)
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label class="btn-lg sizeLarge">Selezionare l'intervallo di date di conferma</label>
+                                    <div class="col-sm-12">
+                                        <div class="col-sm-5">
+                                            <label for="DataInizio" class="control-label mt-10 fontSizeMedium">Data Inizio:</label>
+                                            <div id="calendarDiv" class="input-group input-append date">
+                                                @{var _data = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToShortDateString();}
+                                                <input class="form-control" data-format="dd/MM/yyyy" type="text" id="calendar" name="calendar" value='@_data' />
+                                                <span class="input-group-btn add-on">
+                                                    <button class="btn btn-default h-btn-new" type="button">
+                                                        <i class="fa fa-lg fa-calendar"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <label for="DataFine" class="control-label mt-10 fontSizeMedium">Data Fine:</label>
+                                            <div id="calendarDiv2" class="input-group input-append date">
+                                                <input class="form-control" data-format="dd/MM/yyyy" type="text" id="calendar2" name="calendar2" value='@DateTime.Now.ToShortDateString()' />
+                                                <span class="input-group-btn add-on">
+                                                    <button class="btn btn-default h-btn-new" type="button">
+                                                        <i class="fa fa-lg fa-calendar"></i>
+                                                    </button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer mt-10">
+                            <a class="btn btn-lg btn-default" data-dismiss="modal">
+                                <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Annulla</span>
+                            </a>
+                            <a class="btn btn-lg btn-function" onclick="ristampaMassiva();">
+                                <i class="fa fa-lg fa-search"></i><span class="text-after-icon">Cerca per date</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(function () {
+        $('#calendarDiv').datetimepicker();
+    });
+
+    $(function () {
+        $('#calendarDiv2').datetimepicker();
+    });
+
+    function ristampaMassiva() {
+        if ($('#calendar').val() == '') {
+            notifyWarning("Data inizio non inserita..."); return false;
+        }
+        if ($('#calendar2').val() == '') {
+            notifyWarning("Data fine non inserita..."); return false;
+        }
+        $('#ristampaMassiva').modal('hide');
+        displayModalWaiter();
+
+        var _url;
+        _url = '@Url.Action("RistampaMassiva", "Rimborsi")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                calendar: $('#calendar').val(),
+                calendar2: $('#calendar2').val(),
+                Utente: $('#Utente').val(),
+            }),
+            success: function (result) {
+                $("#rimborsiTableContainer").html(result);
+                setRimborsiConfermatiDataTable();
+                hideModalWaiter();
+
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            },
+        });
+    }
+
+</script>

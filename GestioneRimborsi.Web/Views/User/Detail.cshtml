@@ -1,0 +1,297 @@
+﻿@using GruppoCap
+@using GruppoCap.Core
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model User
+@{
+    ViewBag.Title = "{0} {1}".FormatWith(Model.FirstName, Model.LastName);
+
+    IUser _currentUser = RevoRequest.CurrentUser;
+
+    ICapGroupingService _groupingService = RevoContext.ServiceProvider.GetServiceFor<CapGrouping>() as ICapGroupingService;
+
+    ISubCollection<CapGrouping> _allGroupings = _groupingService.ListByApplicationId(Ambient.CurrentApplicationId, true);
+    IList<String> _relatedGroupingIds = _groupingService.ActiveGroupingIdsForUserAndApplication(Model.UserId, Ambient.CurrentApplicationId);
+    String _mainGroupingId = _groupingService.MainGroupingIdForUserAndApplication(Model.UserId, Ambient.CurrentApplicationId);
+}
+
+<div class="row">
+
+    <div class="col-sm-12">
+
+        <div class="row grid-title">
+            <div class="col-sm-8">
+                <h1>
+                    <a href="@CommonUrls.Users" title="Users list"><i class="fa fa-fw fa-users"></i></a>
+                    /
+                    @ViewBag.Title
+                </h1>
+            </div>
+            <div class="col-sm-4 text-right">
+                @{
+                    if (_currentUser.HasPermissionOrIsPrivileged("security.manage"))
+                    {
+                        <a href="@CommonUrls.UserPermissions(Model.UserId)" class="btn btn-default title-bar-entity-button breath-on-top-8">
+                            <i class="fa fa-lg fa-cube"></i>
+                            <span class="text-after-icon">Permission</span>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+
+        @Html.Partial("_trackedEntity", Model)
+
+        <div class="row">
+
+            <div class="col-sm-12">
+
+                <form role="form" class="breath-on-top-8">
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="txtFirstName" class="control-label">Nome</label>
+                                <input type="text" class="form-control input-lg" id="txtFirstName" placeholder="inserisci il nome" value="@Model.FirstName" disabled >
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="txtLastName" class="control-label">Cognome</label>
+                                <input type="text" class="form-control input-lg" id="txtLastName" placeholder="inserisci il cognome" value="@Model.LastName" disabled >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="txtUserId" class="control-label">User Id / Account</label>
+                                <input disabled type="text" class="form-control" id="txtUserId" placeholder="inserisci lo UserId / Account" value="@Model.UserId">
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="txtDomain" class="control-label">Dominio</label>
+                                <input type="text" class="form-control" id="txtDomain" placeholder="inserisci il dominio" value="@Model.Domain" disabled >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="ddlCompany" class="control-label">Società</label>
+                                <select class="form-control" id="ddlCompany" disabled >
+                                    @{
+                                        IList<SelectListItem> _companies = EnumHelper.GetSelectList(typeof(Company), Model.Company);
+                                        String _selected;
+                                        foreach (SelectListItem _c in _companies)
+                                        {
+                                            _selected = _c.Selected ? "selected" : String.Empty;
+                                            <option @_selected>@_c.Text</option>
+                                        }
+                                    }
+                                </select>
+                                <span class="glyphicon glyphicon-chevron-down form-control-icon" aria-hidden="true"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="well" style="margin-top: 20px;">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h3 class="well-title"><i class="fa fa-unlock-alt"></i><span class="text-after-icon">Abilitazioni</span></h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <label class="control-label">Attivazione dell'utenza</label>
+                                    @{
+                                        String _isActiveDescription, _isActiveClass;
+                                        String _userActiveText = "Utenza attiva";
+                                        String _userNotActiveText = "Utenza NON attiva";
+
+                                        _isActiveDescription = @Model.IsActive ? _userActiveText : _userNotActiveText;
+                                        _isActiveClass = @Model.IsActive ? "text-primary" : "text-danger";
+                                    }
+
+                                    @Html.FontAwesomeCheckbox(
+                                        "chkIsActive",
+                                        Model.IsActive,
+                                        _userActiveText,
+                                        _userNotActiveText,
+                                        "text-primary",
+                                        "text-danger",
+                                        _isActiveClass,
+                                        _isActiveDescription,
+                                        false
+                                    )
+                                </div>
+                            </div>
+                            @{
+                                if (_currentUser.IsPrivileged)
+                                {
+                                    <div class="col-sm-3">
+                                        <div class="form-group" style="margin-bottom: 0px;">
+                                            <label class="control-label">God Mode</label>
+                                            @{
+                                                String _isPrivilegedDescription, _isPrivilegedClass;
+                                                String _userPrivilegedText = "Utenza privilegiata";
+                                                String _userNotPrivilegedText = "Utenza NON privilegiata";
+
+                                                _isPrivilegedDescription = @Model.IsPrivileged ? _userPrivilegedText : _userNotPrivilegedText;
+                                                _isPrivilegedClass = @Model.IsPrivileged ? "text-primary" : "text-danger";
+                                            }
+
+                                            @Html.FontAwesomeCheckbox(
+                                                "chkIsPrivileged",
+                                                Model.IsPrivileged,
+                                                _userPrivilegedText,
+                                                _userNotPrivilegedText,
+                                                "text-primary",    
+                                                "text-danger",
+                                                _isPrivilegedClass,
+                                                _isPrivilegedDescription,
+                                                false
+                                            )
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                    </div>
+
+                    @{
+                        if (_currentUser.HasPermissionOrIsPrivileged("users.assign-to-grouping"))
+                        {
+                            <div class="well" style="margin-top: 20px;">
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <h3 class="well-title"><i class="fa fa-sitemap"></i><span class="text-after-icon">Raggruppamenti di cui @Model.FirstName.ToLower().ToTitleCase() fa parte</span></h3>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        @{
+                                            foreach (CapGrouping _g in _allGroupings.Items)
+                                            {
+                                                <div class="checkbox">
+                                                    <label>
+                                                        @{
+                                                            if (_relatedGroupingIds.Contains(_g.CapGroupingId))
+                                                            {
+                                                                <input class="groupingCheckbox" type="checkbox" name="@_g.CapGroupingId" checked>
+                                                            }
+                                                            else
+                                                            {
+                                                                <input class="groupingCheckbox" type="checkbox" name="@_g.CapGroupingId">
+                                                            }
+                                                        }
+                                                        <span class="text-after-icon"><strong>@_g.CapGroupingCode</strong></span>
+                                                        <span class="text-after-icon">@_g.Description</span>
+                                                    </label>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                    <div class="col-sm-6">
+                                        @{
+                                            foreach (CapGrouping _mg in _allGroupings.Items)
+                                            {
+                                                <div class="radio">
+                                                    <label>
+                                                        @{
+                                                            if (_mainGroupingId.IsNullOrWhiteSpace() == false && _mg.CapGroupingId == _mainGroupingId)
+                                                            {
+                                                                <input class="mainGroupingCheckbox" type="radio" name="main_grouping" value="@_mg.CapGroupingId" onclick="javascript: selectRadioGrouping('@_mg.CapGroupingId');" checked>
+                                                            }
+                                                            else
+                                                            {
+                                                                <input class="mainGroupingCheckbox" type="radio" name="main_grouping" value="@_mg.CapGroupingId" onclick="javascript: selectRadioGrouping('@_mg.CapGroupingId');">
+                                                            }
+                                                        }
+                                                        <span class="text-after-icon"><strong>@_mg.CapGroupingCode</strong></span>
+                                                        <span class="text-after-icon">@_mg.Description</span>
+                                                    </label>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+
+                    <div class="row">
+                        <div class="col-sm-6 col-sm-offset-6 text-right">
+                            <a class="btn btn-lg btn-default" href="@CommonUrls.Users">
+                                <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Torna alla lista utenti</span>
+                            </a>
+                            <a class="btn btn-lg btn-primary" href="javascript:void(0);" onclick="saveUser('@Model.UserId');">
+                                <i id="iconSave" class="fa fa-lg fa-save"></i><span class="text-after-icon">Salva</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section scripts {
+<script>
+    $(function () {
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    function selectRadioGrouping(groupingId) {
+        $("input:checkbox[name=" + groupingId + "]").attr('checked',true);
+    }
+
+    function saveUser(userId) {
+        var _url;
+
+        startSaveOperation('iconSave');
+
+        _url = '@Url.Action("Update", "User")';
+
+        var _groupingPermissions = GetCheckboxListAsJson('.groupingCheckbox');
+        var _mainGroupingPermission = $("input:radio[name='main_grouping']:checked").val()
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                userId: userId,
+                groupingPermissions: _groupingPermissions,
+                mainGroupingPermission: _mainGroupingPermission
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio dei dati');
+            }
+        }).done(function () {
+            endSaveOperation('iconSave');
+        }); // end ajax call
+    } // saveUser
+</script>
+}

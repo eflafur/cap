@@ -1,0 +1,54 @@
+﻿@model ISubCollection<AnnoBloccato>
+@{
+    <table id="gridRettificheGestite" class="table table-condensed table-hover">
+        <thead>
+            <tr>
+                <th class=""></th>
+                <th class="text-left">Competenza</th>
+                <th class="text-center">Data di blocco</th>
+                <th class="text-left">Inserito da</th>
+                <th class="text-center">In data</th>
+                <th class="text-left">Modificato da</th>
+                <th class="text-center">In data</th>                
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                foreach (var _a in Model.Items)
+                {
+                    var maxYear = Model.Items.FirstOrDefault().ANNO_COMPETENZA;
+                    <tr class="anniBloccatiRow" id="@(_a.ANNO_COMPETENZA)_id" onclick="setCurrentRow('@_a.ANNO_COMPETENZA')">
+                        <td class="text-center"><span id="lockDataBlocco" class="fa fa-lg @(DateTime.Now < _a.DATA_BLOCCO && DateTime.Now < _a.DATA_BLOCCO.AddDays(365) ? "fa-unlock-alt" : DateTime.Now >= _a.DATA_BLOCCO && DateTime.Now <= _a.DATA_BLOCCO.AddDays(365) && _a.ANNO_COMPETENZA == maxYear ? "fa-lock colorUnlock": "fa-lock darkGrayColor")"
+                                                      title = "@(DateTime.Now < _a.DATA_BLOCCO && DateTime.Now < _a.DATA_BLOCCO.AddDays(365) ? "blocco non attivo e modificabile" : DateTime.Now >= _a.DATA_BLOCCO && DateTime.Now <= _a.DATA_BLOCCO.AddDays(365) && _a.ANNO_COMPETENZA == maxYear ? "blocco attivo e modificabile": "blocco attivo non modificabile")"></span></td>
+                        <td class="text-left">@_a.ANNO_COMPETENZA</td>
+                        <td class="text-center">@(_a.DATA_BLOCCO != DateTime.MinValue ? _a.DATA_BLOCCO.ToShortDateString() : "n.d.")</td>
+                        <td class="text-left">@(String.IsNullOrEmpty(_a.UTENTE_INSERIMENTO) ? "n.d." : _a.UTENTE_INSERIMENTO)</td>
+                        <td class="text-center">@(_a.DATA_INSERIMENTO != DateTime.MinValue ? _a.DATA_INSERIMENTO.ToShortDateString() : "n.d.")</td>
+                        <td class="text-left">@(String.IsNullOrEmpty(_a.UTENTE_MODIFICA) ? "n.d." : _a.UTENTE_MODIFICA)</td>
+                        <td class="text-center">@(_a.DATA_MODIFICA != DateTime.MinValue ? _a.DATA_MODIFICA.ToShortDateString() : "n.d.")</td>                       
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+<script>  
+
+    $(function () {
+        setTimeout(function () {
+            $("#gridRettificheGestite").parent().parent().css({
+                "min-height": "355px",
+            })
+        }, 50);
+    });
+
+    function setCurrentRow(annoCompetenza) {
+        //var allPages = $('#gridRettificheGestite').DataTable().rows().nodes();
+        //$(allPages).removeClass("rowSelected");
+        //$("#" + annoCompetenza + "_id").addClass("rowSelected");
+        //$("#modificaDataBlocco").attr("onclick", "modificaDataBlocco('" + annoCompetenza + "')");       
+    }
+
+</script>

@@ -1,0 +1,48 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model ISubCollection<Cliente>
+
+@{
+    if (Model == null)
+    {
+        @Html.Raw(HtmlSnippets.Alert.Info("Nessun cliente trovato..."))
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-sm-12" id="ricercaClienteTableContainer">
+                <table id="gridClientiTrovati" class="table table-condensed table-hover">
+                    <thead>
+                        <tr>
+                            <th class="text-left">Codice Cliente</th>
+                            <th class="text-left">Ragione Sociale Cliente</th>
+                            <th class="text-left">Codice Fiscale</th>
+                            <th class="text-left">Partita IVA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{foreach (Cliente _c in Model.Items)
+                        {
+                            String _trClass = String.Empty;                           
+
+                            <tr onclick="selectCliente('@_c.codCliente');" class="@_trClass">
+                                <td class="text-left">@_c.codCliente</td>
+                                <td class="text-left">@_c.ragioneSocialeCliente</td>
+                                <td class="text-left">@_c.codiceFiscale</td>
+                                <td class="text-left">@_c.partitaIva</td>
+                            </tr>
+                        }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}
+
+
+
+
+

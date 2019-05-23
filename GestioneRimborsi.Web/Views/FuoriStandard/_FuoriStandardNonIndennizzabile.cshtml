@@ -1,0 +1,183 @@
+﻿@model String
+
+<div class="modal fade text-left" id="fsNonIndennizzabile" tabindex="-1" role="dialog" aria-labelledby="fsNonIndennizzabileModalTitle" aria-hidden="true">
+    @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "fsNonIndennizzabile")
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalFSNonIndennizzabile">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="dismissModale();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="fsNonIndennizzabileModalTitle">
+                    <span class="text-after-icon sizeXLarge">Conferma FS non indennizzabile</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <span class="lead">
+                            <i class="fa fa-lg fa-exclamation-triangle text-danger" id="txtAttention"></i>Attenzione!
+                            Impostare un Fuori Standard come "Non Indennizzabile" è una procedura irreversibile, a meno di un intervento da parte del team di assistenza tecnica.
+                        </span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12" id="chooseOperationContainer">
+                        <span class="lead">
+                            Si è sicuri di proseguire?
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-lg btn-function pull-left" onclick="dismissModale();">
+                        <i class=" fa fa-lg fa-arrow-circle-left"></i>
+                        <span class="fontSizeMedium">No</span>
+                    </button>
+                    <button type="button" id="" class="btn-lg btn-warning alert-warning" onclick="fsNonIndennizzabile('@Model');">
+                        <span class="fontSizeMedium">Si, imposta FS come non indennizzabile</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('#fsNonIndennizzabile').modal({ backdrop: 'static', keyboard: true, show: false });
+
+    function dismissModale() {
+        $('#fsNonIndennizzabile').modal('hide');
+    }
+
+    function fsNonIndennizzabile(FuoriStandard) {
+
+        var _optionSottoCategoria = $("#ddlSottoCategoria option:selected").val();
+        var _optionCategoria = $("#ddlCategoria option:selected").val();
+        var _note = $("#txtFileDescription").val();
+
+        if ($(".fuoriStandard-valore-rettificato").length > 0) {
+            displayModalWaiter("schedaIndennizzo");
+            var _fuoriStandard = "S";
+            if ($('#inStandard').hasClass("notdisplayed")) {
+                _fuoriStandard = "N";
+            }
+
+            var _url;
+            _url = '@Url.Action("RettificaPrimoStep", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idFuoriStandard: FuoriStandard,
+                    dataInizioAttivita: $('#calendar3').val(),
+                    dataFineAttivita: $('#calendar4').val(),
+                    quantita: $('#quantita').val(),
+                    fuoriStandard: _fuoriStandard.toString(),
+                    causale: $("#ddlCategoria option:selected").val(),
+                    sottoCausale: $("#ddlSottoCategoria option:selected").val(),
+                    note: $("#txtFileDescription").val(),
+                    nonIndennizzabile: "S",
+                    codiceCliente: null,
+                    codicePuf: null,
+                    codiceContratto: null,
+                    flgRettifica: 1
+                }),
+                success: function (result) {
+                    if (result == "") {
+                        var sortColumn = $(".sorting_asc").attr("name");
+                        var sortType = $(".sorting_desc").attr("name");
+                        var page = 1;
+                        page = $("li.paginate_button.active").text();
+
+                        if (sortType != null) {
+                            sortColumn = sortType;
+                            sortType = "desc";
+                        }
+                        else if (sortColumn != null) { sortType = "asc"; }
+
+                        cercaFuoriStandard(null, sortColumn, sortType, page);
+
+                        notifySuccess("Completato");
+                        var totalNumber = $("#totalNumber").data("bind");
+                        totalNumber = totalNumber - 1;
+                        $("#totalNumber").data("bind", totalNumber);
+                        $("#totalNumber").text('Fuori Standard totali: ' + totalNumber);
+                        $('#erroreUmanoModal').modal('hide');
+                        $("#schedaIndennizzoModal").modal("hide");
+
+                        if ($('#chkIndProgressivi').prop('checked') == true) {
+                            displaySchedaIndennizzo($("#chkIndProgressivi").data("bind"), true, $("#elencoIndennizzi").data("bind"));
+                        }
+                        return false;
+                    }
+                    else {
+                        $('#erroreUmanoModal').modal('hide');
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyError(result);
+                        return false;
+                    }
+                },
+                error: function (request, status, error) {
+                    $('#erroreUmanoModal').modal('hide');
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning(error);
+                    return false;
+                },
+            });
+            return false;
+        }
+
+        displayModalWaiter("fsNonIndennizzabile");
+        var _url = '@Url.Action("ValidaFuoriStandardFirstStep", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                FuoriStandardDataCliente: FuoriStandard,
+                CodiceCausa: _optionCategoria,
+                CodiceSottocausa: _optionSottoCategoria,
+                Note: $("#txtFileDescription").val(),
+                NonIndennizzabile: "S",
+            }),
+            success: function (result) {
+                if (result == "") {
+                    var sortColumn = $(".sorting_asc").attr("name");
+                    var sortType = $(".sorting_desc").attr("name");
+                    var page = 1;
+                    page = $("li.paginate_button.active").text();
+
+                    if (sortType != null) {
+                        sortColumn = sortType;
+                        sortType = "desc";
+                    }
+                    else if (sortColumn != null) { sortType = "asc"; }
+
+                    cercaFuoriStandard(null, sortColumn, sortType, page);
+
+                    notifySuccess("Completato");
+                    var totalNumber = $("#totalNumber").data("bind");
+                    totalNumber = totalNumber - 1;
+                    $("#totalNumber").data("bind", totalNumber);
+                    $("#totalNumber").text('Fuori Standard totali: ' + totalNumber);
+                    $("#schedaIndennizzoModal").modal("hide");
+
+                    if ($('#chkIndProgressivi').prop('checked') == true) {
+                        displaySchedaIndennizzo($("#chkIndProgressivi").data("bind"), true, $("#elencoIndennizzi").data("bind"));
+                    }
+                }
+                else {
+                    hideModalWaiter("fsNonIndennizzabile");
+                    notifyError(result);
+                }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("fsNonIndennizzabile");
+                notifyWarning(error);
+            }
+        });
+    }
+
+</script>

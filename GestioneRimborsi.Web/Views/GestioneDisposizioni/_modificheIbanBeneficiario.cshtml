@@ -1,0 +1,38 @@
+﻿@model DisposizioneModificata
+
+<div class="row">
+    <div class="col-sm-12" id="container-modifica">
+        <div class="row padding-top">
+            <div class="col-sm-12">
+                <label>IBAN</label>
+            </div>
+        </div>
+        <div class="row item-border-bottom">
+            @if (Model != null && Model.InternalId != null)
+            {
+                <div class="col-sm-6 no-padding-left">
+                    <span class="@(Model.VecchioIBAN != Model.NuovoIBAN ? "strike-item" : "")">@Model.VecchioIBAN</span>
+                </div>
+                <div class="col-sm-6 no-padding-left">
+                    <span>@(Model.NuovoIBAN != Model.VecchioIBAN ? Model.NuovoIBAN : "")</span>
+                </div>
+            }
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <label>Destinatario</label>
+            </div>
+        </div>
+        <div class="row item-border-bottom">
+            @if (Model != null && Model.InternalId != null)
+            {
+                <div class="col-sm-6 no-padding-left">
+                    <span class="@(Model.VecchioBeneficiario != Model.NuovoBeneficiario ? "strike-item" : "")">@Model.VecchioBeneficiario</span>
+                </div>
+                <div class="col-sm-6 no-padding-left">
+                    <span>@(Model.NuovoBeneficiario != Model.VecchioBeneficiario ? Model.NuovoBeneficiario : "")</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>

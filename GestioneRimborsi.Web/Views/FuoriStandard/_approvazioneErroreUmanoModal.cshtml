@@ -1,0 +1,1080 @@
+﻿@model String
+
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+    FuoriStandard fuoriStandard = null;
+
+    if (Model != null)
+    {
+        fuoriStandard = _fuoriStandardService.GetFuoriStandardByID(Model);
+    }
+}
+
+<div class="modal fade text-left" id="erroreUmanoModal" tabindex="-1" role="dialog" aria-labelledby="erroreUmanoModalTitle" aria-hidden="true">
+    @if (fuoriStandard != null)
+    { @Html.Partial("~/views/FuoriStandard/_sospensioniModal.cshtml", new GestioneRimborsi.Web.Models.SospensioneModel { ID_INDENNIZZO = Convert.ToInt32(Model), NUMERO_PRESTAZIONE = (fuoriStandard != null ? fuoriStandard.CodicePrestazione : ""), DATA_INIZIO_SOSPENSIONE = fuoriStandard.DataInizio.Value, DATA_FINE_SOSPENSIONE = fuoriStandard.DataInizio.Value.AddDays(1) }) }
+    else
+    { @Html.Partial("~/views/FuoriStandard/_sospensioniModal.cshtml", new GestioneRimborsi.Web.Models.SospensioneModel()) }
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalApprovaErrore">
+            <div class="modal-header">
+                <button type="button" class="close" id="closeModalRettifica" onclick="dismissModalErrore('@Model');" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 id="erroreUmanoModalTitle">
+                    Dettagli di Rettifica
+                </h4>
+            </div>
+            <div class="modal-body" id="bodyRettificheSospensioni">
+                <div class="">
+                    @*<div class="row">*@
+
+                    <div class="row fuoriStandard-heading-row">
+                        <div class="col-sm-3">
+                            <div id="calendarDiv3" class="input-group input-append date">
+                                @{var _data = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).ToShortDateString();
+                                }
+
+                                @if (fuoriStandard != null && fuoriStandard.DataInizio != null)
+                                { <input class="form-control" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="calendar3" name="calendar3" value='@fuoriStandard.DataInizio.Value' onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" /> }
+                                else
+                                { <input class="form-control" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="calendar3" name="calendar3" value="" onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" /> }
+
+                                <span class="input-group-btn add-on">
+                                    <button class="btn btn-default h-btn-new" type="button" id="btnCalendar3">
+                                        <i class="fa fa-lg fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <div id="calendarDiv4" class="input-group input-append date">
+                                @if (fuoriStandard != null && fuoriStandard.DataFine != null)
+                                { <input class="form-control" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="calendar4" name="calendar4" value='@fuoriStandard.DataFine.Value' onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" /> }
+                                else
+                                { <input class="form-control" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="calendar4" name="calendar4" value="" onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" /> }
+
+                                <span class="input-group-btn add-on">
+                                    <button class="btn btn-default h-btn-new" type="button">
+                                        <i class="fa fa-lg fa-calendar"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            @if (fuoriStandard != null)
+                            { <input class="form-control" type="number" id="quantita" min="0" step="0.01" pattern="[0-9]{10}" value='@Convert.ToDouble(fuoriStandard.EvasoIn).ToString().Replace(",", ".")' onkeyup="calcoloStandard();" onchange="calcoloStandard();" /> }
+                            else
+                            { <input class="form-control" type="number" id="quantita" min="0" step="0.01" pattern="[0-9]{10}" value="0" onkeyup="calcoloStandard();" /> }
+                            <label for="quantita" class="notdisplayed control-label marginTop10">Quantità sospensione</label>
+                            <input class="notdisplayed form-control" type="number" id="quantita" min="0" step="0.01" pattern="[0-9]{10}" value="0" onkeyup="calcoloStandard();" />
+                        </div>
+                        <div class="col-sm-2">
+                            @*<span class="control-label pull-left" id="durataSospensione">@*(fuoriStandard != null ? fuoriStandard.ErrSospensione : 0)*@@*</span>*@
+                            <input type="number" class="form-control control-label pull-left" min="0" step="1" pattern="[0-9]{10}" id="durataSospensione"/>
+                        </div>
+                        <div class="col-sm-2" id="infoStatoStandard">
+                            <label id="checkInStandard" for="inStandard" data-bind="@(fuoriStandard != null ? fuoriStandard.EccezioneFS : false)"></label>
+                            <span id="fuoriStandardWarning" class="fuoriStandardWarning"><i class="fa fa-warning"></i> FUORI STANDARD</span>
+                            <span id="inStandard" class="inStandard notdisplayed" accesskey="S"><i class="fa fa-check"></i> IN STANDARD</span>
+                        </div>
+                    </div>
+                    <div class="row fuoriStandard-caption-row">
+
+                        <div class="col-sm-3">
+                            <span for="DataInizioAttivita" class="control-label">Data inizio attività</span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span for="DataFineAttivita" class="control-label">Data fine attività</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span for="Durata" class="control-label">Durata prestazione al netto delle sospensioni</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span for="Qta" class="control-label">Durata totale sospensioni</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span for="InFuoriStandard" class="control-label">In/Fuori Standard</span>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-success" id="panelSospensioniV">
+                        <div class="panel-heading fuoriStandard-heading" id="">
+                            <a class="dropdown-toggle" role="button" @*data-toggle="collapse" href="#collapseRettifiche"*@ aria-expanded="true"
+                               aria-controls="collapseRettifiche">
+                                <span class="text-after-icon">Sospensioni</span>
+                                <span class="fa fa-lg collapse-chevron-icon collapseTwo pull-right paddingTop5"></span>
+                                @if (fuoriStandard != null)
+                                {
+                                    @Html.Hidden("codiceSospensioneModel", fuoriStandard.CodicePrestazione)
+                                    @*<span data-toggle="modal-popover" onclick="popoverShow();" data-placement="bottom" href="#popupBottom" role="button" class="fa fa-lg fa-plus-circle pull-right paddingTop5"></span>*@
+                                    <span class="fa fa-lg fa-plus-circle pull-right paddingTop5" id="nuovaSospensioneEvt" onclick="apriFinestraNuovaSosp('@fuoriStandard.CodicePrestazione', '@Model');"></span>
+                                    <span class="fa fa-lg fa-minus-circle pull-right paddingTop5" id="annullaSospensioneEvt" onclick="cancellaSospensione()"></span>
+                                }
+                            </a>
+                        </div>
+                        <div class="panel-body collapse in" role="tabpanel" id="collapseRettifiche">
+                            <div class="row container-fluid">
+                                <div class="col-sm-12" id="containerInfoSospensioni">
+                                    <div id="containerTxtSospensioni">
+                                        <span id="txtInfoSospensioni">Visualizza l'elenco delle sospensioni censite per la prestazione. <span id="txtInfoSospensioniDue">Puoi aggiungere una sospensione compilando il pannello a fianco. Per modificare una sospensione già censita, seleziona la riga con due click.</span></span>
+                                    </div>
+                                    <div id="sospensioniContainer">
+
+                                    </div>
+                                    <div class="text-center notdisplayed" id="containerBtnValidaSosp" @*data-bind="N"*@>
+                                        @if (fuoriStandard != null)
+                                        {
+                                            <a class="btn btn-function" id="confSosp" onclick="validaSospensioni('@Model', '@fuoriStandard.NumeroPrestazione', '@(false)', '@(false)')">
+                                                <span>Valida le sospensioni</span>
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                @if (fuoriStandard != null && fuoriStandard.DataInizio != null && fuoriStandard.DataFine != null)
+            { <a class="btn btn-lg btn-default pull-left" id="resetRettificaFS" onclick="resetRettifica('@Model', '@fuoriStandard.NumeroPrestazione', '@fuoriStandard.DataInizio.Value', '@fuoriStandard.DataFine.Value', '@Convert.ToDouble(fuoriStandard.EvasoIn).ToString().Replace(",", ".")', true);">
+                    <i class="fa fa-lg fa-refresh"></i><span class="text-after-icon">Ripristina</span>
+                </a> }
+            else if (fuoriStandard != null)
+            { <a class="btn btn-lg btn-default pull-left" id="resetRettificaFS" onclick="resetRettifica('@Model', '@fuoriStandard.NumeroPrestazione', '@DateTime.Now', '@DateTime.Now', '@Convert.ToDouble(fuoriStandard.EvasoIn).ToString().Replace(",", ".")', true);">
+                    <i class="fa fa-lg fa-refresh"></i><span class="text-after-icon">Ripristina</span>
+                </a> }
+                @if (fuoriStandard != null)
+                {
+                    <a class="btn btn-lg btn-function" id="confErr" onclick="confrontaStandard(false, '@Model', '@fuoriStandard.NumeroPrestazione');">
+                        <span class="text-after-icon">Salva rettifica</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    var currentDate;
+    var keyCode;
+
+    function setDateValue(e, target) {
+        currentDate = target;
+        keyCode = e.keyCode;
+    }
+
+    function setDateOnBlur(event) {
+        if (keyCode == 9) {
+            var parts = currentDate.split("/");
+            var d = new Date(parts[2], parts[1] - 1, parts[0]);
+            if (isValidDate(d)) {
+                var data = [d.getDate(),
+                            d.getMonth() + 1,
+                            d.getFullYear()].join('/');
+                $(event.target).val(data);
+            }
+            keyCode = 0;
+        }
+    }
+
+    function isValidDate(d) {
+        return d instanceof Date && !isNaN(d);
+    }
+
+    $(function () {
+        $('#calendarDiv3').datetimepicker({
+            format: 'dd/MM/yyyy hh:mm:ss'
+        });
+        $('#calendarDiv4').datetimepicker({
+            format: 'dd/MM/yyyy hh:mm:ss'
+        });
+
+        var picker;
+        var saveDate;
+        var now = new Date();
+        if ($("#calendar3").val() == '') {
+            picker = $('#calendarDiv3').data('datetimepicker');
+            picker.setLocalDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+        }
+        else {
+            saveDate = $("#calendar3").val();
+            picker = $('#calendarDiv3').data('datetimepicker');
+            picker.setLocalDate(new Date(picker.getDate().getFullYear(), picker.getDate().getMonth(), picker.getDate().getDate()));
+            $("#calendar3").val(saveDate);
+        }
+        if ($("#calendar4").val() == '') {
+            picker = $('#calendarDiv4').data('datetimepicker');
+            picker.setLocalDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+        }
+        else {
+            saveDate = $("#calendar4").val();
+            picker = $('#calendarDiv4').data('datetimepicker');
+            picker.setLocalDate(new Date(picker.getDate().getFullYear(), picker.getDate().getMonth(), picker.getDate().getDate()));
+            $("#calendar4").val(saveDate);
+        }
+    });
+
+    $(function () {
+
+        if ($(".tempoLav").text() != "") {
+            $("#quantita").val($(".tempoLav").text().trim());
+            calcoloStandard();
+            //$("#quantita").text($(".tempoLav").text().trim());
+        }
+
+        //$('#calendarDiv4').datetimepicker();
+        $(".icon-time").addClass("fa fa-clock-o");
+        $(".icon-chevron-up").addClass("fa fa-chevron-up");
+        $(".icon-chevron-down").addClass("fa fa-chevron-down");
+        $(".icon-time").parent().parent().attr("role", "button");
+        $(".icon-time").parent().parent().on("click", function () {
+            setTimeout(function () {
+                if (!checkicon()) {
+                    $(".timepicker").parent().addClass("collapse");
+                    $(".timepicker").parent().addClass("collassato");
+                    $(".icon-calendar").removeClass("fa-clock-o");
+                    $(".icon-calendar").addClass("fa-calendar");
+                }
+                else {
+                    $(".datepicker").parent().addClass("collapse");
+                    $(".timepicker").parent().removeClass("collassato");
+                    $(".icon-time").removeClass("fa-calendar");
+                    $(".icon-time").addClass("fa-clock-o");
+                }
+            }, 30);
+        });
+    });
+
+
+    function checkicon() {
+        var iconValueTime = $(".timepicker").parent().hasClass("collassato");
+        return iconValueTime;
+    }
+
+    function dismissModalErrore(idFS) {
+        //$("#approvaRettificaText").text("Confermare l'operazione richiesta?");
+        $("#approvaRettificaText").text("Sei sicuro di voler uscire senza salvare?");
+        $('#approvaRettifica').modal('show');
+        $("#confAppr").off().click(function () {
+
+            var _url = '@Url.Action("SospendiModifiche", "FuoriStandard")';
+            displayModalWaiter("schedaIndennizzo");
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idFuoriStandard: idFS
+                }),
+                success: function (result) {
+                    $('#erroreUmanoModal').modal('hide');
+                    if ($("#dataInizioAfter").text().trim() != null && $("#dataInizioAfter").text().trim() != '') {
+                        $("#calendar3").val($("#dataInizioAfter").text().trim());
+                    }
+                    else {
+                        $("#calendar3").val($("#dataInizioFS").text());
+                    }
+                    if ($("#dataFineAfter").text().trim() != null && $("#dataFineAfter").text().trim() != '') {
+                        $("#calendar4").val($("#dataFineAfter").text().trim());
+                    }
+                    else {
+                        $("#calendar4").val($("#dataFineFS").text());
+                    }
+                    if ($("#quantitaAfter").text().trim() != null && $("#quantitaAfter").text().trim() != '') {
+                        $("#quantita").val($("#quantitaAfter").text().trim());
+                    }
+                    else {
+                        $("#quantita").val($("#quantitaFS").text());
+                        $("#quantita").text($("#quantitaFS").text());
+                    }
+                    if ($("#quantitaSospensione").text().trim() != null && $("#quantitaSospensione").text().trim() != '') {
+                        $("#durataSospensione").val($("#quantitaSospensione").text().trim());
+                        $("#durataSospensione").text($("#quantitaSospensione").text().trim());
+                    }
+                    else {
+                        $("#durataSospensione").val("");
+                        $("#durataSospensione").text("");
+                    }
+                    hideModalWaiter("schedaIndennizzo");
+                    calcoloStandard();
+                    $("#sospensioniContainer").html(result);
+                    setSospensioniDataTable();
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning("Errore durante l'annullamento");
+                }
+            });
+            setTimeout(function () {
+                $("#approvaRettificaText").text("Confermare l'operazione richiesta?");
+            }, 750);
+        });
+        //$("#resetRettificaFS").click();
+    }
+
+    function resetRettifica(idFS, numeroPrestazione, dataInizio, dataFine, evasoIn, flgRipristino) {
+        $("#approvaRettificaText").text("Confermare l'operazione richiesta?");
+        $('#calendar3').val(dataInizio);
+        $('#calendar4').val(dataFine);
+        $('#quantita').val(evasoIn);
+        //$('#quantitaSosp').val("0");
+        $("#durataSospensione").val("");
+        $("#durataSospensione").text("");
+        $('#fuoriStandardWarning').removeClass("notdisplayed");
+        $('#inStandard').addClass("notdisplayed");
+        confrontaStandard(flgRipristino, idFS, numeroPrestazione);
+        setTimeout(function () {
+            $("#ddlCategoria").find("option:first").prop('selected', true);
+            $("#ddlSottoCategoria").find("option:first").prop('selected', true);
+            $("#ddlCategoria").attr("disabled", false);
+            $("#ddlSottoCategoria").attr("disabled", false);
+        }, 600)
+        ripristinaSospensioniCancellate(idFS);
+        //$("#containerBtnValidaSosp").data("bind", "N");
+    }
+
+    function ripristinaSospensioniCancellate(idFS) {
+
+        var _url = '@Url.Action("RipristinaSospensioniCancellate", "FuoriStandard")';
+        displayModalWaiter("schedaIndennizzo");
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                idFuoriStandard: idFS
+            }),
+            success: function (result) {
+                $("#sospensioniContainer").html(result);
+                setSospensioniDataTable();
+                hideModalWaiter("schedaIndennizzo");
+            },
+            error: function (request, status, error) {
+                displayModalWaiter("schedaIndennizzo");
+                notifyWarning("Errore durante il ripristino delle sospensioni cancellate");
+            }
+        });
+    }
+
+    $(function () {
+        calcoloStandard();
+
+        //$('#calendarDiv3').datetimepicker();
+        $(".icon-time").addClass("fa fa-clock-o");
+        $(".icon-chevron-up").addClass("fa fa-chevron-up");
+        $(".icon-chevron-down").addClass("fa fa-chevron-down");
+        $(".icon-time").parent().parent().attr("role", "button");
+        $(".icon-time").parent().parent().on("click", function () {
+            setTimeout(function () {
+                if (!checkicon()) {
+                    $(".timepicker").parent().addClass("collapse");
+                    $(".timepicker").parent().addClass("collassato");
+                    $(".icon-calendar").removeClass("fa-clock-o");
+                    $(".icon-calendar").addClass("fa-calendar");
+                }
+                else {
+                    $(".datepicker").parent().addClass("collapse");
+                    $(".timepicker").parent().removeClass("collassato");
+                    $(".icon-time").removeClass("fa-calendar");
+                    $(".icon-time").addClass("fa-clock-o");
+                }
+            }, 30);
+        });
+    });
+
+    function getDate(data) {
+        var date = data.split("/"),
+        d = date[0],
+        m = date[1],
+        y = date[2].substring(0, 4),
+        hh = date[2].substring(5, 7),
+        mm = date[2].substring(8, 10),
+        ss = date[2].substring(11, 13);
+        var newDate = new Date(y, m - 1, d, hh, mm, ss);
+        return newDate;
+    }
+
+    function confrontaStandard(flgRipristino, idFs, numeroPrestazione) {
+
+        if ($('#calendar3').val() == '') {
+            notifyWarning("Data inizio non inserita..."); return false;
+        }
+        if ($('#calendar4').val() == '') {
+            notifyWarning("Data fine non inserita..."); return false;
+        }
+        if ($('#quantita').val() == '' || $('#quantita').val() == null) {
+            notifyWarning("Inserire una quantità..."); return false;
+        }
+        //if ($('#quantitaSosp').val() == '' || $('#quantitaSosp').val() == null) {
+        //    notifyWarning("Inserire una quantità sospensione..."); return false;
+        //}
+
+        if (getDate($('#calendar4').val()) < getDate($('#calendar3').val())) {
+            notifyWarning("Data inizio attività successiva alla data fine attività..."); return false;
+        }
+
+        validaSospensioni(idFs, numeroPrestazione, flgRipristino, true);
+
+    }
+
+    function checkInStandard(flgRipristino) {
+        if ($("#checkInStandard").data("bind") == "False") {
+            if ((parseFloat($("#quantita").val().replace(",", ".")).toFixed(3)) <= $("#valStandard").data("bind")) {
+                aggiornaSchedaFuoriStandard(flgRipristino);
+            }
+            else {
+                aggiornaSchedaInStandard(flgRipristino);
+            }
+        }
+        else {
+            if ((parseFloat($("#quantita").val().replace(",", ".")).toFixed(3)) >= $("#valStandard").data("bind")) {
+                aggiornaSchedaFuoriStandard(flgRipristino);
+            }
+            else {
+                aggiornaSchedaInStandard(flgRipristino);
+            }
+        }
+    }
+
+    function calcoloStandard() {
+        if ($("#checkInStandard").data("bind") == "False") {
+            if ((parseFloat($("#quantita").val().replace(",", ".")).toFixed(3)) <= $("#valStandard").data("bind")) {
+                $("#fuoriStandardWarning").addClass("notdisplayed");
+                $("#inStandard").removeClass("notdisplayed");
+            }
+            else {
+                $("#inStandard").addClass("notdisplayed");
+                $("#fuoriStandardWarning").removeClass("notdisplayed");
+            }
+        }
+        else {
+            if ((parseFloat($("#quantita").val().replace(",", ".")).toFixed(3)) >= $("#valStandard").data("bind")) {
+                $("#fuoriStandardWarning").addClass("notdisplayed");
+                $("#inStandard").removeClass("notdisplayed");
+            }
+            else {
+                $("#inStandard").addClass("notdisplayed");
+                $("#fuoriStandardWarning").removeClass("notdisplayed");
+            }
+        }
+    }
+
+    function aggiornaSchedaFuoriStandard(flgRipristino) {
+        $('#erroreUmanoModal').modal('hide');
+        if (flgRipristino == false) {
+            $("#ddlCategoria option[value=ERR]").prop('selected', true);
+        }
+        var _optionCategoria = $("#ddlCategoria option:selected").val();
+
+        var _url = '@Url.Action("FiltraDatiSottoCategoria", "FuoriStandard", new { OptionCategoria = "_optioncategoria_", firstTime = "_firstTime_" })'.replace("_optioncategoria_", _optionCategoria).replace("_firstTime_", false);
+
+        //displayModalWaiter("schedaIndennizzo");
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                OptionCategoria: _optionCategoria,
+                firstTime: false,
+            }),
+            success: function (result) {
+                $("#SottoCategorieContainerIndennizzi").html(result);
+                setTimeout(function () {
+                    if (flgRipristino == false) {
+                        $("#ddlSottoCategoria option[value=ERR01]").prop('selected', true);
+                        $("#ddlSottoCategoria").attr("disabled", true);
+                        $("#ddlCategoria").attr("disabled", true);
+                    }
+
+                    if (parseFloat($("#quantita").val().replace(",", ".")).toFixed(3) != parseFloat($("#quantitaFS").text()).toFixed(3) && $("#quantitaAfter").val() == null) {
+                        $("#quantitaFS").addClass("fuoriStandard-valore-rettificato");
+                        $("#quantitaFS").after("<span id='quantitaAfter' class='fuoriStandard-valore-rettifica'> " + parseFloat($("#quantita").val().replace(",", ".")) + "</span>");
+                    }
+                    else if ($("#quantitaAfter").val() != null && parseFloat($("#quantita").val()).toFixed(3) != parseFloat($("#quantitaFS").text()).toFixed(3)) {
+                        $("#quantitaAfter").text(" " + parseFloat($("#quantita").val().replace(",", ".")));
+                    }
+                    else {
+                        $("#quantitaFS").removeClass("fuoriStandard-valore-rettificato");
+                        $("#quantitaAfter").remove();
+                    }
+
+                    if ($("#durataSospensione").val() != "" && $("#durataSospensione").val() != null && parseInt($("#durataSospensione").val()) != 0) {
+                        $("#quantitaSospensione").val(parseInt($("#durataSospensione").val()));
+                        $("#quantitaSospensione").text(parseInt($("#durataSospensione").val()));
+                        //$("#quantitaSospensione").addClass("fuoriStandard-valore-rettifica");
+                        //$("#quantitaSospensione").addClass("modSospensione");
+                    }
+                    else {
+                        $("#quantitaSospensione").val("");
+                        $("#quantitaSospensione").text("");
+                        //$("#quantitaSospensione").removeClass("fuoriStandard-valore-rettifica");
+                        //$("#quantitaSospensione").removeClass("modSospensione");
+                    }
+
+                    if ($("#calendar4").val() != $("#dataFineFS").text() && $("#dataFineAfter").val() == null) {
+                        $("#dataFineFS").addClass("fuoriStandard-valore-rettificato");
+                        $("#dataFineFS").after("<span id='dataFineAfter' class='fuoriStandard-valore-rettifica'> " + $('#calendar4').val() + "</span>");
+                    }
+                    else if ($("#dataFineAfter").val() != null && $("#calendar4").val() != $("#dataFineFS").text()) {
+                        $("#dataFineAfter").text(" " + $("#calendar4").val());
+                    }
+                    else {
+                        $("#dataFineFS").removeClass("fuoriStandard-valore-rettificato");
+                        $("#dataFineAfter").remove();
+                    }
+
+                    if ($("#calendar3").val() != $("#dataInizioFS").text() && $("#dataInizioAfter").val() == null) {
+                        $("#dataInizioFS").addClass("fuoriStandard-valore-rettificato");
+                        $("#dataInizioFS").after("<span id='dataInizioAfter' class='fuoriStandard-valore-rettifica'> " + $('#calendar3').val() + "</span>");
+                    }
+                    else if ($("#dataInizioAfter").val() != null && $("#calendar3").val() != $("#dataInizioFS").text()) {
+                        $("#dataInizioAfter").text(" " + $('#calendar3').val());
+                    }
+                    else {
+                        $("#dataInizioFS").removeClass("fuoriStandard-valore-rettificato");
+                        $("#dataInizioAfter").remove();
+                    }
+
+                    if ($("#statoStandard").text() == "FS" && $("#statoStandardAfter").val() == null) {
+                        $("#statoStandard").addClass("fuoriStandard-valore-rettificato");
+                        $("#statoStandard").before("<span id='statoStandardAfter' class='fuoriStandard-valore-rettifica pull-right'>" + "<hidden class='invisible'>_</hidden>" + "S" + "</span>");
+                    }
+                    else if ($("#statoStandardAfter").val() != null && $("#statoStandard").text() == "FS") {
+                        $("#statoStandardAfter").val("S");
+                    }
+                    else {
+                        $("#statoStandard").removeClass("fuoriStandard-valore-rettificato");
+                        $("#statoStandardAfter").remove();
+                    }
+
+                    if (flgRipristino == true) {
+                        if ($("#dataInizioFS").text() == "") {
+                            $("#dataInizioFS").removeClass("fuoriStandard-valore-rettificato");
+                            $("#dataInizioAfter").remove();
+                        }
+                        if ($("#dataFineFS").text() == "") {
+                            $("#dataFineFS").removeClass("fuoriStandard-valore-rettificato");
+                            $("#dataFineAfter").remove();
+                        }
+                    }
+                }, 50)
+
+                hideModalWaiter("schedaIndennizzo");
+                setTimeout(function () {
+                    if ($(".fuoriStandard-valore-rettificato").length == 0 && $(".modSospensione").length == 0) {
+                        $("#ddlCategoria").find("option:first").prop('selected', true);
+                        $("#ddlSottoCategoria").find("option:first").prop('selected', true);
+                        $("#ddlCategoria").attr("disabled", false);
+                        $("#ddlSottoCategoria").attr("disabled", false);
+                    }
+                }, 50);
+
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function aggiornaSchedaInStandard(flgRipristino) {
+        $('#erroreUmanoModal').modal('hide');
+        $("#ddlSottoCategoria").removeAttr("disabled");
+        $("#ddlCategoria").removeAttr("disabled");
+        setTimeout(function () {
+            $("#ddlCategoria").find("option:first").prop('selected', true);
+
+            if (parseFloat($("#quantita").val().replace(",", ".")).toFixed(3) != parseFloat($("#quantitaFS").text()).toFixed(3) && $("#quantitaAfter").val() == null) {
+                $("#quantitaFS").addClass("fuoriStandard-valore-rettificato");
+                $("#quantitaFS").after("<span id='quantitaAfter' class='fuoriStandard-valore-rettifica'> " + parseFloat($("#quantita").val().replace(",", ".")) + "</span>");
+            }
+            else if ($("#quantitaAfter").val() != null && parseFloat($("#quantita").val()).toFixed(3) != parseFloat($("#quantitaFS").text()).toFixed(3)) {
+                $("#quantitaAfter").text(" " + parseFloat($("#quantita").val().replace(",", ".")));
+            }
+            else {
+                $("#quantitaFS").removeClass("fuoriStandard-valore-rettificato");
+                $("#quantitaAfter").remove();
+            }
+
+            if ($("#durataSospensione").val() != "" && $("#durataSospensione").val() != null && parseInt($("#durataSospensione").val()) != 0) {
+                $("#quantitaSospensione").val(parseInt($("#durataSospensione").val()));
+                $("#quantitaSospensione").text(parseInt($("#durataSospensione").val()));
+                //$("#quantitaSospensione").addClass("fuoriStandard-valore-rettifica");
+                //$("#quantitaSospensione").addClass("modSospensione");
+            }
+            else {
+                $("#quantitaSospensione").val("");
+                $("#quantitaSospensione").text("");
+                //$("#quantitaSospensione").removeClass("fuoriStandard-valore-rettifica");
+                //$("#quantitaSospensione").removeClass("modSospensione");
+            }
+
+            if ($("#calendar4").val() != $("#dataFineFS").text() && $("#dataFineAfter").val() == null) {
+                $("#dataFineFS").addClass("fuoriStandard-valore-rettificato");
+                $("#dataFineFS").after("<span id='dataFineAfter' class='fuoriStandard-valore-rettifica'> " + $('#calendar4').val() + "</span>");
+            }
+            else if ($("#dataFineAfter").val() != null && $("#calendar4").val() != $("#dataFineFS").text()) {
+                $("#dataFineAfter").text(" " + $("#calendar4").val());
+            }
+            else {
+                $("#dataFineFS").removeClass("fuoriStandard-valore-rettificato");
+                $("#dataFineAfter").remove();
+            }
+
+            if ($("#calendar3").val() != $("#dataInizioFS").text() && $("#dataInizioAfter").val() == null) {
+                $("#dataInizioFS").addClass("fuoriStandard-valore-rettificato");
+                $("#dataInizioFS").after("<span id='dataInizioAfter' class='fuoriStandard-valore-rettifica'> " + $('#calendar3').val() + "</span>");
+            }
+            else if ($("#dataInizioAfter").val() != null && $("#calendar3").val() != $("#dataInizioFS").text()) {
+                $("#dataInizioAfter").text(" " + $('#calendar3').val());
+            }
+            else {
+                $("#dataInizioFS").removeClass("fuoriStandard-valore-rettificato");
+                $("#dataInizioAfter").remove();
+            }
+
+            if ($("#statoStandardAfter").val() != null && $("#statoStandard").text() == "FS") {
+                $("#statoStandard").removeClass("fuoriStandard-valore-rettificato");
+                $("#statoStandardAfter").remove();
+            }
+            else {
+                $("#statoStandard").removeClass("fuoriStandard-valore-rettificato");
+                $("#statoStandardAfter").remove();
+            }
+
+            if ($("#statoStandardAfter").val() == null && $("#statoStandard").text() == "S") {
+                $("#statoStandard").addClass("fuoriStandard-valore-rettificato");
+                $("#statoStandard").before("<span id='statoStandardAfter' class='fuoriStandard-valore-rettifica pull-right'>" + "<hidden class='invisible'>_</hidden>" + "FS" + "</span>");
+            }
+            else if ($("#statoStandardAfter").val() != null && $("#statoStandard").text() == "S") {
+                $("#statoStandardAfter").val("FS");
+            }
+            else {
+                $("#statoStandard").removeClass("fuoriStandard-valore-rettificato");
+                $("#statoStandardAfter").remove();
+            }
+
+            $("#ddlSottoCategoria").find("option:first").prop('selected', true);
+
+            if (flgRipristino == true) {
+                if ($("#dataInizioFS").text() == "") {
+                    $("#dataInizioFS").removeClass("fuoriStandard-valore-rettificato");
+                    $("#dataInizioAfter").remove();
+                }
+                if ($("#dataFineFS").text() == "") {
+                    $("#dataFineFS").removeClass("fuoriStandard-valore-rettificato");
+                    $("#dataFineAfter").remove();
+                }
+            }
+        }, 150);
+    }
+
+    function setSospensioniDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridSospensioni')) {
+            _sospensioniTable = $('#gridSospensioni').DataTable();
+        }
+        else {
+            _sospensioniTable = $('#gridSospensioni').DataTable({
+                "pageLength": 5,
+                "scrollY": "142px",
+                "scrollX": "hidden",
+                columns: [
+                    { "orderable": false },
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    { "orderable": false },
+                ],
+                order: [1, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+
+        $("#headerOneSosp").css({ "width": "5%" }); $("#headerTwoSosp").css({ "width": "12%" }); $("#headerThreeSosp").css({ "width": "11%" });
+        $("#headerFourSosp").css({ "width": "9%" }); $("#headerFiveSosp").css({ "width": "14%" }); $("#headerSixSosp").css({ "width": "19%" });
+        $("#headerSevenSosp").css({ "width": "20%" }); $("#headerEightSosp").css({ "width": "10%" });
+
+        $("#rowOneSosp").css({ "width": "5%" }); $("#rowTwoSosp").css({ "width": "12%" }); $("#rowThreeSosp").css({ "width": "11%" });
+        $("#rowFourSosp").css({ "width": "9%" }); $("#rowCinqueFiveSosp").css({ "width": "14%" }); $("#rowSixSosp").css({ "width": "19%" });
+        $("#rowSevenSosp").css({ "width": "20%" }); $("#rowEightSosp").css({ "width": "10%" });
+
+        $(".dataTables_scrollBody").addClass("positionRelative");
+
+    }
+    $(function () {
+        setSospensioniDataTable();
+    });
+
+    function validaSospensioni(idFs, numeroPrestazione, flgRipristino, salva) {
+        if (salva == '') {
+            salva = false;
+        }
+        if (flgRipristino == true) {
+            checkInStandard(flgRipristino);
+        }
+        else {
+            //$("#approvaRettifica #approvaRettificaText").text("Sei sicuro di aver validato le sospensioni?");
+            //$('#approvaRettifica').modal('show');
+            //$("#confAppr").off().click(function () {
+                var _url = '@Url.Action("ValidaSospensioni", "FuoriStandard")';
+                displayModalWaiter("schedaIndennizzo");
+
+                $.ajax({
+                    url: _url,
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        jsonSospensioni: "",
+                        idFs: idFs,
+                        numeroPrestazione: numeroPrestazione,
+                        dataInizio: $("#calendar3").val(),
+                        dataFine: $("#calendar4").val(),
+                        salva: salva
+                    }),
+                    success: function (result) {
+                        if (result.messaggio == null) {
+                            if (!salva) {
+                                $("#sospensioniContainer").html(result);
+                                setSospensioniDataTable();
+
+                                //var someArray = $('#gridSospensioni').DataTable().column(3).data().toArray();
+                                //var total = 0;
+                                //for (var i = 0; i < someArray.length; i++) {
+                                //    total += someArray[i] << 0;
+                                //}
+                                //$("#durataSospensione").text(total);
+                                //$("#durataSospensione").val(total);
+
+                                $("#quantita").text($("#durataSospensioneCalcolata").val());
+                                $("#quantita").val($("#durataSospensioneCalcolata").val());
+                                $("#durataSospensione").text($("#durataTotaleSospensioni").val());
+                                $("#durataSospensione").val($("#durataTotaleSospensioni").val());
+
+                                calcoloStandard();
+                                notifySuccess("Validazione completata");
+                            }
+                            hideModalWaiter("schedaIndennizzo");
+                            if (salva) {
+                                checkInStandard(flgRipristino);
+                                //$("#containerBtnValidaSosp").data("bind", "Y");
+                                hideModalWaiter("schedaIndennizzo");
+                            }
+                        }
+                        else {
+                            hideModalWaiter("schedaIndennizzo");
+                            notifyWarning(result.messaggio);
+                        }
+                    },
+                    error: function (request, status, error) {
+                        hideModalWaiter();
+                        notifyWarning(error + ", riprova più tardi..");
+                    }
+                });
+            //    $("#approvaRettificaText").text("Confermare l'operazione richiesta?");
+            //}
+            //)
+        };
+    }
+
+    $(function () {
+        _url = '@Url.Action("ElencoSospensioni", "FuoriStandard")';
+        displayModalWaiter("schedaIndennizzo");
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                IdFS: '@Model',
+            }),
+            success: function (result) {
+                $("#sospensioniContainer").html(result);
+                setSospensioniDataTable();
+                hideModalWaiter("schedaIndennizzo");
+            },
+            error: function (request, status, error) {
+                notifyWarning(error);
+                hideModalWaiter("schedaIndennizzo");
+            }
+        });
+    })
+
+    function apriFinestraNuovaSosp(numeroPrestazione, idPrestazione) {
+        displayModalWaiter("schedaIndennizzo");
+        _url = '@Url.Action("GetNuovaSospensione", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                idIndennizzo: idPrestazione,
+            }),
+            success: function (result) {
+                $("#schedaSospensioni").html(result);
+                $('#dataInizioSospensioneContainer').datetimepicker({
+                    format: 'dd/MM/yyyy hh:mm:ss'
+                });
+                loadCategorie(numeroPrestazione, false);
+                hideModalWaiter("schedaIndennizzo");
+                $("#sospensioniModal").modal("show");
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyWarning(error);
+            }
+        });
+        //loadCategorie(numeroPrestazione, false);
+    }
+
+    function loadCategorie(numeroPrestazione, checkModifica) {
+        displayModalWaiter("schedaIndennizzo");
+        _url = '@Url.Action("CategorieSospensioni", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                numeroPrestazione: numeroPrestazione
+            }),
+            success: function (result) {
+                $("#categoriaContainer").html(result);
+                hideModalWaiter("schedaIndennizzo");
+                if (checkModifica == false) {
+                    $("#sospensioniModal").modal("show");
+                    $("#FormSospensioni .emptyField").val("");
+                    //$("#dataInizioSospensione").val($("#calendar3").val());
+                    //var datePlus1 = $("#calendar3").val().split('/');
+                    //datePlus1[0] = Number(datePlus1[0]) + 1;
+                    //$("#dataFineSospensione").val(datePlus1.join('/'));
+                    $("#dataComunicazioneContainer").datetimepicker('disable');
+                    $("#FormSospensioni select").val("-1");
+                }
+                else {
+                    $("#categorieSospensioni").val($("#selectedCategoria").val());
+                    loadTipiSospensioni(true);
+                    $("#tipiSospensioni").val($("#selectedTipoSospensione").val());
+                }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function loadTipiSospensioni(checkModifica) {
+
+        if ($("#categorieSospensioni").val() == "2") {
+            $("#dataComunicazioneContainer").datetimepicker('enable');
+        }
+        else {
+            $("#dataComunicazioneContainer").datetimepicker('disable');
+            $("#dataComunicazione").val("");
+        }
+
+        _url = '@Url.Action("TipiSospensione", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                codCategoria: $("#categorieSospensioni option:selected").val()
+            }),
+            success: function (result) {
+                $("#tipoSospensioneContainer").html(result);
+                if (checkModifica == true) {
+                    $("#tipiSospensioni").val($("#selectedTipoSospensione").val());
+                }
+            },
+            error: function (request, status, error) {
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function mostraPannelloModifica(rowId, idIndennizzo, numeroPrestazione) {
+
+        displayModalWaiter("schedaIndennizzo");
+        _url = '@Url.Action("GetSospensione", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                idIndennizzo: idIndennizzo,
+                rowID: rowId
+            }),
+            success: function (result) {
+                $("#schedaSospensioni").html(result);
+                loadCategorie($("#codiceSospensioneModel").val(), true);
+                //$("#categorieSospensioni").val($("#selectedCategoria").val());
+                //loadTipiSospensioni();
+                //$("#tipiSospensioni").val($("#selectedTipoSospensione").val());
+                hideModalWaiter("schedaIndennizzo");
+                $("#sospensioniModal").modal("show");
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function cancellaSospensione(rowID, idSospensione, idIndennizzo) {
+        if ($("#gridSospensioni .selected").length == 0) {
+            notifyWarning("nessuna sospensione selezionata");
+        }
+        else {
+            displayModalWaiter("schedaIndennizzo");
+            _url = '@Url.Action("AnnullaSospensione", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idIndennizzo: idIndennizzo,
+                    rowID: rowID,
+                    idSospensione: idSospensione
+                }),
+                success: function (result) {
+                    $("#sospensioniContainer").html(result);
+                    setSospensioniDataTable();
+                    hideModalWaiter("schedaIndennizzo");
+                    notifySuccess("Sospensione cancellata con successo");
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning(error);
+                }
+            });
+        }
+    }
+
+    function HandleBrowseClickSosp(rowID) {
+        var fileinput = document.getElementById("filesInputSosp_" + rowID);
+        fileinput.click();
+    }
+
+    function HandlechangeSosp(IdSospensione, IdFs, rowId, event) {
+        var fileinput = document.getElementById("filesInputSosp_" + rowId);
+        var identificativo = rowId;
+        if (IdSospensione != 0) { identificativo = IdSospensione }
+        displayModalWaiter("schedaIndennizzo");
+        var xhre = new XMLHttpRequest();
+        var fdata = new FormData();
+        fdata.append("file", document.getElementById('filesInputSosp_' + rowId).files[0]);
+        fdata.append("IdSospensione", identificativo);
+        fdata.append("IdFs", IdFs);
+        xhre.open("POST", "/FuoriStandard/AggiungiAllegatoSospensione/", true);
+        xhre.send(fdata);
+        var results;
+
+        xhre.onreadystatechange = function () {
+            var content = xhre.responseText;
+            if (content != undefined && content != null && content != '' && content != results) {
+                notifyInfo(content);
+            }
+            results = xhre.responseText;
+        }
+
+        if (document.getElementById('filesInputSosp_' + rowId).files[0] != null) {
+            var _url;
+
+            setTimeout(function () {
+
+                _url = '@Url.Action("ElencoAllegatiSospensione", "FuoriStandard")';
+
+                $.ajax({
+                    url: _url,
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        IdSospensione: IdSospensione,
+                        IdFs: IdFs,
+                        RowId: rowId
+                    }),
+                    success: function (result) {
+                        $("#attachmentsSosp_" + rowId).html(result);
+                        hideModalWaiter("schedaIndennizzo");
+                    },
+                    error: function (request, status, error) {
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyWarning(error);
+                    }
+                });
+            }, 500);
+        }
+        else { hideModalWaiter("schedaIndennizzo"); notifyWarning("Nessun file selezionato"); }
+        hideModalWaiter("schedaIndennizzo");
+    }
+
+    function getAllegatiSospensione(IdSospensione, IdFs, rowID, event) {
+        if (!$("#attachmentsSosp_" + rowID).hasClass("in")) {
+            $(".showPanelAllegati").removeClass("in");
+            $(".showPanelAllegati").addClass("collapse");
+            $(".dataTables_scrollBody").css({
+                "position": "relative"
+            });
+
+            var firstTimeSosp = false;
+            if (($("#attachSosp_" + rowID).data("bind") == "firstTimeSosp")) {
+                firstTimeSosp = true;
+            }
+
+            //$("#attachmentsSosp_" + rowID).removeClass("showPanelAllegati");
+            //if ($(".showPanelAllegati").hasClass("in")) {
+            //    $(".showPanelAllegati").collapse("hide");
+            //}
+            $("#attachmentsSosp_" + rowID).addClass("showPanelAllegati");
+
+            if (firstTimeSosp == true) {
+
+                //if (!$("#attachmentsSosp_" + rowID).hasClass("collapse in")) {
+                _url = '@Url.Action("ElencoAllegatiSospensione", "FuoriStandard")';
+                $.ajax({
+                    url: _url,
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        IdSospensione: IdSospensione,
+                        IdFs: IdFs,
+                        RowId: rowID
+                    }),
+                    success: function (result) {
+                        $("#attachSosp_" + rowID).data("bind", "noFirstTimeSosp");
+                        //$("#attachmentsSosp_" + rowID).removeClass("showPanelAllegati");
+                        $("#attachmentsSosp_" + rowID).html(result);
+                        var checkReadOnly = $("#btnRettifica").data("bind");
+                        if (checkReadOnly == 'True') {
+                            $(".btnEliminaAllegatoSosp").addClass("notdisplayed");
+                            $(".fakeBrowseSosp").addClass("notdisplayed");
+                        }
+                    },
+                    error: function (request, status, error) {
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyWarning(error);
+                    }
+                });
+            }
+        }
+        else {
+            $(".showPanelAllegati").removeClass("in");
+            $(".showPanelAllegati").addClass("collapse");
+            event.stopPropagation();
+            //$("#attachmentsSosp_" + rowID).removeClass("showPanelAllegati");
+        }
+    }
+
+</script>

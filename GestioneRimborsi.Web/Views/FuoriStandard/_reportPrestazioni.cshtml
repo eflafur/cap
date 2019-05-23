@@ -1,0 +1,58 @@
+﻿@model ISubCollection<ReportFuoriStandard>
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+}
+
+@{
+    <table id="gridIndennizzi" class="table">
+        <thead>
+            <tr>                
+                <th class="text-left">Codice Rintracciabilita</th>
+                <th class="text-left">Data</th>
+                <th class="text-left">Codice Cliente</th>
+                <th class="text-left">Nome Completo</th>
+                <th class="text-left">Codice Prestazione</th>
+                <th class="text-left">Tipo Standard</th>
+                <th class="text-left">Codice Causa</th>
+                <th class="text-left">Stadio Indennizzo</th>
+                <th class="text-left">Gruppo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                foreach (ReportFuoriStandard _fs in Model.Items)
+                {
+                    <tr>                        
+                        <td class="text-left">@_fs.Rintracciabilita</td>
+                        <td class="text-left">@((_fs.Data != null) ? _fs.Data : "N/A")</td>
+                        <td class="text-left">@_fs.Cliente</td>
+                        @if (_fuoriStandardService.GetCliFuoriStandard(_fs.Cliente) != null)
+                        {
+                            <td class="text-left">@_fuoriStandardService.GetCliFuoriStandard(_fs.Cliente).RagioneSociale</td> }
+                        else
+                        {
+                            <td class="text-left"></td> }
+                        <td class="text-left">@_fs.Prestazione</td>
+                        <td class="text-left">@_fs.TipoStandard</td>
+                        <td class="text-left">@_fs.CodiceCausa</td>
+                        <td class="text-left">@_fs.StadioIndennizzo</td>
+                        <td class="text-left">@_fs.CodGruppo</td>
+                    </tr>
+                }
+            }            
+        </tbody>
+    </table>
+}
+
+<script>
+
+    $(function () {
+        setTimeout(function () {
+            $("#gridIndennizzi").parent().parent().css({
+                "min-height": "408px",
+            })
+        }, 50);
+    });
+
+</script>

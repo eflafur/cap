@@ -1,0 +1,108 @@
+﻿@model ISubCollection<FuoriStandard>
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+}
+
+@{
+    <table id="gridNonIndennizzabili" class="table">
+        <thead>
+            <tr>
+                <th class="text-left">Codice Rintracciabilità</th>
+                <th class="text-left">Indicatore Prestazione</th>
+                <th class="text-left">Evaso in</th>
+                <th class="text-left">Codice Cliente</th>
+                <th class="text-left">Codice contratto</th>
+                <th class="text-left">Codice puf</th>
+                <th class="text-left">Nome Completo</th>
+                <th class="text-left">Importo</th>
+                <th class="text-left">Censito il</th>
+                <th class="text-left">Censito da</th>
+                <th class="text-left">Origine</th>
+                <th class="text-left" id="indenn">Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null)
+            {
+                foreach (FuoriStandard _fs in Model.Items)
+                {
+                    <tr class="">
+                        <td class="text-left">@_fs.CodiceRintracciabilita</td>
+                        <td class="text-left">@((_fuoriStandardService.GetTipologiaStandard(_fs.IdStandard) != null) ? _fuoriStandardService.GetTipologiaStandard(_fs.IdStandard).DescStandard : "N/A")</td>
+                        <td class="text-left">@Convert.ToDouble(_fs.EvasoIn).ToString().Replace(",", ".")</td>
+                        <td class="text-left">@_fs.CodCliente</td>
+                        <td class="text-left">@_fs.CodContratto</td>
+                        <td class="text-left">@_fs.CodPuf</td>
+                        @if (_fuoriStandardService.GetCliFuoriStandard(_fs.CodCliente) != null)
+                        {
+                            <td class="text-left">@_fuoriStandardService.GetCliFuoriStandard(_fs.CodCliente).RagioneSociale</td> }
+                        else
+                        {
+                            <td class="text-left"></td> }
+                        <td class="text-left">@(_fs.Importo != 0 ? _fs.Importo.ToString("#.00") : "0,00") <span>€</span></td>
+                        @if (_fs.CensitoIl != null)
+                        {
+                            <td class="text-left">@_fs.CensitoIl.Value.ToShortDateString()</td> }
+                        else
+                        {
+                            <td class="text-left"></td> }
+                        @if (_fs.UtenteInserimento != null)
+                        {
+                            <td class="text-left">@_fs.UtenteInserimento</td> }
+                        else
+                        {
+                            <td class="text-left"></td> }
+                        <td class="text-left">@(_fs.FlagOrigine == "I" ? "S" : "FS")</td>
+                        <td class="text-left">
+                            @if (RevoRequest.CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.nonIndennizzabili.update") && _fs.NonIndennizzabile == "S")
+                            {
+                                <a id="selezioneIndennizzo" name="@_fs.IDFS" role="button" title="Collega cliente" onclick="modificaFSNonIndennizzabile('@_fs.IDFS');" value="@_fs.IDFS;@_fs.CensitoIl;@_fs.CodCliente">
+                                    <i class="fa fa-fw fa-lg fa-chain"></i>
+                                </a> }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+<script>
+
+    function modificaFSNonIndennizzabile(fuoriStandardID) {
+        displayModalWaiter();
+
+        var _url = '@Url.Action("SchedaAssociaCliente", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                CodiceIndennizzo: fuoriStandardID,
+            }),
+            success: function (result) {
+                if (result != null) {
+                    hideModalWaiter();
+                    $("#causaCAP").html(result);
+                    $('#causaCAPModal').modal("show");
+                }
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+                return false;
+            }
+        });
+    }
+
+    $(function () {
+        setTimeout(function () {
+            $("#gridNonIndennizzabili").parent().parent().css({
+                "min-height": "355px",
+            })
+        }, 50);
+    });
+
+</script>

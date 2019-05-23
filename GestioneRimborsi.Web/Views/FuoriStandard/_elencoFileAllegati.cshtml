@@ -1,0 +1,103 @@
+﻿@model GestioneRimborsi.Web.Models.AllegatiFSModel
+
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+
+    var allegati = _fuoriStandardService.GetElencoAllegati("-1");
+
+    if (Model != null)
+    {
+        allegati = _fuoriStandardService.GetElencoAllegati(Model.IdFS);
+    }
+}
+
+@if (allegati != null)
+{
+    <label id="labelAllegatiFS">Documenti Allegati</label>
+    <ul title="Documenti Allegati" id="ulAllegatiFS">
+        @foreach (var item in allegati.Items)
+        {
+            <li id="liAllegatiFS">
+                <u><a class="listaAllegati" role="button" onclick="return getAllegato('@item.NomeFile', '@item.TipoFile');">@item.NomeFile</a></u>
+                @if (Model.SolaLettura == false)
+                {
+                    <a class="pull-right padRight10" title="elimina" role="button" onclick="deleteAllegato('@item.NomeFile','@item.TipoFile','@item.IdFS')"><i class="fa fa-lg fa-fw fa-trash"></i></a>
+                }
+            </li>
+        }
+    </ul>
+}
+
+@if (Model != null)
+{
+    if (Model.SolaLettura == false)
+    {
+        <div class="table-bordered alert-info">
+            <input type="file" class="btn btn-lg mt-10 notdisplayed" id="filesInput" onchange="Handlechange('@Model.IdFS');">
+            <u role="button"><a id="fakeBrowse" onclick="return HandleBrowseClick();" class="padLeft10" role="button">Allega nuovo...</a></u>
+        </div>
+    }
+}
+
+<script>
+
+    function getAllegato(nome, tipo) {
+
+        var _url = '@Url.Action("DownloadFile", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                Filename: nome,
+                Extension: tipo
+            }),
+            success: function (result) {
+                if (result == "Error") {
+                    notifyWarning("Errore nel recuperare il file...");
+                }
+                else {
+                    window.location.href = '@Html.Raw(Url.Action("DownloadFileStorico", "FuoriStandard", new { Filename = "_nome_", Extension = "_tipo_" }))'.replace("_nome_", nome).replace("_tipo_", tipo);
+                }
+            },
+            error: function (request, status, error) {
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function deleteAllegato(fileName, tipoFile, IdFS) {
+
+        displayModalWaiter("schedaIndennizzo");
+        var _url;
+        _url = "@Url.Action("EliminaAllegato","FuoriStandard")";
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                Filename: fileName,
+                TipoFile: tipoFile,
+                IdFS: IdFS,
+            }),
+            success: function (result) {
+                if (result != null) {
+                    notifySuccess("cancellazione eseguita correttamente!");
+                    $("#collapseAttachments").html(result);
+                    hideModalWaiter("schedaIndennizzo");
+                }
+                else {
+                    notifyWarning("purtroppo la cancellazione non è stata eseguita correttamente..");
+                    hideModalWaiter("schedaIndennizzo");
+                }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyError("purtroppo la cancellazione non è stata eseguita correttamente..(deve essere presente almeno una riga)");
+            }
+        });
+    }
+
+</script>

@@ -1,0 +1,199 @@
+﻿@model List<string>
+
+@{
+    ViewBag.Title = "Gestione disposizioni";
+
+    Int64 temp = 0;
+
+    if (!CurrentUser.HasPermissionOrIsPrivileged("gri.disposizioni"))
+    {
+        Response.Redirect(CommonUrls.BaseUrl);
+    }
+}
+
+<div class="space-container">
+    <div class="row paddingTop15">
+        <div class="col-sm-12 space-container">
+            <h2 class="mr-l">
+                @CommonSnippets.IconLinkToHomepage
+                /
+                <i class="fa fa-list-ul"></i>
+                <span class="text-after-icon">Modifica Disposizioni Bancarie</span>
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 space-container">
+            <div class="col-sm-2">
+                @Html.Partial("_leftMenu", "ModificaDisposizioniBancarie")
+            </div>
+            <div class="col-sm-10">
+                @Html.Partial("~/views/GestioneDisposizioni/_schedaElencoModifiche.cshtml", temp)
+                @Html.Partial("~/views/GestioneDisposizioni/_schedaModifiche.cshtml", new SepaCreditTransaction())
+                @Html.Partial("~/views/Rimborsi/_confermaModificheModal.cshtml", "Confermare l'operazione di sbocco della disposizione selezionata?")
+
+                <div class="gestione-disposizioni">
+                    <div class="row border-bottom">
+                        <div class="col-xs-12 col-md-3 col-sm-3 col-lg-3">
+                            <p class="padTitle"></p><h4><label>Elenco Disposizioni</label></h4>
+                        </div>
+                        <div class="col-xs-12 col-md-9 col-sm-9 col-lg-9 border-left">
+                            <h4><span id="t1"></span><label id="t2"></label><span id="t3"></span><label id="t4"></label></h4>
+                            <h4><span id="t5"></span><label id="t6"></label></h4>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-12 col-md-3 col-sm-3 col-lg-3">
+                            @Html.Partial("~/views/shared/_modalWaiter.cshtml")
+
+                            <div class="row">
+                                <div class="col-xs-12 col-md-12 col-sm-12 col-lg-12 dropdown-selector">
+                                    <div class="text-center" id="">
+                                        <div class="btn-group" role="group">
+                                            <select id="listaAutori" role="button" class="form-control selectCaret" onchange="loadInnerList();">
+                                                <option value="-1" selected>Seleziona un utente  </option>
+                                                @foreach (var x in Model)
+                                                {
+                                                    <option value="@x.ToString()">@x.ToString()</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-12 disposizioni-container border-right">
+                                    <ul id="headerList" class="list-group"></ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xs-12 col-md-9 col-sm-9 col-lg-9">
+                            <div class="row">
+                                <div class="col-sm-12" id="transactionTableContainer"></div>
+                            </div>
+                            <!--FOOTER-->
+                            <div class="row">
+                                <div class="col-sm-12"></div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    displayModalWaiter();
+    var _url = '@Url.Action("SearchSepaHeader", "GestioneDisposizioni")';
+
+    $.ajax({
+        url: _url,
+        type: 'POST',
+        contentType: "application/json; charset=utf-8",
+        data: JSON.stringify({
+        }),
+        success: function (result) {
+            $("#headerList").html(result);
+            hideModalWaiter();
+        },
+        error: function (request, status, error) {
+            hideModalWaiter();
+            notifyWarning(error);
+        }
+    });
+
+    function setTransactionDataTable() {
+        if ($.fn.dataTable.isDataTable('#grigliaTransazioni')) {
+            _transactionTable = $('#grigliaTransazioni').DataTable();
+        }
+        else {
+            _transactionTable = $('#grigliaTransazioni').DataTable({
+                "pageLength": 7,
+                columns: [
+                null,
+                null,
+                null,
+                null,
+                { "orderable": false }
+                ],
+                order: [1, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $(function () {
+        setTransactionDataTable();
+    });
+
+</script>
+
+@section scripts {
+    <script>
+
+        $(".application-title").text("Gestione Rimborsi");
+
+        function LoadInnerList(user) {
+            displayModalWaiter();
+
+            if (user != "" && user != null) {
+                _innerListUrl = '@UrlFor.GestioneDisposizioni_InnerSepaList()' + user + '/';
+            }
+            else {
+                _innerListUrl = '@UrlFor.GestioneDisposizioni_InnerSepaList()';
+            }
+            evaluateInnerListUrl(_innerListUrl, user);
+        }
+
+        $(function () {
+            @{                
+                //if (!RevoContext.IdentityManager.CurrentUser.HasPermission("GestioneRimborsi.GestionePermessi.ImpersonificaUtente"))
+                if (!RevoContext.IdentityManager.CurrentUser.HasPermission("gri.disposizioni.scegliUtenti"))
+                {
+                    @:$('#rowFilter').hide();
+        }
+             }
+        });
+
+        function loadInnerList() {
+            if ($("#listaAutori option:selected").val() != "-1") {
+                LoadInnerList($("#listaAutori option:selected").val());
+            }
+            else {
+                displayModalWaiter();
+                evaluateInnerListUrl('@UrlFor.GestioneDisposizioni_SearchSepaHeader()', null);
+            }
+        }
+        function evaluateInnerListUrl(url, user) {
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    Username: user
+                }),
+                success: function (result) {
+                    $("#headerList").html(result);
+                    if ($("#t2").text() != "" && $("#t2").text() != null) {
+                        $("#" + $("#t2").text()).addClass("selected");
+                    }
+                    hideModalWaiter();
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter();
+                    notifyWarning(error);
+                }
+            });
+        }
+
+    </script>
+}
+

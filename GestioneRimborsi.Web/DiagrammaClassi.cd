@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="GestioneRimborsi.Web.Controllers.FuoriStandardController" Collapsed="true">
+    <Position X="2.5" Y="7.25" Width="2" />
+    <AssociationLine Name="_fuoriStandardService" Type="GestioneRimborsi.Core.IFuoriStandardService">
+      <MemberNameLabel ManuallyPlaced="true">
+        <Position X="-1.632" Y="0.102" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>QpiAMmAAeYCQA4AIACBQIFghKmggIEBKEKGIAIIAEAA=</HashCode>
+      <FileName>Controllers\FuoriStandardController.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="_fuoriStandardService" />
+      <Field Name="_rettificaFuoriStandardService" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GestioneRimborsi.Web.Controllers.GestioneDisposizioniController" Collapsed="true">
+    <Position X="3.5" Y="13.5" Width="2.5" />
+    <AssociationLine Name="_lottorimborsiService" Type="GestioneRimborsi.Core.ILottoRimborsiService">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.723" Y="1.068" Height="0.182" Width="1.637" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>CEAAAAAAAAAAAACAAEJAgAAAACgAAIgAAEAAAACAAQI=</HashCode>
+      <FileName>Controllers\GestioneDisposizioniController.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="_lottorimborsiService" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GestioneRimborsi.Web.Controllers.LottoRimborsiController" Collapsed="true">
+    <Position X="1.25" Y="12.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIEAAAAIAAAAAAAAAAQAAAEAAAAAAAQI=</HashCode>
+      <FileName>Controllers\LottoRimborsiController.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="_lottorimborsiService" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="GestioneRimborsi.Web.Controllers.RimborsiController" Collapsed="true">
+    <Position X="2.5" Y="2.5" Width="2.5" />
+    <AssociationLine Name="_clienteService" Type="GestioneRimborsi.Core.IClienteService">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="0.018" Y="-0.265" Height="0.182" Width="1.195" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="_rimborsoService" Type="GestioneRimborsi.Core.IRimborsoService">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-1.454" Y="0.227" Height="0.182" Width="1.364" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <AssociationLine Name="reportViewer" Type="Microsoft.Reporting.WebForms.ReportViewer">
+      <MemberNameLabel ManuallyPlaced="true" ManuallySized="true">
+        <Position X="-0.636" Y="0.178" Height="0.182" Width="1.064" />
+      </MemberNameLabel>
+    </AssociationLine>
+    <TypeIdentifier>
+      <HashCode>AAAEoAAAAAAAAQJgCABAYKDCAAEAAAAAAQMAiADggCA=</HashCode>
+      <FileName>Controllers\RimborsiController.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="_clienteService" />
+      <Field Name="_rimborsoService" />
+      <Field Name="reportViewer" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="Microsoft.Reporting.WebForms.ReportViewer" Collapsed="true">
+    <Position X="0.5" Y="3" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Bottom" Position="0.1" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.Cliente" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4" Y="3.75" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Right" Position="0.1" Collapsed="true" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.FuoriStandard" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="1.5" Y="5.25" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Bottom" Position="0.142" Collapsed="true" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.GestioneRimborso" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="4.75" Y="0.5" Width="1.75" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Bottom" Position="1.445" Collapsed="true" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.LottoRimborso" Collapsed="true">
+    <Position X="6" Y="12.5" Width="1.5" />
+    <TypeIdentifier />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.ClienteRepo" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Position="1.086" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.FuoriStandardRepo" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="0.5" Y="6" Width="1.75" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Right" Position="0.1" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.LottoRimborsiRepo" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="6" Y="11.75" Width="1.75" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Left" Position="0.233" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.RimborsoRepo" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="5" Y="1.25" Width="1.5" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Left" Position="0.158" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.RettificaFuoriStandard" Collapsed="true">
+    <Position X="5.75" Y="7.75" Width="2" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Bottom" Position="0.1" Collapsed="true" />
+  </Class>
+  <Class Name="GestioneRimborsi.Core.RettificaFuoriStandardRepo" Collapsed="true">
+    <Position X="5.75" Y="8.5" Width="2.25" />
+    <TypeIdentifier />
+    <Lollipop Orientation="Left" Position="0.16" />
+  </Class>
+  <Interface Name="GestioneRimborsi.Web.BankXMLManager.IBankXMLService" Collapsed="true">
+    <Position X="0.75" Y="10.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAACAAiAAAAAAAAAAEIAEAAAAAAAAAEAAEAAAAA=</HashCode>
+      <FileName>Service References\BankXMLManager\Reference.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="GestioneRimborsi.Web.BankXMLManager.IBankXMLServiceChannel" Collapsed="true">
+    <Position X="0.5" Y="11.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Service References\BankXMLManager\Reference.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="GestioneRimborsi.Core.IRimborsoService" Collapsed="true">
+    <Position X="1.25" Y="1.25" Width="1.75" />
+    <TypeIdentifier />
+  </Interface>
+  <Interface Name="GestioneRimborsi.Core.IClienteService" Collapsed="true">
+    <Position X="6.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier />
+  </Interface>
+  <Interface Name="GestioneRimborsi.Core.IFuoriStandardService" Collapsed="true">
+    <Position X="4" Y="6" Width="1.75" />
+    <TypeIdentifier />
+  </Interface>
+  <Interface Name="GestioneRimborsi.Core.ILottoRimborsiService" Collapsed="true">
+    <Position X="2.75" Y="11.5" Width="1.75" />
+    <TypeIdentifier />
+  </Interface>
+  <Interface Name="GestioneRimborsi.Core.IRettificaFuoriStandardService" Collapsed="true">
+    <Position X="1.25" Y="8.5" Width="2.25" />
+    <TypeIdentifier />
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

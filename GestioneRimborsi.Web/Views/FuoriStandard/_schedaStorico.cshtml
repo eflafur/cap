@@ -1,0 +1,743 @@
+﻿@model String
+
+@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborsi.Core.Cliente>();
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+    IRettificaFuoriStandardService _rettificaService = (IRettificaFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<RettificaFuoriStandard>();
+    IUserService _userService = (IUserService)RevoContext.ServiceProvider.GetServiceFor<User>();
+
+    FuoriStandard fuoriStandard = null;
+    ISubCollection<RettificaFuoriStandard> rettifiche = null;
+    RettificaFuoriStandard rettifica = null;
+    var inStandard = "";
+
+    if (Model != null)
+    {
+        fuoriStandard = _fuoriStandardService.GetFuoriStandardStoricoByID(Model);
+        rettifica = _rettificaService.GetRettificaApertaByID(Model);
+
+        if (fuoriStandard == null)
+        {
+            fuoriStandard = _fuoriStandardService.GetFuoriStandardByID(Model);
+            inStandard = (fuoriStandard.InFuoriStandard == "S" ? "S" : "N");
+        }
+        else
+        {
+            inStandard = (fuoriStandard.InFuoriStandard == "S" ? "S" : "N");
+        }
+
+        rettifiche = _rettificaService.GetRettificheByID(Model);
+
+        if (rettifiche != null && rettifiche.Items.Count == 0)
+        {
+            if (fuoriStandard.IndennizzoDWH != 0 && fuoriStandard.IndennizzoDWH.ToString() != Model)
+            {
+                rettifiche = _rettificaService.GetRettificheByID(fuoriStandard.IndennizzoDWH.ToString());
+            }
+        }
+    }
+
+    Cliente cliente = null;
+
+    if (fuoriStandard != null)
+    {
+        cliente = _clienteService.InfoCliente(fuoriStandard.CodCliente);
+    }
+}
+
+<div id="schedaIndennizzoStorico">
+    <div class="modal fade text-left" id="schedaIndennizzoStoricoModal" tabindex="-1" role="dialog" aria-labelledby="schedaIndennizzoStoricoModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="modalStoricoContainer">
+                <div class="modal-header header-view">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="schedaIndennizzoStoricoModalTitle">
+                        Prestazione
+                    </h4>
+                    <h5 id="titleStoricoFS">
+                        @if (Model != null && fuoriStandard != null)
+                        {
+                            if (fuoriStandard.CodiceRintracciabilita != null && fuoriStandard.CensitoIl != null)
+                            { <span>N°: <strong>@fuoriStandard.IDFS</strong> - Codice Rintracciabilità: <strong>@fuoriStandard.CodiceRintracciabilita</strong> censito in data: <strong>@fuoriStandard.CensitoIl.Value.ToShortDateString()</strong> </span>}
+                            else if (fuoriStandard.CensitoIl != null)
+                            { <span>N°: <strong>@fuoriStandard.IDFS</strong> censito in data: <strong>@fuoriStandard.CensitoIl.Value.ToShortDateString()</strong> </span>}
+                        }
+                    </h5>
+                </div>
+                <div class="modal-body" id="schedaIndennizzoStorico">
+
+                    <div id="container-scheda-storico">
+                        <div class="dettaglioStorico">
+                            <ul class="nav nav-pills nav-stacked col-md-2">
+                                <li class="active"><a role="button" class="menuStorico" href="#tab_a" data-toggle="pill">Prestazione</a></li>
+                                <li class=""><a role="button" href="#tab_b" class="menuStorico" data-toggle="pill">Info Generali</a></li>
+                                <li class=""><a role="button" href="#tab_c" class="menuStorico" data-toggle="pill">Storico</a></li>
+                                <li class=""><a role="button" href="#tab_d" class="menuStorico" data-toggle="pill">Allegati</a></li>
+                            </ul>
+                            <div id="tabStoricoContainer" class="tab-content col-md-10">
+                                <div class="tab-pane active" id="tab_a">
+                                    <div id="firstTabContainer">
+                                        @if (fuoriStandard != null)
+                                        {
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-12">
+                                                    <span class="control-label @(fuoriStandard.DescrizionePrestazione != null ? "" : "lightGrayColor" )">@(fuoriStandard.DescrizionePrestazione != null ? fuoriStandard.DescrizionePrestazione : "n/a")</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-12">
+                                                    <span for="DescPrestazione" class="control-label">Descrizione prestazione</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-3">
+                                                    <span class="control-label @(fuoriStandard.CodStandard != null ? "" : "lightGrayColor")">@(fuoriStandard.CodStandard != null ? fuoriStandard.CodStandard.ToString() : "n/a")</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span class="control-label @(fuoriStandard.Tipo != null ? "" : "lightGrayColor")">@(fuoriStandard.Tipo != null ? fuoriStandard.Tipo : "n/a")</span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <span class="control-label pull-right @(fuoriStandard.TipoStandard != null ? "" : "lightGrayColor")">@(fuoriStandard.TipoStandard != null ? fuoriStandard.TipoStandard : "n/a")</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-3">
+                                                    <span for="CodStandard" class="control-label">Codice Standard</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span for="Tipo" class="control-label">Tipologia Fuori standard</span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <span for="Tipologia" class="control-label pull-right">Specifico / Generale</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-3">
+                                                    @if (fuoriStandard.ErrDataInizio != null)
+                                                    { <span class="control-label @(fuoriStandard.ErrDataInizio != null ? "" : "lightGrayColor")">@(fuoriStandard.ErrDataInizio != null ? fuoriStandard.ErrDataInizio.Value.ToString() : "n/a")</span> }
+                                                    else
+                                                    { <span class="control-label @(fuoriStandard.DataInizio != null ? "" : "lightGrayColor")">@(fuoriStandard.DataInizio != null ? fuoriStandard.DataInizio.Value.ToString() : "n/a")</span> }
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    @if (fuoriStandard.ErrDataFine != null)
+                                                    { <span class="control-label @(fuoriStandard.ErrDataFine != null ? "" : "lightGrayColor")">@(fuoriStandard.ErrDataFine != null ? fuoriStandard.ErrDataFine.Value.ToString() : "n/a")</span> }
+                                                    else
+                                                    { <span class="control-label @(fuoriStandard.DataFine != null ? "" : "lightGrayColor")">@(fuoriStandard.DataFine != null ? fuoriStandard.DataFine.Value.ToString() : "n/a")</span> }
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    @if (fuoriStandard.ErrTempoLavorazione != 0)
+                                                    { <span class="control-label pull-right @(fuoriStandard.ErrTempoLavorazione != 0 ? "" : "lightGrayColor")">@(fuoriStandard.ErrTempoLavorazione != 0 ? fuoriStandard.ErrTempoLavorazione.ToString() : "/")</span> }
+                                                    else
+                                                    { <span class="control-label pull-right @(fuoriStandard.EvasoIn != 0 ? "" : "lightGrayColor")">@(fuoriStandard.EvasoIn != 0 ? fuoriStandard.EvasoIn.ToString() : "/")</span> }
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <span class="control-label">@(_fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard) != null ? _fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard).UnitaMisura : "")</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    @if (fuoriStandard.ErrFlagStandard != null)
+                                                    { <span class="control-label pull-right @(fuoriStandard.ErrFlagStandard != null ? "" : "lightGrayColor")">@(fuoriStandard.ErrFlagStandard != null ? fuoriStandard.ErrFlagStandard : "n/a")</span> }
+                                                    else if (fuoriStandard.InFuoriStandard == "FS")
+                                                    { <span class="control-label pull-right">FS</span> }
+                                                    else
+                                                    { <span class="control-label pull-right">S</span> }
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-3">
+                                                    <span for="DataInizio" class="control-label">Data Inizio attività</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span for="DataFine" class="control-label">Data Fine attività</span>
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <span for="Quantita" class="control-label pull-right">Quantità </span>
+                                                </div>
+                                                <div class="col-sm-1">
+                                                    <span for="Um" class="control-label">U.m.</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span for="InStandard" class="control-label pull-right">In-Fuori Standard</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-3">
+                                                    <span class="control-label">
+                                                        <strong class="@(!String.IsNullOrEmpty(fuoriStandard.StadioIndennizzo) ? "" : "lightGrayColor")">
+                                                            @(fuoriStandard.StadioIndennizzo == "V" ? "Validato" : fuoriStandard.StadioIndennizzo == "F" ? "Fatturabile" :
+                                                    fuoriStandard.StadioIndennizzo == "R" ? "Rimborsabile" : fuoriStandard.StadioIndennizzo == "N" ? "Non Liquidabile" : fuoriStandard.StadioIndennizzo == "P" ? "Pagabile" : fuoriStandard.StadioIndennizzo == "L" ? "Liquidato" : fuoriStandard.StadioIndennizzo == "B" ? "Pagato in bolletta" : fuoriStandard.StadioIndennizzo == "A" ? "Annullato" : "")
+                                                        </strong>
+                                                    </span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <span class="control-label @(fuoriStandard.Esito != null ? "" : "lightGrayColor")">@(string.IsNullOrEmpty(fuoriStandard.Esito) ? "n/a" : fuoriStandard.Esito)</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span class="control-label pull-right"><strong>@(fuoriStandard.Importo != 0 ? fuoriStandard.Importo.ToString("#.00") : "0,00") €</strong></span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-3">
+                                                    <span for="Stato" class="control-label">Stato</span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <span for="Esito" class="control-label">Esito</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span for="Stato" class="control-label pull-right">Valore Indennizzabile</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-12">
+                                                    <span class="control-label @(fuoriStandard.DettaglioEsito != null ? "" : "lightGrayColor")">@(fuoriStandard.DettaglioEsito != null ? fuoriStandard.DettaglioEsito : "n/a")</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-12">
+                                                    <span for="DescEsito" class="control-label">Descrizione Esito</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-12">
+                                                    <span class="control-label @(fuoriStandard.NoteEsito != null ? "" : "lightGrayColor")">@(string.IsNullOrEmpty(fuoriStandard.NoteEsito) ? "n/a" : fuoriStandard.NoteEsito)</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-12 mb-10">
+                                                    <span for="NoteEsito" class="control-label">Note Esito</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="tab-pane" id="tab_b">
+                                    <div id="secondTabContainer">
+                                        @if (fuoriStandard != null)
+                                        {
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-3">
+                                                    <span class="control-label @(fuoriStandard.CodCliente != null ? "" : "lightGrayColor")"><strong>@(fuoriStandard.CodCliente != null ? fuoriStandard.CodCliente : "n/a")</strong></span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    @if (_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente) != null)
+                                                    { <span class="control-label @(!String.IsNullOrEmpty(_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).RagioneSociale) ? "" : "lightGrayColor")"><strong>@(!String.IsNullOrEmpty(_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).RagioneSociale) ? _fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).RagioneSociale : "n/a")</strong></span> }
+                                                    else
+                                                    { <span class="control-label lightGrayColor">n/a</span> }
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    @if (_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente) != null)
+                                                    { <span class="control-label pull-right @(!String.IsNullOrEmpty(_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).Cellulare) ? "" : "lightGrayColor")">@(!String.IsNullOrEmpty(_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).Cellulare) ? _fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).Cellulare : "n/a")</span> }
+                                                    else
+                                                    { <span class="control-label pull-right lightGrayColor">n/a</span> }
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-3">
+                                                    <span for="CodiceCliente" class="control-label">Codice Cliente</span>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <span for="RegioneSociale" class="control-label">Ragione Sociale</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span for="RecapitoTelefonico" class="control-label pull-right">Recapito telefonico</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-5">
+                                                    <span class="control-label @(fuoriStandard.CodContratto != null ? "" : "lightGrayColor")">@(fuoriStandard.CodContratto != null ? fuoriStandard.CodContratto : "n/a")</span>
+                                                </div>
+                                                <div class="col-sm-7">
+                                                    <span class="control-label pull-right @(fuoriStandard.NumeroPrestazione != null ? "" : "lightGrayColor")"><strong>@(fuoriStandard.NumeroPrestazione != null ? fuoriStandard.NumeroPrestazione : "n/a")</strong></span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row">
+                                                <div class="col-sm-5">
+                                                    <span for="CodiceContratto" class="control-label">Codice Contratto</span>
+                                                </div>
+                                                <div class="col-sm-7">
+                                                    <span for="NPrestazione" class="control-label pull-right">N° Prestazione</span>
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-heading-row">
+                                                <div class="col-sm-3">
+                                                    <span class="control-label @(fuoriStandard.CodPuf != null ? "" : "lightGrayColor")">@(fuoriStandard.CodPuf != null ? fuoriStandard.CodPuf : "n/a")</span>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    @if (cliente != null)
+                                                    { <span class="control-label @(cliente.Strada != null ? "" : "lightGrayColor")">@(cliente.Strada != null ? cliente.Strada : "n/a")</span> }
+                                                    else
+                                                    { <span class="control-label">N/A</span> }
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    @if (cliente != null)
+                                                    { <span class="control-label">@cliente.NumeroCivico</span> }
+                                                    else
+                                                    { <span class="control-label lightGrayColor">n/a</span> }
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    @if (cliente != null)
+                                                    { <span class="control-label pull-right">@cliente.Comune</span> }
+                                                    else
+                                                    { <span class="control-label pull-right lightGrayColor">n/a</span> }
+                                                </div>
+                                            </div>
+                                            <div class="row fuoriStandard-caption-row mb-10">
+                                                <div class="col-sm-3">
+                                                    <span for="CodPUF" class="control-label">Codice PUF</span>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                    <span for="Indirizzo" class="control-label">Indirizzo</span>
+                                                </div>
+                                                <div class="col-sm-2">
+                                                    <span for="Civico" class="control-label">Civico</span>
+                                                </div>
+                                                <div class="col-sm-3">
+                                                    <span for="Localita" class="control-label pull-right">Località</span>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="tab-pane" id="tab_c">
+                                    @if (fuoriStandard != null && fuoriStandard.DataRimborso != null)
+                                    {
+                                        <div class="boxStoricoModifiche">
+                                            <h4>
+                                                <span class="fa fa-money darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata indennizzata</span>
+                                                <span class="pull-right titleDataModifica">@(fuoriStandard.DataRimborso != null ? fuoriStandard.DataRimborso.Value.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                            </h4>
+                                            <div class="infoStoricoContainer marginBottom10">
+                                                <div class="row infoRowStyle">
+                                                    <div class="col-sm-6 divColumnTitle">
+                                                        <label class="labelInfoTitle">Descrizione</label>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleNext">
+                                                        <label class="labelInfo">Data</label>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleLast">
+                                                        <label class="labelInfo">Autore</label>
+                                                    </div>
+                                                </div>
+                                                <div class="row infoRowStyleNext">
+                                                    <div class="col-sm-6 divColumnTitle">
+                                                        <label class="labelInfoTitle">Indennizzo creto in data</label>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleNext">
+                                                        <span class="colorGray">@(fuoriStandard.CensitoIl != null ? fuoriStandard.CensitoIl.Value.ToShortDateString() : "n/a")</span>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleLast">
+                                                        <span class="colorGray">@((_userService != null && _userService.GetById(fuoriStandard.UtenteInserimento) != null ? _userService.GetById(fuoriStandard.UtenteInserimento).DisplayText : fuoriStandard.UtenteInserimento))</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row infoRowStyleNext">
+                                                    <div class="col-sm-6 divColumnTitle">
+                                                        <label class="labelInfoTitle">Indennizzo processato in data</label>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleNext">
+                                                        <span class="colorGray">@(fuoriStandard.GestitoIl != null ? fuoriStandard.GestitoIl.Value.ToShortDateString() : "n/a")</span>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleLast">
+                                                        <span class="colorGray">@((_userService != null && _userService.GetById(fuoriStandard.GestitoDa) != null) ? _userService.GetById(fuoriStandard.GestitoDa).DisplayText : fuoriStandard.GestitoDa)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="row infoRowStyleLast">
+                                                    <div class="col-sm-6 divColumnTitle">
+                                                        <label class="labelInfoTitle">Indennizzo liquidato in data</label>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleNext">
+                                                        <span class="colorGray">@(fuoriStandard.DataRimborso != null ? fuoriStandard.DataRimborso.Value.ToShortDateString() : "n/a")</span>
+                                                    </div>
+                                                    <div class="col-sm-3 divColumnTitleLast">
+                                                        <span class="lightGrayColor">.</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        if ((rettifiche != null && rettifiche.Items.Count > 0) || fuoriStandard.DataAnnullamento != null || fuoriStandard.ValidazioneErrore != null || fuoriStandard.GestitoIl != null)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-12 text-center separatorCircle">
+                                                    <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    @if (fuoriStandard != null && fuoriStandard.ValidazioneErrore != null && fuoriStandard.CodiceCausa != "ANN")
+                                    {
+                                        <div class="boxStoricoModifiche">
+                                            <h4>
+                                                <span class="fa fa-thumbs-o-up darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata approvata dal Manager</span>
+                                                <span class="pull-right titleDataModifica">@(fuoriStandard.ValidazioneErrore != null ? fuoriStandard.ValidazioneErrore.Value.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                            </h4>
+                                            <div class="infoStoricoContainer">
+                                                <div class="row infoRowStyleLast">
+                                                    <div class="col-sm-6 divColumnTitle">
+                                                        <label class="labelInfoTitle">Note</label>
+                                                    </div>
+                                                    <div class="col-sm-6 divColumnTitleLast">
+                                                        <span class="fuoriStandard-valore-rettifica colorGray">@(rettifica != null && !String.IsNullOrEmpty(rettifica.NoteApprovatore) ? rettifica.NoteApprovatore : "n/a")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(fuoriStandard.UtenteErrore) != null) ? _userService.GetById(fuoriStandard.UtenteErrore).DisplayText : fuoriStandard.UtenteErrore)</span></span>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12 text-center separatorCircle">
+                                                <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (fuoriStandard != null && fuoriStandard.DataAnnullamento != null)
+                                    {
+                                        <div class="boxStoricoModifiche">
+                                            <h4>
+                                                <span class="fa fa-thumbs-o-up darkGrayColor"></span><span class="titlePrestazione">L'annullamento è stato approvato</span>
+                                                <span class="pull-right titleDataModifica">@(fuoriStandard.DataAnnullamento != null ? fuoriStandard.DataAnnullamento.Value.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                            </h4>
+                                            <div class="infoStoricoContainer">
+                                                <div class="row infoRowStyleLast">
+                                                    <div class="col-sm-6 divColumnTitle">
+                                                        <label class="labelInfoTitle">Note</label>
+                                                    </div>
+                                                    <div class="col-sm-6 divColumnTitleLast">
+                                                        <span class="fuoriStandard-valore-rettifica colorGray">@(rettifica != null && !String.IsNullOrEmpty(rettifica.NoteApprovatore) ? rettifica.NoteApprovatore : "n/a")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(fuoriStandard.UtenteAnnullamento) != null) ? _userService.GetById(fuoriStandard.UtenteAnnullamento).DisplayText : fuoriStandard.UtenteAnnullamento)</span></span>
+                                        </div>
+                                        if (rettifiche != null && rettifiche.Items.Count > 0)
+                                        {
+                                            <div class="row">
+                                                <div class="col-sm-12 text-center separatorCircle">
+                                                    <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    @if (rettifica != null && rettifica.Esito != 2 && !String.IsNullOrEmpty(rettifica.ProcessOwner))
+                                    {
+                                        <div class="boxStoricoModifiche">
+                                            <h4>
+                                                <span class="fa fa-thumbs-o-up darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata approvata dal Process Owner</span>
+                                                <span class="pull-right titleDataModifica">@(rettifica != null && rettifica.DataApprovazionePO != null ? rettifica.DataApprovazionePO.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                            </h4>
+                                            <div class="infoStoricoContainer">
+                                                <div class="row infoRowStyleLast">
+                                                    <div class="col-sm-6 divColumnTitle">
+                                                        <label class="labelInfoTitle">Note</label>
+                                                    </div>
+                                                    <div class="col-sm-6 divColumnTitleLast">
+                                                        <span class="fuoriStandard-valore-rettifica colorGray">@(rettifica != null && !String.IsNullOrEmpty(rettifica.NoteProcessOwner) ? rettifica.NoteProcessOwner : "n/a")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@(rettifica != null && (_userService != null && _userService.GetById(rettifica.ProcessOwner) != null) ? _userService.GetById(rettifica.ProcessOwner).DisplayText : "n/a")</span></span>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-12 text-center separatorCircle">
+                                                <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                            </div>
+                                        </div>
+                                    }
+                                    @if (rettifiche != null && rettifiche.Items.Count > 0)
+                                    {
+                                        foreach (var rett in rettifiche.Items)
+                                        {
+                                            if (rett.FlagIsRettifica == 1)
+                                            {
+                                                if (rett.Esito == 2 && !String.IsNullOrEmpty(rett.Manager))
+                                                {
+                                                    <div class="boxStoricoModifiche">
+                                                        <h4>
+                                                            <span class="fa fa-ban darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata rifiutata dal Manager</span>
+                                                            <span class="pull-right titleDataModifica">@(rett.DataManager != null ? rett.DataManager.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                                        </h4>
+                                                        <div class="infoStoricoContainer">
+                                                            <div class="row infoRowStyleLast">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Note</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(!String.IsNullOrEmpty(rett.NoteApprovatore) ? rett.NoteApprovatore : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(rett.Manager) != null) ? _userService.GetById(rett.Manager).DisplayText : "n/a")</span></span>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-sm-12 text-center separatorCircle">
+                                                            <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="boxStoricoModifiche">
+                                                        <h4>
+                                                            <span class="fa fa-thumbs-o-up darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata approvata dal Process Owner</span>
+                                                            <span class="pull-right titleDataModifica">@(rett.DataApprovazionePO != null ? rett.DataApprovazionePO.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                                        </h4>
+                                                        <div class="infoStoricoContainer">
+                                                            <div class="row infoRowStyleLast">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Note</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(!String.IsNullOrEmpty(rett.NoteProcessOwner) ? rett.NoteProcessOwner : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(rett.ProcessOwner) != null) ? _userService.GetById(rett.ProcessOwner).DisplayText : "n/a")</span></span>
+                                                    </div>
+                                                        <div class="row">
+                                                            <div class="col-sm-12 text-center separatorCircle">
+                                                                <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                            </div>
+                                                        </div>
+                                                }
+                                                else if (rett.Esito == 2)
+                                                {
+                                                    <div class="boxStoricoModifiche">
+                                                        <h4>
+                                                            <span class="fa fa-ban darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata rifiutata dal Process Owner</span>
+                                                            <span class="pull-right titleDataModifica">@(rett.DataApprovazionePO != null ? rett.DataApprovazionePO.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                                        </h4>
+                                                        <div class="infoStoricoContainer">
+                                                            <div class="row infoRowStyleLast">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Note</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(!String.IsNullOrEmpty(rett.NoteProcessOwner) ? rett.NoteProcessOwner : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(rett.ProcessOwner) != null) ? _userService.GetById(rett.ProcessOwner).DisplayText : "n/a")</span></span>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-sm-12 text-center separatorCircle">
+                                                            <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                if (rett.Causale == "ANN")
+                                                {
+                                                    <div class="boxStoricoModifiche">
+                                                        <h4>
+                                                            <span class="fa fa-pencil darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata annullata</span>
+                                                            <span class="pull-right titleDataModifica">@(rett.CreatoIl != null ? rett.CreatoIl.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                                        </h4>
+                                                        <div class="infoStoricoContainer">
+                                                            <div class="row infoRowStyleNext">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Codice Causale</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(_fuoriStandardService.GetCategoriaByCod(rett.Causale) != null ? _fuoriStandardService.GetCategoriaByCod(rett.Causale).Descrizione : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row infoRowStyleNext">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Codice Sottocausale</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(_fuoriStandardService.GetSottoCategoriaByCod(rett.SottoCausale) != null ? _fuoriStandardService.GetSottoCategoriaByCod(rett.SottoCausale).Descrizione : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row infoRowStyleLast">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Note</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(!String.IsNullOrEmpty(rett.Note) ? rett.Note : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(rett.Autore) != null) ? _userService.GetById(rett.Autore).DisplayText : rett.Autore)</span></span>
+                                                    </div>
+                                                    if (!(rettifiche.Items.LastOrDefault() == rett))
+                                                    {
+                                                        <div class="row">
+                                                            <div class="col-sm-12 text-center separatorCircle">
+                                                                <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <div class="boxStoricoModifiche">
+                                                        <h4>
+                                                            <span class="fa fa-pencil darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata rettificata</span>
+                                                            <span class="pull-right titleDataModifica">@(rett.CreatoIl != null ? rett.CreatoIl.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                                        </h4>
+                                                        <div class="infoStoricoContainer">
+                                                            <div class="row infoRowStyleNext">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Data inizio attività</label>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleNext">
+                                                                    <span class="@((rett.DataInizioAttivita != rett.DataInizioOriginale) ? "fuoriStandard-valore-rettificato" : "fuoriStandard-valore-rettifica colorGray")">@(rett.DataInizioOriginale != null ? rett.DataInizioOriginale.ToShortDateString() : "n/a")</span>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(rett.DataInizioAttivita != null ? rett.DataInizioAttivita.ToShortDateString() : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row infoRowStyleNext">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Data fine attività</label>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleNext">
+                                                                    <span class="@((rett.DataFineAttivita != rett.DataFineOriginale) ? "fuoriStandard-valore-rettificato" : "fuoriStandard-valore-rettifica colorGray")">@(rett.DataFineOriginale != null ? rett.DataFineOriginale.ToShortDateString() : "n/a")</span>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(rett.DataFineAttivita != null ? rett.DataFineAttivita.ToShortDateString() : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row infoRowStyleNext">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Quantità</label>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleNext">
+                                                                    <span class="@((rett.Quantita != fuoriStandard.EvasoIn) ? "fuoriStandard-valore-rettificato" : "fuoriStandard-valore-rettifica colorGray")">@rett.QuantitaOriginale</span>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@rett.Quantita</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="notdisplayed row infoRowStyleNext">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Quantità Sospensione</label>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleNext">
+                                                                    <span class="@((rett.QuantitaSospensione != 0) ? "fuoriStandard-valore-rettificato" : "fuoriStandard-valore-rettifica colorGray")">0</span>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@rett.QuantitaSospensione</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row infoRowStyleNext">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">In/Fuori Standard</label>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleNext">
+                                                                    <span class="@(!(rett.FuoriStandard == inStandard) ? "fuoriStandard-valore-rettificato" : "fuoriStandard-valore-rettifica colorGray")">@(inStandard == "S" ? "S" : "FS")</span>
+                                                                </div>
+                                                                <div class="col-sm-3 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(rett.FuoriStandard == "S" ? "S" : "FS")</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="row infoRowStyleLast">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Note</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(!String.IsNullOrEmpty(rett.Note) ? rett.Note : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(rett.Autore) != null) ? _userService.GetById(rett.Autore).DisplayText : rett.Autore)</span></span>
+                                                    </div>
+                                                    if (!(rettifiche.Items.LastOrDefault() == rett))
+                                                    {
+                                                        <div class="row">
+                                                            <div class="col-sm-12 text-center separatorCircle">
+                                                                <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (rett.Esito == 2)
+                                                {
+                                                    <div class="boxStoricoModifiche">
+                                                        <h4>
+                                                            <span class="fa fa-ban darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata rifiutata dal Process Owner</span>
+                                                            <span class="pull-right titleDataModifica">@(rett.DataApprovazionePO != null ? rett.DataApprovazionePO.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                                        </h4>
+                                                        <div class="infoStoricoContainer">
+                                                            <div class="row infoRowStyleLast">
+                                                                <div class="col-sm-6 divColumnTitle">
+                                                                    <label class="labelInfoTitle">Note</label>
+                                                                </div>
+                                                                <div class="col-sm-6 divColumnTitleLast">
+                                                                    <span class="fuoriStandard-valore-rettifica colorGray">@(!String.IsNullOrEmpty(rett.NoteProcessOwner) ? rett.NoteProcessOwner : "n/a")</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(rett.ProcessOwner) != null) ? _userService.GetById(rett.ProcessOwner).DisplayText : "n/a")</span></span>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-sm-12 text-center separatorCircle">
+                                                            <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                <div class="boxStoricoModifiche">
+                                                    <h4>
+                                                        <span class="fa fa-check-square-o darkGrayColor"></span><span class="titlePrestazione">La prestazione è stata validata</span>
+                                                        <span class="pull-right titleDataModifica">@(rett.CreatoIl != null ? rett.CreatoIl.ToShortDateString() : "")<span class="fa fa-lg fa-calendar calendarStyle"></span></span>
+                                                    </h4>
+                                                    <div class="infoStoricoContainer">
+                                                        <div class="row infoRowStyleNext">
+                                                            <div class="col-sm-6 divColumnTitle">
+                                                                <label class="labelInfoTitle">Codice Causale</label>
+                                                            </div>
+                                                            <div class="col-sm-6 divColumnTitleLast">
+                                                                <span class="fuoriStandard-valore-rettifica colorGray">@(_fuoriStandardService.GetCategoriaByCod(rett.Causale) != null ? _fuoriStandardService.GetCategoriaByCod(rett.Causale).Descrizione : "n/a")</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row infoRowStyleNext">
+                                                            <div class="col-sm-6 divColumnTitle">
+                                                                <label class="labelInfoTitle">Codice Sottocausale</label>
+                                                            </div>
+                                                            <div class="col-sm-6 divColumnTitleLast">
+                                                                <span class="fuoriStandard-valore-rettifica colorGray">@(_fuoriStandardService.GetSottoCategoriaByCod(rett.SottoCausale) != null ? _fuoriStandardService.GetSottoCategoriaByCod(rett.SottoCausale).Descrizione : "n/a")</span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row infoRowStyleLast">
+                                                            <div class="col-sm-6 divColumnTitle">
+                                                                <label class="labelInfoTitle">Note</label>
+                                                            </div>
+                                                            <div class="col-sm-6 divColumnTitleLast">
+                                                                <span class="fuoriStandard-valore-rettifica colorGray">@(!String.IsNullOrEmpty(rett.Note) ? rett.Note : "n/a")</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="fa fa-user userSoricoInfo"><span class="text-after-icon">@((_userService != null && _userService.GetById(rett.Autore) != null) ? _userService.GetById(rett.Autore).DisplayText : rett.Autore)</span></span>
+                                                </div>
+                                                if (!(rettifiche.Items.LastOrDefault() == rett))
+                                                {
+                                                    <div class="row">
+                                                        <div class="col-sm-12 text-center separatorCircle">
+                                                            <span class="text-center"><span class="fa fa-circle lightGrayColor"></span></span>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        }
+                                    }
+                                </div>
+                                <div class="tab-pane" id="tab_d">
+                                    @if (fuoriStandard != null)
+                                    {
+                                        @Html.Partial("~/Views/FuoriStandard/_elencoAllegatiStorico.cshtml", fuoriStandard.IDFS.ToString())
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="modal-footer footerSchedaStorico">
+                        <button type="button" class="btn btn-lg btn-function pull-right mr-l" data-dismiss="modal">
+                            <i class="fa fa-lg fa-close">
+                            </i>
+                            <span class="text-after-icon">Chiudi</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+@using GruppoCap.Security.PEM
+
+
+@model IList<IPermission>
+
+<div class="row">
+    <div class="col-sm-12">
+
+        @{
+            String _lastCategoryName = String.Empty;
+            foreach (IPermission _p in Model)
+            {
+                String _grantIcon;
+                _grantIcon = _p.DefaultGrant ? CommonSnippets.AllowedGrant : CommonSnippets.DeniedGrant;
+
+                if (_p.CategoryName != _lastCategoryName)
+                {
+                    <h4 class="permission-category">@_p.CategoryName</h4>
+                }
+
+                <div class="row permission-row">
+                    <div class="col-sm-3 permission-code">@_p.PermissionCode</div>
+                    <div class="col-sm-8 permission-description">@_p.Description</div>
+                    <div class="col-sm-1">
+                        <a id="a_@_p.PermissionId" href="javascript:void(0);" onclick="changeDefaultGrant('@_p.PermissionCode');">
+                            @_grantIcon.ToRaw()
+                        </a>
+                    </div>
+                </div>
+
+                _lastCategoryName = _p.CategoryName;
+
+            }
+        }
+
+    </div>
+</div>
+
+<script>
+    function changeDefaultGrant(permissionCode) {
+        var _url = "@CommonUrls.PermissionSetDefaultGrant("_permissionCode_")".replace('_permissionCode_', permissionCode);
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                permissionCode: permissionCode
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                    $('#a_' + result.data.permissionId).html('' + result.data.htmlGrant + '');
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio dei dati');
+            }
+        }).done(function () {
+
+        }); // end ajax call
+
+    }
+</script>

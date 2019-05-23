@@ -1,0 +1,179 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model IPermissionGroup
+@{
+    ViewBag.Title = Model.Title;
+
+    IUser _currentUser = RevoRequest.CurrentUser;
+}
+
+<div class="row">
+
+    <div class="col-sm-2">
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="nav nav-pills nav-stacked detail-menu">
+                    @Html.AreaMenuLink("Permissions", "fa-cube", CommonUrls.Permissions)
+                    @Html.AreaMenuLink("Permission Groups", "fa-cubes", CommonUrls.PermissionGroups, true)
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-10">
+
+        <div class="row grid-title">
+            <div class="col-sm-12">
+                <h1>
+                    <i class="fa fa-lg fa-cubes"></i> @ViewBag.Title
+                </h1>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-sm-12">
+
+                <form role="form" class="breath-on-top-20">
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="txtApplicationId" class="control-label">Permission Group Id</label>
+                                <input type="text" class="form-control" id="txtPermissionGroupId" value="@Model.PermissionGroupId" disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="txtTitle" class="control-label">Title</label>
+                                <input type="text" class="form-control input-lg" id="txtTitle" placeholder="Insert title" maxlength="50" value="@Model.Title">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="txtDescription" class="control-label">Description</label>
+                                <textarea type="text" class="form-control" id="txtDescription" placeholder="Insert description" maxlength="500" >@Model.Description</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="well" style="margin-top: 20px;">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h3 class="well-title"><i class="fa fa-user-secret"></i><span class="text-after-icon">Privilege</span></h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <label class="control-label">Privileged permission group</label>
+                                    @{
+                                        String _isPrivilegedDescription, _isPrivilegedClass;
+                                        String _groupPrivilegedText = "PRIVILEGED group";
+                                        String _groupNotPrivilegedText = "NOT privileged group";
+
+                                        _isPrivilegedDescription = @Model.IsPrivileged ? _groupPrivilegedText : _groupNotPrivilegedText;
+                                        _isPrivilegedClass = @Model.IsPrivileged ? "text-primary" : "text-danger";
+                                    }
+
+                                    @Html.FontAwesomeCheckbox(
+                                        "chkIsPrivileged",
+                                        Model.IsPrivileged,
+                                        _groupPrivilegedText,
+                                        _groupNotPrivilegedText,
+                                        "text-primary",
+                                        "text-danger",
+                                        _isPrivilegedClass,
+                                        _isPrivilegedDescription
+                                    )
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            @Html.Partial("~/Views/Security/_groupPermissions.cshtml", Model)
+                        </div>
+                    </div>
+
+                    <div class="row breath-on-top-32">
+                        <div class="col-sm-12 text-right">
+                            <a class="btn btn-lg btn-default" href="@CommonUrls.PermissionGroups">
+                                <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Back to Permission Group list</span>
+                            </a>
+                            <a class="btn btn-lg btn-primary" href="javascript:void(0);" onclick="savePermissionGroup('@Model.PermissionGroupId');">
+                                <i id="iconSave" class="fa fa-lg fa-save"></i><span class="text-after-icon">Save</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section scripts {
+<script>
+    $(function () {
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    function savePermissionGroup(permissionGroupId) {
+        var _url;
+        var _id, _title, _description, _isPrivileged;
+        
+        startSaveOperation('iconSave');
+
+        _url = '@Url.Action("UpdatePermissionGroup", "Security")';
+        _id = permissionGroupId;
+        
+        _title = $("#txtTitle").val();
+        _description = $("#txtDescription").val();
+        _isPrivileged = isFontAwesomeChecked('#chkIsPrivileged');
+        
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                permissionGroupId: _id,
+                title: _title,
+                description: _description,
+                isPrivileged: _isPrivileged
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Something gone wrong saving the data');
+            }
+        }).done(function () {
+            endSaveOperation('iconSave');
+        }); // end ajax call
+    } // saveUser
+</script>
+}

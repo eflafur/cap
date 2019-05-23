@@ -1,0 +1,46 @@
+﻿<div class="modal fade text-left" id="nessunaRettifica" tabindex="-1" role="dialog" aria-labelledby="nessunaRettificaTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalConfermaNuovoCliente">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="dismissPopup();" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="nessunaRettificaModal">
+                    <i class="fa fa-info text-info"></i>
+                    <span class="text-after-icon">Avviso</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="col-md-11 col-md-offset-1">
+                            <p class="lead">
+                                Per questa prestazione non è stata effettuata alcuna rettifica, quindi non è possibile procedere con il salvataggio.
+                                <br />
+                                Si desidera uscire senza effettuare alcuna rettifica?<br />
+                            </p>
+                        </div>
+                        <div class="modal-footer col-md-12">
+                            <button type="button" class="btn btn-lg btn-default" onclick="dismissPopup();">
+                                <i class="">
+                                </i><span class="text-after-icon">No</span>
+                            </button>
+                            <button type="button" id="btnNessunaRettifica" class="btn btn-lg btn-function" onclick="dismissPopup();">
+                                <span>Si</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('#nessunaRettifica').modal({ backdrop: 'static', keyboard: true, show: false });
+
+    function dismissPopup() {
+        $('#nessunaRettifica').modal('hide');
+    }
+
+</script>
+

@@ -1,0 +1,424 @@
+﻿@model String
+
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+
+    GestioneRimborsi.Core.FuoriStandard fuoriStandard = null;
+
+    if (!String.IsNullOrEmpty(Model))
+    {
+        fuoriStandard = _fuoriStandardService.GetFuoriStandardByID(Model);
+    }
+
+    ViewBag.Title = "CausaCAP";
+}
+
+<div id="causaCAP">
+    <div class="modal fade text-left" id="causaCAPModal" tabindex="-1" role="dialog" aria-labelledby="causaCAPModalTitle" aria-hidden="true">
+        @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "schedaCausaCap")
+        @Html.Partial("~/views/FuoriStandard/_confermaFSNuovoCliente.cshtml", "Confermare l'associazione del cliente a questa Prestazione?")
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content modal-causa-cap">
+                <div class="modal-header header-view">
+                    <button type="button" class="close" onclick="dismissModalCausaCAP();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                    <h4 id="causaCAPModalTitle">
+                        <span class="fa fa-lg fa-user"></span>
+                        <span class="text-after-icon">Associa Cliente</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <span id="schedaRecuperoInfo"><span>Ricerca un cliente per codice o descrizione, e seleziona in cascata il codice Contratto e PUF. Una volta identificato correttamente, salva il dato.</span></span>
+                    </div>
+                    @Html.Hidden("Utente", Model)
+                    <div class="form-group">
+                        <div class="row">
+                            <div id="containerClienteDetail">
+                                <div class="col-sm-12 clienteDetail">
+                                    <div class="row"><div class="col-sm-12"><label>Codice Cliente</label></div></div>
+                                    <div class="input-group col-sm-5">
+                                        <input type="text" class="form-control" id="txtSearchTerm" name="CodiceCliente" placeholder="Codice Cliente">
+                                        <div class="input-group-btn">
+                                            <button type="button" class="btn btn-function " title="Cerca cliente" data-toggle="modal" data-target="#cercaClienteModal" id="btnSearch">
+                                                <i id="iconSearch" class="fa fa-lg fa-ellipsis-h"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12" id="dettaglioClienteStorico">
+                                            @Html.Partial("~/views/FuoriStandard/_schedaClienteStorico.cshtml", null)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12">
+                                <div class="col-sm-6" id="codiciContrattiContainer">
+                                    @Html.Partial("~/Views/FuoriStandard/_filtroContratti.cshtml", "-1")
+                                </div>
+                                <div class="col-sm-6" id="codiciContrattiContainer">
+                                    <label for="CodicePUF" class="control-label ">Codice PUF*</label>
+                                    <input type="text" class="form-control puf" id="CodicePUF" name="CodicePUF">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer mt-10">
+                        <a class="btn btn-lg btn-default pull-left" onclick="dismissModalCausaCAP();">
+                            <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Annulla</span>
+                        </a>
+                        @if (!String.IsNullOrEmpty(Model) && RevoRequest.CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.nonIndennizzabili.update"))
+                        {
+                            <a class="btn btn-lg btn-function" data-target="confermaFSNuovoCliente" data-toggle="modal" id="confRegistrazioneCAP" onclick="approvaFSNuovoCliente('@Model');">
+                                <span class="text-after-icon">Associa il cliente selezionato alla prestazione</span>
+                            </a>
+                            <a class="btn btn-lg btn-function notdisplayed" data-target="confermaFSNuovoCliente" data-toggle="modal" id="confAssociazione" onclick="associaNuovoCliente('@Model');">
+                                <span class="text-after-icon">Associa il cliente selezionato alla prestazione</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('#causaCAPModal').modal({ backdrop: 'static', keyboard: true, show: false });
+
+    function dismissModalCausaCAP() {
+        $('#causaCAPModal').modal('hide');
+    }
+
+    var customerCode = "";
+    $("#txtSearchTerm").bind("keypress", function (e) {
+        setTimeout(function () {
+            if (e.keyCode == 13 && e.target.value.length < 10) {
+                setTimeout(function () {
+                    $("#erroreUmanoModal").addClass("invisible");
+                }, 10);
+                $("#btnSearch").click();
+            }
+            else if (e.target.value.length >= 10) {
+                if (customerCode != $("#txtSearchTerm").val()) {
+                    customerCode = $("#txtSearchTerm").val();
+                    ricercaEsatta(customerCode);
+                }
+            }
+        }, 50);
+    });
+
+    $("#txtSearchTerm").bind("paste", function (e) {
+        setTimeout(function () {
+            var pastedData = e.target.value
+            if (pastedData.length >= 10)
+                ricercaEsatta(pastedData);
+        }, 50);
+
+    });
+
+    if ($("#indennizziTableContainer").data("bind") == "RecuperoFuoriStandard") {
+        $("#confRegistrazioneCAP").addClass("notdisplayed");
+        $("#confAssociazione").removeClass("notdisplayed");
+    }
+
+    function ricercaEsatta(_term) {
+
+        var _url;
+        var _user;
+        var _perm;
+
+        displayModalWaiter();
+
+        var _url = '@Url.Action("SchedaClienteStorico", "FuoriStandard", new { CodiceCliente = "_term_" })'.replace('_term_', _term);
+        $("#dettaglioClienteStorico").load(_url, function () {
+            filtraDatiByCliente();
+            hideModalWaiter();
+            $("#cercaClienteModal").modal("hide");
+        });
+    }
+
+    function impostaUtente(utente) {
+        displayModalWaiter();
+        var _term = $("#txtSearchTerm").val();
+        if ((_term.trim().length < 10 || _term.trim().length > 10) && _term.trim().length != 0) {
+            notifyWarning("Inserisci un codice cliente valido...");
+            hideModalWaiter();
+            return false;
+        }
+
+        var _url = '@Url.Action("SchedaClienteStorico", "FuoriStandard", new { CodiceCliente = "_term_" })'.replace('_term_', _term);
+        $("#dettaglioClienteStorico").load(_url, function () {
+            hideModalWaiter();
+            $("#cercaClienteModal").modal("hide");
+        });
+    }
+
+    function filtraDatiByCliente() {
+
+        var _cliente = $("#txtSearchTerm").val();
+        var _url = '@Url.Action("FiltraDatiContratti", "FuoriStandard", new { CodiceCliente = "_cliente_" })'.replace("_cliente_", _cliente);
+
+        displayModalWaiter();
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                CodiceCliente: _cliente
+            }),
+            success: function (result) {
+                $("#codiciContrattiContainer").html(result);
+                $("#CodicePUF").val("");
+                $("#CodicePUF").text("");
+                $("#CodicePUF").attr("readonly", false);
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function filtraPUF() {
+
+        var _contratto = $("#contratti").val();
+        var _url = '@Url.Action("FiltraDatiPUF", "FuoriStandard", new { CodiceContratto = "_contratto_" })'.replace("_contratto_", _contratto);
+
+        displayModalWaiter();
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                CodiceContratto: _contratto
+            }),
+            success: function (result) {
+                $("#CodicePUF").val(result);
+                $("#CodicePUF").text(result);
+                if (result != "")
+                { $("#CodicePUF").attr("readonly", true); }
+                else { $("#CodicePUF").attr("readonly", false); }
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function approvaFSNuovoCliente(FuoriStandard) {
+
+        var _optionSottoCategoria = $("#ddlSottoCategoria option:selected").val();
+        var _optionCategoria = $("#ddlCategoria option:selected").val();
+        var _note = $("#txtFileDescription").val();
+
+        if ($("#txtSearchTerm").val() == "") {
+            notifyWarning("Nessun cliente selezionato..");
+            return false;
+        }
+
+        if ($("#contratti").val() == "-1") {
+            notifyWarning("Nessun contratto selezionato..");
+            return false;
+        }
+
+        if ($("#CodicePUF").val() == "") {
+            notifyWarning("Nessun Puf selezionato..");
+            return false;
+        }
+
+        if ($(".fuoriStandard-valore-rettificato").length > 0) {
+            displayModalWaiter("schedaIndennizzo");
+            var _fuoriStandard = "S";
+            if ($('#inStandard').hasClass("notdisplayed")) {
+                _fuoriStandard = "N";
+            }
+
+            var _url;
+            _url = '@Url.Action("RettificaPrimoStep", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idFuoriStandard: FuoriStandard,
+                    dataInizioAttivita: $('#calendar3').val(),
+                    dataFineAttivita: $('#calendar4').val(),
+                    quantita: $('#quantita').val(),
+                    fuoriStandard: _fuoriStandard.toString(),
+                    causale: $("#ddlCategoria option:selected").val(),
+                    sottoCausale: $("#ddlSottoCategoria option:selected").val(),
+                    note: $("#txtFileDescription").val(),
+                    nonIndennizzabile: "N",
+                    codiceCliente: $("#txtSearchTerm").val(),
+                    codicePuf: $("#CodicePUF").val(),
+                    codiceContratto: $("#contratti").val(),
+                    flgRettifica: 1
+                }),
+                success: function (result) {
+                    if (result == "") {
+                        var sortColumn = $(".sortColumn.sorting_asc").attr("name");
+                        var sortType = $(".sorting_desc").attr("name");
+                        var page = 1;
+                        page = $("li.paginate_button.active").text();
+
+                        if (sortType != null) {
+                            sortColumn = sortType;
+                            sortType = "desc";
+                        }
+                        else if (sortColumn != null) { sortType = "asc"; }
+
+                        cercaFuoriStandard(null, sortColumn, sortType, page);
+
+                        notifySuccess("Completato");
+                        var totalNumber = $("#totalNumber").data("bind");
+                        totalNumber = totalNumber - 1;
+                        $("#totalNumber").data("bind", totalNumber);
+                        $("#totalNumber").text('Fuori Standard totali: ' + totalNumber);
+                        $('#erroreUmanoModal').modal('hide');
+                        $("#schedaIndennizzoModal").modal("hide");
+
+                        if ($('#chkIndProgressivi').prop('checked') == true) {
+                            displaySchedaIndennizzo($("#chkIndProgressivi").data("bind"), true, $("#elencoIndennizzi").data("bind"));
+                        }
+                        return false;
+                    }
+                    else {
+                        $('#erroreUmanoModal').modal('hide');
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyError(result);
+                        return false;
+                    }
+                },
+                error: function (request, status, error) {
+                    $('#erroreUmanoModal').modal('hide');
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning(error);
+                    return false;
+                },
+            });
+            return false;
+        }
+
+        $('#confermaFSNuovoCliente').modal('show');
+
+        $("#confNuovoCliente").off().click(function () {
+            displayModalWaiter("schedaCausaCap");
+            var _url;
+
+            _url = '@Url.Action("ValidaFuoriStandardNuovoCliente", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    IdFS: FuoriStandard,
+                    CodiceCliente: $("#txtSearchTerm").val(),
+                    CodiceContratto: $("#contratti").val(),
+                    CodicePuf: $("#CodicePUF").val(),
+                    CodiceCausa: _optionCategoria,
+                    CodiceSottocausa: _optionSottoCategoria,
+                    Note: $("#txtFileDescription").val(),
+                    NonIndennizzabile: 'N'
+                }),
+                success: function (result) {
+                    if (result == "") {
+
+                        var sortColumn = $(".sortColumn.sorting_asc").attr("name");
+                        var sortType = $(".sorting_desc").attr("name");
+                        var page = 1;
+                        page = $("li.paginate_button.active").text();
+
+                        if (sortType != null) {
+                            sortColumn = sortType;
+                            sortType = "desc";
+                        }
+                        else if (sortColumn != null) { sortType = "asc"; }
+
+                        filtraDati(sortColumn, sortType, page);
+
+                        notifySuccess("Completato");
+                        var totalNumber = $("#totalNumber").data("bind");
+                        totalNumber = totalNumber - 1;
+                        $("#totalNumber").data("bind", totalNumber);
+                        $("#totalNumber").text('Fuori Standard totali: ' + totalNumber);
+                        $("#schedaIndennizzoModal").modal("hide");
+
+                        if ($('#chkIndProgressivi').prop('checked') == true) {
+                            displaySchedaIndennizzo($("#chkIndProgressivi").data("bind"), true, $("#elencoIndennizzi").data("bind"));
+                        }
+                    }
+                    else {
+                        hideModalWaiter("schedaCausaCap");
+                        notifyError(result);
+                    }
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaCausaCap");
+                    notifyWarning(error);
+                }
+            });
+        });
+    }
+
+    function associaNuovoCliente(idFS) {
+
+        if ($("#txtSearchTerm").val() == "") {
+            notifyWarning("Nessun cliente selezionato..");
+            return false;
+        }
+
+        if ($("#contratti").val() == "-1") {
+            notifyWarning("Nessun contratto selezionato..");
+            return false;
+        }
+
+        if ($("#CodicePUF").val() == "") {
+            notifyWarning("Nessun Puf selezionato..");
+            return false;
+        }
+
+        var _url;
+        _url = '@Url.Action("AssociaNuovoCliente", "FuoriStandard")';
+
+        $('#confermaFSNuovoCliente').modal('show');
+
+        $("#confNuovoCliente").off().click(function () {
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idFS: idFS,
+                    CodiceCliente: $("#txtSearchTerm").val(),
+                    CodiceContratto: $("#contratti").val(),
+                    CodicePuf: $("#CodicePUF").val()
+                }),
+                success: function (result) {
+                    displayModalWaiter("schedaCausaCap");
+                    if (result == "") {
+                        notifySuccess("Operazione eseguita con successo.");
+                        $('#causaCAPModal').modal('hide');
+                        cercaFuoriStandard(null);
+                    }
+                    else {
+                        notifyWarning(result);
+                    }
+                    hideModalWaiter("schedaCausaCap");
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaCausaCap");
+                    notifyWarning(error);
+                }
+            });
+        });
+    }
+
+</script>

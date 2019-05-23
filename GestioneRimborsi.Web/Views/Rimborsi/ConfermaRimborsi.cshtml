@@ -1,0 +1,281 @@
+﻿@model String
+
+@{
+    IRimborsoService _rimborsiService = (IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborso>();
+    ISubCollection<GestioneRimborsi.Core.GestioneRimborso> _rimborsi = _rimborsiService.GetRimborsiConfermabili(Model, RevoRequest.CurrentUser.IsSuperUser());
+
+    Double totale = 0.00;
+
+    if (_rimborsi != null)
+    {
+        foreach (var item in _rimborsi.Items)
+        {
+            totale = totale + Convert.ToDouble(item.ImportoTotaleRimborso);
+        }
+    }
+
+    if (!CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi"))
+    {
+        Response.Redirect(CommonUrls.BaseUrl);
+    }
+
+    bool IsSuperUser = RevoRequest.CurrentUser.IsSuperUser();
+}
+
+@{
+    ViewBag.Title = "ConfermaRimborsi";
+}
+<div class="space-container">
+    <div class="row paddingTop15">
+        <div class="col-sm-12 space-container">
+            @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "")
+            @Html.Partial("~/views/rimborsi/_confermaModificheModal.cshtml", "Confermare i rimborsi selezionati?")
+            <h2 class="mr-l">
+                <a href="@UrlFor.HomeRimborsi" title="torna alla homepage"><i class="fa fa-arrow-left"></i></a>
+                /
+                <i class="fa fa-check-square-o"></i>
+                <span class="text-after-icon">Conferma Rimborsi</span>
+            </h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 space-container">
+            <div class="col-sm-2">
+                @Html.Partial("_leftMenu", "ConfermaRimborsi")
+            </div>
+            <div class="col-sm-10">
+                <div class="panel">
+                    <div class="panel-heading panel-info-cap">
+                        <h4>Informazioni sulla conferma</h4>
+                    </div>
+                    <div class="panel-body" id="confermaRimborsiTableContainer">
+                        <div class="row mr-r">
+                            <div class="col-sm-4">
+                                <label>Numero Protocollo: </label>
+                                <input type="text" id="txtNumeroProtocollo" class="form-control" placeholder="AB123456" maxlength="30"/>
+                            </div>
+                            <div class="col-sm-4">
+                                <label>Utente Protocollo: </label>
+                                <input type="text" id="txtUtenteProtocollo" class="form-control" placeholder="Mario Rossi" maxlength="30" />
+                            </div>
+                            <div class="col-sm-4">
+                                <label for="calendar">Data Protocollo: </label>
+                                <div id="calendarDiv" class="input-group form input-append date">
+                                    <input class="form-control" data-format="dd/MM/yyyy" type="text" id="calendar" placeholder="01/01/1970" name="calendar" value='@DateTime.Now.ToShortDateString()' />
+                                    <span class="input-group-btn add-on">
+                                        <button class="btn btn-default h-btn-new" type="button">
+                                            <i class="fa fa-lg fa-calendar"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @Html.Partial("_confermaRimborsi", _rimborsi)
+
+                <div class="panel">
+                    <div class="panel-heading panel-info-cap">
+                        <h4>Totale Rimborso:<label class="pull-right" id="lblTotRimborso">€ 0.00</label></h4>
+                    </div>
+                    <div class="panel-body">
+                        @using (@Html.BeginForm("RimborsiConfermati", "Rimborsi", FormMethod.Post, new { target = "_blank" }))
+                        {
+                            @Html.Hidden("ClienteAnnoNumeroDocumento");
+                            @Html.Hidden("Utente", @Model);
+                            @Html.Hidden("NumeroProt");
+                            @Html.Hidden("UtenteProt");
+                            @Html.Hidden("DataProt");
+                        }
+                        <div class="pull-right">
+                            <a id="btnAnnullaRimborsi" class="btn btn-lg btn-default" href='@UrlFor.HomeRimborsi'>
+                                <i class=" fa fa-lg fa-arrow-circle-o-left">
+                                </i><span class="text-after-icon">Annulla</span>
+                            </a>
+                            <a id="contabilizzaRimborsi" class="btn btn-lg btn-function" onclick="confermaRimborsi('@Model');">
+                                Conferma
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(".application-title").text("Gestione Rimborsi");
+
+    $(function () {
+        $('#calendarDiv').datetimepicker();
+    });
+
+    function confermaRimborsi(utente) {
+
+        if ($('#txtNumeroProtocollo').val() == '') {
+            notifyWarning("Numero Protocollo non inserito..."); return false;
+        }
+        if ($('#txtUtenteProtocollo').val() == '') {
+            notifyWarning("Utente protocollo non inserito..."); return false;
+        }
+        if ($('#calendar').val() == '') {
+            notifyWarning("Data Protocollo non inserita..."); return false;
+        }
+
+        var items = [];
+        var allPages = _rimborsiConfermabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]:checked').each(function () {
+            var status = $(this).attr("name");
+            items.push(status)
+        });
+
+
+        if (items.length == 0) {
+            notifyWarning("Nessuna riga selezionata..."); return false;
+        }
+
+        $("#ClienteAnnoNumeroDocumento").val(JSON.stringify(items));
+        $("#NumeroProt").val($("#txtNumeroProtocollo").val());
+        $("#UtenteProt").val($("#txtUtenteProtocollo").val());
+        $("#DataProt").val($("#calendar").val());
+
+        $('#confermaModifiche').modal('show');
+
+        $("#confMod").off().click(function () {
+            displayModalWaiter();
+
+            _url = '@Url.Action("ConfermareRimborsi", "Rimborsi")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    ClienteAnnoNumeroDocumento: items,
+                    Utente: utente,
+                    NumeroProtocollo: $("#txtNumeroProtocollo").val(),
+                    UtenteProtocollo: $("#txtUtenteProtocollo").val(),
+                    DataProtocollo: $("#calendar").val(),
+                }),
+                success: function (result) {
+                    if (result == '') {
+                        notifySuccess("Operazione eseguita con successo");
+                        //execute pdf in post
+                        //--> var pdfWin= window.open("data:application/pdf;base64, " + data, '', 'height=650,width=840');
+
+                        $("form").submit();
+                        setTimeout(function () {
+                            window.location.reload();
+                        }, 5000);
+                    }
+                    else {
+                        hideModalWaiter();
+                        notifyWarning(result);
+                    }
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter();
+                    notifyWarning(error);
+                }
+            });
+        });
+    }
+
+    var getAbsoluteUrl = function (url) {
+        var a = document.createElement('a');
+        a.href = url;
+        return a.href;
+    }
+
+    function getPDF() {
+
+        _url = '@Url.Action("RimborsiConfermati", "Rimborsi")';
+
+        return $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                ClienteAnnoNumeroDocumento: $("#ClienteAnnoNumeroDocumento").val(),
+                Utente: $("#Utente").val(),
+                NumeroProtocollo: $("#NumeroProt").val(),
+                UtenteProtocollo: $("#UtenteProt").val(),
+                DataProtocollo: $("#DataProt").val(),
+            }),
+            success: function (result) {
+                if (result != undefined) {
+                    localStorage.setItem("pdfName", "rimborsi_" + $("#Utente").val() + ".pdf");
+                    localStorage.setItem("pdfBase64", result);
+                    localStorage.setItem("useBase64File", true);
+                    var win = window.open("");
+                    var iframe = win.document.createElement('iframe');
+                    iframe.setAttribute("style", "width:100%;height:100%;margin:0;padding:0;");
+                    iframe.setAttribute("src", getAbsoluteUrl("/plugin/pdf.js/web/viewer.html"));
+                    win.document.body.setAttribute("style", "margin:0; padding:0;overflow: hidden;");
+                    win.document.body.appendChild(iframe);
+                }
+                else {
+                    hideModalWaiter();
+                    notifyWarning('Errore');
+                }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function setRimborsiConfermabiliDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridRimborsiConfermabili')) {
+            _rimborsiConfermabiliTable = $('#gridRimborsiConfermabili').DataTable();
+        }
+        else {
+            _rimborsiConfermabiliTable = $('#gridRimborsiConfermabili').DataTable({
+                "pageLength": 5,
+                columns: [
+                { "orderable": false, className: "info-column" }, // ICONs
+                { "orderable": false },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                ],
+                order: [6, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $(function () {
+        setRimborsiConfermabiliDataTable();
+    });
+
+    var IE = (function () {
+        "use strict";
+
+        var ret, isTheBrowser,
+            actualVersion;
+
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+            isTheBrowser = true;
+            actualVersion = parseInt(ua.substring(msie + 5, ua.indexOf(".", msie)));
+        }
+        else {
+            isTheBrowser = false;
+            actualVersion = undefined;
+        }
+        ret = {
+            isTheBrowser: isTheBrowser,
+            actualVersion: actualVersion
+        };
+
+        return ret;
+    }());
+
+</script>

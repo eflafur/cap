@@ -1,0 +1,160 @@
+﻿@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+}
+
+<div class="modal fade text-left" id="cercaClienteModal" tabindex="-1" role="dialog" aria-labelledby="cercaClienteModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        @Html.Partial("~/views/rimborsi/_smallModalWaiter.cshtml", "ricercaCliente")
+        <div id="modalCercaCliente" class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="dismissModalCliente();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="cercaClienteModalTitle">
+                    <i class="fa fa-lg fa-user"></i>
+                    <span class="text-after-icon">Cerca Cliente</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="row">
+                            <div class="col-sm-12 pd-r-pd-l">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="txtCercaCliente" onkeypress="startSearchCliente(event);">
+                                    <span class="input-group-btn">
+                                        <a class="btn btn-function" id="btnSearchCliente" onclick="searchCliente();">
+                                            <i id="iconSearch" class="fa fa-lg fa-search"></i>
+                                            <span class="text-after-icon">Cerca</span>
+                                        </a>
+                                    </span>
+                                </div>
+                                <span class="caption spanCaption">Cerca per codice cliente, ragione sociale, codice fiscale o partita IVA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                @Html.Partial("~/views/rimborsi/_risultatiRicercaCliente.cshtml", _clienteService.FilterByTerm(null))
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-lg btn-default" onclick="dismissModalCliente();">
+                    <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Annulla</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function dismissModalCliente() {
+        $('#cercaClienteModal').modal('hide');
+    }
+
+    function startSearchCliente(e) {
+        if (e.keyCode == 13) {
+            setTimeout(function () {
+                $("#erroreUmanoModal").addClass("invisible");
+            }, 10);
+            searchCliente();
+            return false;
+        }
+    }
+
+    $('#cercaClienteModal').on('shown.bs.modal', function () {
+        $("#txtCercaCliente").val("");
+        $('#txtCercaCliente').focus();
+    });
+
+    function searchCliente() {
+        var _url, _term;
+        try {
+            _term = $("#txtCercaCliente").val();
+            if (_term.trim().length < 1) {
+                notifyWarning("Nessun dato inserito...");
+                return false;
+            }
+            displaySmallModalWaiter("ricercaCliente");
+            _url = "@UrlFor.ClientiSearch("_term_")".replace('_term_', encodeURIComponent(_term));
+
+            $("#ricercaClienteTableContainer").load(_url, function () {
+                hideSmallModalWaiter("ricercaCliente");
+                setSearchClienteDataTable();
+            });
+        }
+        catch (err) {
+            notifyError();
+            hideSmallModalWaiter("ricercaCliente");
+        }
+        finally {
+            return false;
+        }
+    }
+
+    var _searchClienteTable;
+
+    function setSearchClienteDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridClientiTrovati')) {
+            _searchClienteTable = $('#gridClientiTrovati').DataTable();
+        }
+        else {
+            _searchClienteTable = $('#gridClientiTrovati').DataTable({
+                "pageLength": 5,
+                columns: [
+                null,
+                null,
+                null,
+                null,
+                ],
+                "order": [[1, 'asc']]
+            });
+        }
+
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $(function () {
+        setSearchClienteDataTable();
+    });
+
+    function selectCliente(clienteID) {
+        displaySmallModalWaiter("ricercaCliente");
+        var _user = $('#ddlUsers').val();
+        var _perm;
+
+        var _url = "@UrlFor.RimborsiSearch("_clienteID_", "_user_")".replace('_clienteID_', encodeURIComponent(clienteID)).replace("_user_", encodeURIComponent(_user));
+        $("#rimborsiTableContainer").load(_url, function () {
+            $("#txtSearchTerm").val('');
+            $("#cercaClienteModal").modal("hide");
+            setRimborsiDataTable();
+        });
+        var _url = "@UrlFor.ClienteSearch("_clienteID_")".replace('_clienteID_', encodeURIComponent(clienteID));
+        $("#dettaglioClienteContainer").load(_url, function () {
+            hideSmallModalWaiter("ricercaCliente");
+            $("#cercaClienteModal").modal("hide");
+        });
+
+        var _url = '@Url.Action("SchedaClienteStorico", "FuoriStandard", new { CodiceCliente = "_clienteID_" })'.replace('_clienteID_', clienteID);
+        $("#dettaglioClienteStorico").load(_url, function () {
+            hideSmallModalWaiter("ricercaCliente");
+            $("#cercaClienteModal").modal("hide");
+        });
+
+        @if (ViewData["Title"].ToString() == "RecuperoFuoriStandard")
+        {
+            @:$("#confRegistrazioneCAP").addClass("notdisplayed");
+                    @:$("#confAssociazione").removeClass("notdisplayed");
+                }
+
+        @if (ViewData["Title"].ToString() == "RegistraFuoriStandard" || ViewData["Title"].ToString() == "CausaCAP" || ViewData["Title"].ToString() == "RecuperoFuoriStandard")
+        {
+            @:$("#txtSearchTerm").val(clienteID);
+                    @:filtraDatiByCliente();
+                }
+    }
+
+    @if (ViewData["Title"].ToString() == "Index" || ViewData["Title"].ToString() == "RegistraFuoriStandard")
+    {
+        @:$("#modalCercaCliente").css({ "margin-top": "0px", "margin-left": "0px", "width": "100%" });
+        }
+
+</script>

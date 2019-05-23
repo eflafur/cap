@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:sgate="http://www.sgate.ancitel.it/idrico/xsd/sgateprimitivi"
+	attributeFormDefault="unqualified" elementFormDefault="qualified"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:simpleType name="tipoNumerico">
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse" />
+			<xs:pattern value="(\d)+" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoCodiceFiscale">
+		<xs:restriction base="xs:string">
+			<xs:pattern
+				value="([A-Z]{6}[0-9LMNPQRSTUV]{2}[ABCDEHLMPRST][0-9LMNPQRSTUV]{2}[A-Z][0-9LMNPQRSTUV]{3}[A-Z])|(\d{11})" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoCap">
+		<xs:restriction base="tipoNumerico">
+			<xs:length value="5" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoCodiceIstatComune">
+		<xs:restriction base="tipoNumerico">
+			<xs:length value="6" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoCharMax80">
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse" />
+			<xs:minLength value="1" />
+			<xs:maxLength value="80" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoCharMax255">
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse" />
+			<xs:minLength value="1" />
+			<xs:maxLength value="255" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoProtocollo">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:maxLength value="20" />
+			<xs:pattern value="([a-zA-Z0-9])*" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoIBAN">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="[A-Z]{2,2}[0-9]{2,2}[a-zA-Z0-9]{1,30}" />
+		</xs:restriction>
+	</xs:simpleType>
+  <xs:simpleType name="tipoCodiceUtente">
+    	<xs:restriction base="xs:string">
+      		<xs:minLength value="1" />
+      		<xs:maxLength value="25" />
+    	</xs:restriction>
+  	</xs:simpleType>
+	<xs:simpleType name="tipoPartitaIva">
+		<xs:restriction base="xs:string">
+			<xs:pattern value="\d{11}" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoNumeroCivico">
+		<xs:restriction base="xs:string">
+			<xs:whiteSpace value="collapse" />
+			<xs:maxLength value="10" />
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="tipoCodiceAgevolazione">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="10" />
+			<xs:minLength value="1" />
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

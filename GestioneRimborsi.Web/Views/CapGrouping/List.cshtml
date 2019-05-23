@@ -1,0 +1,69 @@
+﻿
+@model ISubCollection<CapGrouping>
+
+<div class="row">
+
+    <div class="col-sm-12">
+
+        <div class="row grid-title">
+            <div class="col-sm-6">
+                <h1>
+                    Elenco Raggruppamenti
+                </h1>
+            </div>
+            <div class="col-sm-6 text-right">
+                <button type="button" class="btn btn-default title-bar-entity-button" data-toggle="modal" data-target="#createCapGroupingModal">
+                    <i class="fa fa-lg fa-desktop"></i>
+                    <span class="text-after-icon">Crea nuovo raggruppamento</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-sm-12" id="capGroupingTableContainer">
+
+                @Html.Partial("_list", Model)
+
+            </div>
+
+        </div>
+        
+    </div>
+
+    @Html.Partial("_create")
+
+</div>
+
+@section scripts {
+<script>
+
+    var _capGroupingTable;
+
+    function setCapGroupingDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridCapGrouping')) {
+            _capGroupingTable = $('#gridCapGrouping').DataTable();
+        }
+        else {
+            _capGroupingTable = $('#gridCapGrouping').DataTable({
+                columns: [
+                { "orderable": false, className: "info-column" }, // ICONs
+                null,
+                null,
+                { "orderable": false, className: "command-column" } // COMMANDs
+                ],
+                order: [1, 'asc']
+            });
+        }
+
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+
+    $(function () {
+        // INIT ENHANCED DATAGRID (_list)
+        setCapGroupingDataTable();
+    });
+
+</script>
+}

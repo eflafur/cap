@@ -1,0 +1,91 @@
+﻿@using GruppoCap.Core
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>@Ambient.CurrentApplicationName</title>
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,300italic,400italic,600italic,700italic' rel='stylesheet' type='text/css' />
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,700,300' rel='stylesheet' type='text/css'>
+
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/plugin-css")
+    @Styles.Render("~/Content/custom-css")
+
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/standard")
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+</head>
+<body>
+
+    <div class="container-fluid">
+        
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="@CommonUrls.BaseUrl">
+                        <img alt="Cap Holding" src="~/img/logo-cap-green.png" />
+                        <span class="application-title">@Ambient.CurrentApplicationName</span>
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="small-device">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <i class="fa fa-lg fa-danger"></i>
+                            <span>Risoluzione non supportata</span>
+                        </div>
+                        <div class="panel-body">
+                            <p>
+                                Ci dispiace ma <strong>@Ambient.CurrentApplicationName</strong> non supporta una risoluzione tanto bassa... I device supportati vanno dagli small tablet in su...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mainContent">
+
+            @RenderBody()
+
+        </div>
+
+        <div class="clearfix"></div>
+
+        <footer>
+            <nav class="navbar navbar-default navbar-fixed-bottom cap-footer" role="navigation">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <p class="text-left footer-links">
+
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="text-right footer-credits">
+                                v.@Ambient.CurrentApplicationVersion - Application & DB Administration
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </footer>
+
+    </div> <!-- container fluid ends -->
+        
+        @Scripts.Render("~/bundles/plugin")
+        @Scripts.Render("~/bundles/moment-js")
+        @Scripts.Render("~/bundles/gruppocap-custom")
+
+        @RenderSection("scripts", required: false)
+        
+</body>
+</html>

@@ -1,0 +1,66 @@
+﻿
+@model ISubCollection<Activity>
+
+<table id="gridActivities" class="table table-condensed table-hover">
+    <thead>
+        <tr>
+            <th width="10%"></th>
+            <th width="20%">Data</th>
+            <th width="70%">Activity</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            foreach (Activity _a in Model.Items)
+            {
+                String _trIcon = String.Empty;
+                String _verbIcon = String.Empty;
+
+                if (_a.IsPrivileged)
+                {
+                    _trIcon += CommonSnippets.IsPrivileged;
+                }
+                
+                switch( _a.Verb)
+                {
+                    case ActivityVerb.Login:
+                        _verbIcon = ActivitySnippets.ActivityText.Login;
+                        break;
+                    case ActivityVerb.Logout:
+                        _verbIcon = ActivitySnippets.ActivityText.Logout;
+                        break;
+                    case ActivityVerb.Create:
+                        _verbIcon = ActivitySnippets.ActivityText.Create;
+                        break;
+                    case ActivityVerb.Update:
+                        _verbIcon = ActivitySnippets.ActivityText.Update;
+                        break;
+                    case ActivityVerb.View:
+                        _verbIcon = ActivitySnippets.ActivityText.View;
+                        break;
+                    case ActivityVerb.Delete:
+                        _verbIcon = ActivitySnippets.ActivityText.Delete;
+                        break;
+                    case ActivityVerb.Link:
+                        _verbIcon = ActivitySnippets.ActivityText.Link;
+                        break;
+                    case ActivityVerb.Unlink:
+                        _verbIcon = ActivitySnippets.ActivityText.Unlink;
+                        break;
+                    case ActivityVerb.Impersonate:
+                        _verbIcon = ActivitySnippets.ActivityText.Impersonate;
+                        break;
+                    default:
+                        _verbIcon = String.Empty;
+                        break;
+                }   
+                
+                <tr>
+                    <td>@Html.Raw(_trIcon)&nbsp;@Html.Raw(_verbIcon)</td>
+                    <td>@_a.Moment.ToEuropeanString(true)</td>
+                    <td>@Html.Raw(ActivitySnippets.ActivityText.GetText(_a))</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>

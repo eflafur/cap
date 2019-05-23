@@ -1,0 +1,54 @@
+﻿@model String
+
+<div class="modal fade text-left" id="confermaAnnullamento" tabindex="-1" role="dialog" aria-labelledby="confermaAnnullamentoTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content" id="modalNote">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="dismissModalAnn();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="confermaAnnullamentoModalTitle">
+                    <i class="fa fa-exclamation-triangle text-danger"></i>
+                    <span class="text-after-icon">Conferma</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="col-md-10 col-md-offset-1 mb-10">
+                            <h2 class="text-danger lead">Attenzione</h2>
+                            <p class="lead" id="txtConfermaAnn">@Model<br /></p>
+                            <label class="fontSizeSmall">Inserisci una breve nota di testo come commento all'annullamento (*)</label>
+                            <textarea type="text" class="form-control" id="txtFileDescriptions" rows="3" placeholder="(Inserisci un testo opzionale)"></textarea>
+                        </div>
+                        <div class="modal-footer col-md-12">
+                            <button type="button" class="btn btn-lg btn-default" onclick="dismissModalAnn();">
+                                <i class=" fa fa-lg fa-arrow-circle-o-left">
+                                </i><span class="text-after-icon">Annulla</span>
+                            </button>
+                            <button type="button" id="confAnn" class="btn btn-lg btn-function" onclick="okDismissModalAnn();">
+                                <span>OK</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('#confermaAnnullamento').modal({ backdrop: 'static', keyboard: true, show: false });
+
+    function dismissModalAnn() {
+        $('#confermaAnnullamento').modal('hide');
+    }
+
+    function okDismissModalAnn() {
+        if ($("#txtFileDescriptions").val() == "") {
+            return;
+        }
+        $('#confermaAnnullamento').modal('hide');
+    }
+
+</script>

@@ -1,0 +1,188 @@
+﻿@model ISubCollection<SepaCreditTransaction>
+@{
+    GestioneRimborsi.Core.ILottoRimborsiService _lottoService = (GestioneRimborsi.Core.ILottoRimborsiService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborsi.Core.Rimborso>();
+    bool solaLettura = false;
+
+    if (Model != null)
+    {
+        if (Model.Items.Count > 0)
+        {
+            SepaHeader header = _lottoService.GetSepaHeaderByTransaction(Model.Items.FirstOrDefault().IdPayment);
+            if (!String.IsNullOrEmpty(header.BloccatoDa))
+            {
+                solaLettura = true;
+            }
+        }
+    }
+
+    double totale = 0;
+    double totaleEliminati = 0;
+    int countEliminati = 0;
+}
+
+@{
+    if (Model == null)
+    {
+        @Html.Raw(HtmlSnippets.Alert.Info("Nessuna riga da visualizzare..."))
+    }
+    else
+    {
+        <table id="grigliaTransazioni" class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th class="text-left">Cliente</th>
+                    <th class="text-left">Beneficiario</th>
+                    <th class="text-left">IBAN</th>
+                    <th class="text-left">Importo</th>
+                    <th class="text-left">Azione</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (SepaCreditTransaction _sct in Model.Items)
+                    {
+                        totale += Convert.ToDouble(_sct.InstructedAmount);
+                        if (_sct.EliminatoDa != null) { totaleEliminati += Convert.ToDouble(_sct.InstructedAmount); countEliminati++; }
+
+                        if (_sct.EliminatoDa == null)
+                        {
+                            <tr onclick="">
+                                <td class="text-left">@_sct.CreditorTaxId</td>
+                                <td class="text-left">@_sct.CreditorName</td>
+                                <td class="text-left">@_sct.CreditorIban</td>
+                                <td class="text-left">@_sct.InstructedAmount</td>
+                                <td class="text-left">
+                                    @if (solaLettura == false)
+                        {
+                                        <a class="editButtonInList" role="button" title="modifica" onclick="modificaTransazione('@_sct.ID');"><span class="fa fa-lg fa-fw fa-edit"></span></a>
+                                        <a class="deleteButtonInList" role="button" title="elimina" onclick="deleteTransaction('@_sct.ID');"><span class="fa fa-lg fa-fw fa-trash"></span></a>
+                                    }
+                                    @if (_sct.ModificatoDa != null)
+                        { <a class="storicoButtonInList" role="button" title="storico" onclick="elencoModifiche('@_sct.ID');"><span class="fa fa-lg fa-fw fa-eye"></span></a> }
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr onclick="" class="b-colorLightPink">
+                                <td class="text-left colorLightRed">@_sct.CreditorTaxId</td>
+                                <td class="text-left">@_sct.CreditorName</td>
+                                <td class="text-left">@_sct.CreditorIban</td>
+                                <td class="text-left">@_sct.InstructedAmount</td>
+                                <td class="text-left">
+                                    @if (solaLettura == false)
+                        {
+                                        <a class="reloadButtonInList" role="button" title="recupera" onclick="recuperaTransaction('@_sct.ID');"><span class="fa fa-lg fa-fw fa-repeat"></span></a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+            </tbody>
+        </table>
+        <div class="row footerTransazioni">
+            @{
+                var _totale = (totale != 0 ? totale.ToString("#.00") : "0,00");
+                var _totaleEliminati = (totaleEliminati != 0 ? totaleEliminati.ToString("#.00") : "0,00");
+                var _diffTotali = (totale - totaleEliminati);
+            }
+            <div class="col-sm-5"><label>Riepilogo Disposizioni</label><p><span>Totale: @Model.Items.Count, Eliminate: <span class="colorRed">@countEliminati</span>, Correnti: @(Model.Items.Count - countEliminati)</span></p></div>
+            <div class="col-sm-7 text-right"><label>Riepilogo totali</label><p><span>Totale: € @_totale, Eliminate: <span class="colorRed">€ -@_totaleEliminati</span>, Correnti: € @(_diffTotali != 0 ? _diffTotali.ToString("#.00") : "0,00")</span></p></div>
+        </div>
+                }
+}
+
+<script>
+    function deleteTransaction(id) {
+        displayModalWaiter();
+        var _url = '@Url.Action("DeleteSepaCreditTransaction", "GestioneDisposizioni", new { id = "_id_" })'.replace('_id_', encodeURIComponent(id));
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                id: id
+            }),
+            success: function (result) {
+                $("#transactionTableContainer").html(result);
+                setTransactionDataTable();
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function recuperaTransaction(id) {
+        displayModalWaiter();
+        var _url = '@Url.Action("RecuperaSepaCreditTransaction", "GestioneDisposizioni", new { id = "_id_" })'.replace('_id_', encodeURIComponent(id));
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                id: id
+            }),
+            success: function (result) {
+                $("#transactionTableContainer").html(result);
+                setTransactionDataTable();
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function modificaTransazione(id) {
+        displayModalWaiter();
+        var _url = '@Url.Action("SchedaModifiche", "GestioneDisposizioni", new { id = "_id_" })'.replace('_id_', encodeURIComponent(id));
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                id: id
+            }),
+            success: function (result) {
+                $("#schedaModifiche").html(result);
+                hideModalWaiter();
+                $('#modificaIBAN').modal('show');
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function elencoModifiche(id) {
+        displayModalWaiter();
+        var _url = '@Url.Action("SchedaElencoModifiche", "GestioneDisposizioni", new { id = "_id_" })'.replace('_id_', encodeURIComponent(id));
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                id: id
+            }),
+            success: function (result) {
+                $("#schedaElencoModifiche").html(result);
+                hideModalWaiter();
+                $('#elencoModifiche').modal('show');
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+</script>

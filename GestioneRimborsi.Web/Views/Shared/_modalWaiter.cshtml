@@ -1,0 +1,38 @@
+﻿
+<div id="ModalWaiter" class="modal fade bs-modal-sm apr-modal-container" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm apr-modal">
+        <div class="modal-content">
+            <i class="fa fa-5x fa-spin fa-spinner"></i>
+            <br />
+            <span id="randomText">Operazione in corso</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('#ModalWaiter').modal({ keyboard: false, show: false });
+
+    function displayModalWaiter() {
+        $('#ModalWaiter').modal('show');
+    }
+
+    function hideModalWaiter() {
+        $('#ModalWaiter').modal('hide');
+    }
+
+    $(function () {
+        var words = [
+            'Operazione in corso'
+        ];
+
+        var i = 0;
+        setInterval(function () {
+            $('#randomText').fadeOut(1000, function () {
+                $(this).html(words[i = (i + 1) % words.length]).fadeIn(1000);
+            });
+        }, 8000);
+    });
+
+
+
+</script>

@@ -1,0 +1,22 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    Layout = "~/Views/Shared/_LayoutWithoutLogin.cshtml";
+    ViewBag.Title = "Accesso negato";
+}
+
+<div class="jumbotron alert-danger text-center">
+    <h1>
+        <i class="fa fa-ban fa-2x"></i>
+    </h1>
+    <br/>
+    <p><strong>Applicazione offline!</strong></p>
+    <p>
+        Attenzione, questa applicazione non è disponibile. 
+        <br/>
+        Contatta i <strong>sistemi informativi</strong> per sapere se si tratta di un problema temporaneo
+    </p>
+    <p style="font-size: 12px;">
+        oppure di qualcosa di ben più grave!
+    </p>
+</div>

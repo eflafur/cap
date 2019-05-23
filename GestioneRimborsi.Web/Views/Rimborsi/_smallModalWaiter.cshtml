@@ -1,0 +1,30 @@
+﻿@model String
+
+@{
+    var modalId = "SmallModalWaiter" + Model;
+    var randomTextId = "randomText" + Model;
+    var modalIdHash = "#ModalWaiter" + Model;
+    var randomTextIdHash = "#randomText" + Model;
+}
+
+<div id="@modalId" class="modal fade bs-modal-sm apr-modal-container" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm apr-modal">
+        <div class="modal-content">
+            <i class="fa fa-5x fa-spin fa-spinner"></i>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('@modalIdHash').modal({ backdrop: 'static', keyboard: false, show: false });
+
+    function displaySmallModalWaiter(id) {
+        $("#SmallModalWaiter" + (id || '')).modal({ backdrop: 'static', keyboard: false, show: true });
+    }
+
+    function hideSmallModalWaiter(id) {
+        $("#SmallModalWaiter" + (id || '')).modal('hide');
+    }
+
+</script>

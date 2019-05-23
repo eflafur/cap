@@ -1,0 +1,73 @@
+﻿@model String
+
+@{
+    IClienteService _clienteService = (GestioneRimborsi.Core.IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+    Cliente cliente = _clienteService.InfoCliente(Model);
+
+    if (Model != "")
+    {
+        cliente = _clienteService.InfoCliente(Model);
+    }
+}
+
+<div id="scheda">
+    <div class="row">
+        @if (Model != "" && Model != null)
+        {
+            <div class="form-group">
+                <div class="col-sm-12 panel-collapse collapse in mt-10 collapseDetailsMargin" role="tabpanel" id="collapseDetails3">
+                    <div class="row fuoriStandard-heading-row">
+                        <div class="col-sm-6">
+                            <span class="control-label"><strong>@(cliente != null ? cliente.ragioneSocialeCliente : "")</strong></span>
+                        </div>
+                        <div class="col-sm-3">
+                            @if (cliente != null && cliente.DataNascita != null)
+                            { <span class="control-label"><strong>@cliente.DataNascita.Value.ToShortDateString()</strong></span> }
+                            else
+                            { <span class="control-label"></span> }
+                        </div>
+                        <div class="col-sm-3">
+                            <span class="control-label pull-right"><strong>@(cliente != null ? cliente.Telefono : "")</strong></span>
+                        </div>
+                    </div>
+                    <div class="row fuoriStandard-caption-row">
+                        <div class="col-sm-6">
+                            <span for="Nome" class="control-label">Nome</span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span for="DataNascita" class="control-label">Data di nascita</span>
+                        </div>
+                        <div class="col-sm-3">
+                            <span for="Telefono" class="control-label pull-right">Telefono</span>
+                        </div>
+                    </div>
+
+                    <div class="row fuoriStandard-heading-row">
+                        <div class="col-sm-6">
+                            <span class="control-label"><strong>@(cliente != null ? cliente.Email : "")</strong></span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="control-label pull-right"><strong>@(cliente != null ? cliente.Strada + ", " + cliente.CAP + "-" + cliente.Comune : "")</strong></span>
+                        </div>
+                    </div>
+                    <div class="row fuoriStandard-caption-row">
+                        <div class="col-sm-6">
+                            <span for="Email" class="control-label">E-Mail</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <span for="Inidirizzo" class="control-label pull-right">Indirizzo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script>
+
+    function activaTab(tab) {
+        $('.nav-tabs a[href="#' + tab + '"]').tab('show');
+    };
+
+</script>

@@ -1,0 +1,170 @@
+﻿@model String
+
+@{
+    IRimborsoService _rimborsiService = (IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborso>();
+    ISubCollection<GestioneRimborso> _rimborsi = _rimborsiService.GetRimborsiAnnullabili(Model, RevoRequest.CurrentUser.IsSuperUser());
+}
+
+@{
+    ViewBag.Title = "AnnullaRimborsi";
+
+    if (!CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi"))
+    {
+        Response.Redirect(CommonUrls.BaseUrl);
+    }
+    bool IsSuperUser = RevoRequest.CurrentUser.IsSuperUser();
+}
+
+<div class="row">
+    @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "")
+    @Html.Partial("~/views/rimborsi/_confermaModificheModal.cshtml", "Annullare i rimborsi selezionati?")
+    <div class="col-sm-12 space-container">
+        <div class="col-sm-12">
+            <div id="rowFilter">
+                @if (IsSuperUser && 1 == 0)
+                {
+                    <div class="container-information pull-right" role="group">
+                        <span class="btn-lg">
+                            Impersonificazione utente:
+                            <b class="btn-lg">@Model</b>
+                        </span>
+                    </div>
+                }
+                <h2>
+                    <a href="@UrlFor.HomeRimborsi" title="torna alla homepage"><i class="fa fa-arrow-left"></i></a>
+                    /
+                    <i class="fa fa-times-circle"></i>
+                    <span class="text-after-icon">Annulla Rimborsi</span>
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-sm-12 space-container">
+        <div class="col-sm-2">
+            <div class="row">
+                <div class="col-sm-12">
+                    @Html.Partial("_leftMenu", "AnnullaRimborsi")
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-10">
+            <div class="col-sm-12 container-information bg-w">
+                <h4>Selezione dei rimborsi da annullare</h4>
+                <div class="col-sm-12 container-information bg-w" id="annullaRimborsiTableContainer">
+                    @Html.Partial("_annullaRimborsi", _rimborsi)
+                </div>
+                <div class="input-group col-sm-12 pull-right mr-l p-20 marginBottom10">
+                    <button type="button" class="btn btn-lg btn-function pull-right" onclick="cancellaRimborsi('@Model');">
+                        <i class=" fa fa-lg fa-times-circle">
+                        </i>
+                        <span class="text-after-icon">Annulla Rimborsi</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(".application-title").text("Gestione Rimborsi");
+
+    function setRimborsiAnnullabiliDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridRimborsiAnnullabili')) {
+            _rimborsiAnnullabiliTable = $('#gridRimborsiAnnullabili').DataTable();
+        }
+        else {
+            _rimborsiAnnullabiliTable = $('#gridRimborsiAnnullabili').DataTable({
+                "pageLength": 5,
+                columns: [
+                { "orderable": false, className: "info-column" },
+                { "orderable": false },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                ],
+                order: [7, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $(function () {
+        setRimborsiAnnullabiliDataTable();
+    });
+
+    function selezionaTutto() {
+        var allPages = _rimborsiAnnullabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]').prop('checked', true);
+        return;
+    }
+
+    function deselezionaTutto() {
+        var allPages = _rimborsiAnnullabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]').prop('checked', false);
+        return;
+    }
+
+    $('#ddlUsers-menu a').on('click', function () {
+        $('#ddlUsers').html($(this).html() + '   <span class="caret"></span>');
+        $('#ddlUsers').attr('value', $(this).html());
+    });
+
+    function impostaUtente(utente) {
+        displayModalWaiter();
+        var _url = '@Url.Action("UtenteRimborsoAnn", "Rimborsi", new { Utente = "_utente_" })'.replace("_utente_", utente);
+        $("#annullaRimborsiTableContainer").load(_url, function () {
+            hideModalWaiter();
+            setRimborsiAnnullabiliDataTable();
+        });
+    }
+
+    function cancellaRimborsi(utente) {
+
+        var items = [];
+        var allPages = _rimborsiAnnullabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]:checked').each(function () {
+            var status = $(this).val();
+            items.push(status)
+        });
+
+        if (items.length == 0) {
+            notifyWarning("Nessuna riga selezionata..."); return false;
+        }
+
+        $('#confermaModifiche').modal('show');
+        $("#confMod").off().click(function () {
+            displayModalWaiter();
+
+            var _url;
+
+            _url = '@Url.Action("CancellaRimborsi", "Rimborsi")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    ClienteAnnoNumeroDocumento: items,
+                    Utente: utente,
+                }),
+                success: function (result) {
+                    notifySuccess("Cancellazione completata");
+                    window.location.reload();
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter();
+                    notifyWarning(error);
+                }
+            });
+        });
+    }
+
+</script>

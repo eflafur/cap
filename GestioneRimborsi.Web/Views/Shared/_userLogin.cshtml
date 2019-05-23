@@ -1,0 +1,95 @@
+﻿@using GruppoCap
+@using GruppoCap.Core
+
+@{
+    IUser _user = RevoRequest.CurrentUser;
+    String _userIcon = _user.IsPrivileged ? "user-secret" : "user";
+}
+
+<ul class="nav navbar-nav navbar-right application-user">
+    <li class="dropdown">
+        @*<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                <i class="fa fa-lg fa-@_userIcon"></i>
+                <span class="text-after-icon">@_user.DisplayText.ToTitleCase()</span>
+                <span class="caret text-after-icon"></span>
+            </a>*@
+        <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+            <span>ciao </span>
+            <span style="font-size: larger; margin-left: 6px; margin-right: 4px;">@_user.FirstName.ToTitleCase()</span>
+            <span class="caret text-after-icon"></span>
+        </a>
+        <ul class="dropdown-menu" role="menu">
+            @{
+                if (_user.HasPermissionOrIsPrivileged("GestioneRimborsi.Setup.Manage"))
+                {
+                    <li>
+                        <a href="@CommonUrls.AdministrationPanel" class="settings-item">
+                            <i class="fa fa-lg fa-fw fa-gear"></i>
+                            <span class="text-after-icon">Setup</span>
+                        </a>
+                    </li>
+                }
+            }
+            @{
+                if (_user.HasPermissionOrIsPrivileged("activity.manage"))
+                {
+                    <li>
+                        <a href="@CommonUrls.Activities">
+                            <i class="fa fa-lg fa-fw fa-bolt"></i>
+                            <span class="text-after-icon">Activity</span>
+                        </a>
+                    </li>
+                }
+
+                if (_user.HasPermissionOrIsPrivileged("security.manage"))
+                {
+                    <li>
+                        <a href="@CommonUrls.Permissions">
+                            <i class="fa fa-lg fa-fw fa-lock"></i>
+                            <span class="text-after-icon">Security</span>
+                        </a>
+                    </li>
+                }
+
+                if (_user.HasPermissionOrIsPrivileged("entity.user"))
+                {
+                    <li>
+                        <a href="@CommonUrls.Users">
+                            <i class="fa fa-lg fa-fw fa-users"></i>
+                            <span class="text-after-icon">Users</span>
+                        </a>
+                    </li>
+                }
+
+                if (_user.HasPermissionOrIsPrivileged("entity.capgrouping"))
+                {
+                    <li>
+                        <a href="@CommonUrls.Groupings">
+                            <i class="fa fa-lg fa-fw fa-sitemap"></i>
+                            <span class="text-after-icon">Groupings</span>
+                        </a>
+                    </li>
+                }
+                <li role="separator" class="divider"></li>
+                <li>
+                    <a href="@CommonUrls.ApplicationReferences">
+                        <i class="fa fa-lg fa-fw fa-question-circle"></i>
+                        <span class="text-after-icon">Informazioni su @Ambient.CurrentApplicationId</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@UrlFor.Guide">
+                        <i class="fa fa-lg fa-fw fa-book"></i>
+                        <span class="text-after-icon">Guida all'uso di @Ambient.CurrentApplicationId</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="@UrlFor.GuideGFS">
+                        <i class="fa fa-lg fa-fw fa-book"></i>
+                        <span class="text-after-icon">Guida all'uso Gestione fuori standard</span>
+                    </a>
+                </li>
+            }
+        </ul>
+    </li>
+</ul>

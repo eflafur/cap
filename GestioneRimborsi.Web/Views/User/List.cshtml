@@ -1,0 +1,141 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model ISubCollection<User>
+
+@{
+    ViewBag.Title = "User list";
+}
+
+<div class="row">
+
+    <div class="col-sm-12">
+
+        <div class="row grid-title">
+            <div class="col-sm-6">
+                <h1>
+                    Elenco utenti
+                </h1>
+            </div>
+            <div class="col-sm-6 text-right">
+                <button type="button" class="btn btn-default title-bar-entity-button" data-toggle="collapse" data-target="#collapseFilterPanel" aria-expanded="true" aria-controls="collapseFilterPanel">
+                    <i class="fa fa-lf fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <div id="collapseFilterPanel" class="panel panel-collapse collapse filter-panel" role="tabpanel" aria-labelledby="collapseFilterPanel">
+                    <div class="panel-body">
+                        <form role="form">
+                            <div class="row">
+                                <div class="col-sm-8">
+                                    <div class="form-group">
+                                        <label for="txtSearchTerm" class="control-label">User</label>
+                                        <input type="text" class="form-control" id="txtSearchTerm" placeholder="inserisci l'account da cercare'">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 text-right">
+                                    <button type="button" class="btn btn-default title-bar-entity-button" onclick="clearSearch();">
+                                        <i class="fa fa-lg fa-times"></i>
+                                        <span class="text-after-icon">Rimuovi filtro</span>
+                                    </button>
+                                    <button type="button" class="btn btn-primary title-bar-entity-button" onclick="search();">
+                                        <i id="iconSearch" class="fa fa-lg fa-search"></i>
+                                        <span class="text-after-icon">Filtra</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-sm-12" id="userTableContainer">
+
+                @Html.Partial("_list", Model)
+
+            </div>
+
+        </div>
+        
+    </div>
+
+</div>
+
+@section scripts {
+<script>
+
+    $("#txtSearchTerm").bind("keypress", function (e) { });
+
+    var _userTable;
+
+    function setUsersDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridUsers')) {
+            _userTable = $('#gridUsers').DataTable();
+        }
+        else {
+            _userTable = $('#gridUsers').DataTable({
+                columns: [
+                { "orderable": false, className: "info-column" }, // ICONs
+                null,
+                null,
+                null,
+                null
+                ],
+                order: [1, 'asc']
+            });
+        }
+
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+
+    $(function () {
+        // INIT ENHANCED DATAGRID (_list)
+        setUsersDataTable();
+    });
+
+    function clearSearch() {
+        var _url = "@CommonUrls.Users";
+        window.location.href = _url;
+    }
+
+    function search() {
+        var _url, _term;
+
+        try {
+            _term = $("#txtSearchTerm").val();
+            _url = "@CommonUrls.UserSearch("_term_")".replace('_term_', encodeURIComponent(_term));
+
+            if (_term.trim().length < 1) {
+                notifyWarning("Non ho capito cosa stai cercando...");
+                return false;
+            }
+
+            if (_term.trim().length < 3) {
+                notifyWarning("La stringa di ricerca è troppo corta. Deve essere di almeno tre caratteri.");
+                return false;
+            }
+
+            startSearchOperation('iconSearch');
+
+            $("#userTableContainer").load(_url, function () {
+                setUsersDataTable();
+            });
+        }
+        catch (err) {
+            notifyError();
+        }
+        finally {
+            endSearchOperation('iconSearch');
+        }
+    }
+
+</script>
+}

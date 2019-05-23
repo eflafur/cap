@@ -1,0 +1,45 @@
+﻿@model String
+
+@{
+    var modalId = "ModalWaiter" + Model;
+    var randomTextId = "randomText" + Model;
+    var modalIdHash = "#ModalWaiter" + Model;
+    var randomTextIdHash = "#randomText" + Model;
+}
+
+<div id="@modalId" class="modal fade bs-modal-sm apr-modal-container" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm apr-modal">
+        <div class="modal-content">
+            <i class="fa fa-5x fa-spin fa-spinner"></i>
+            <br />
+            <span id="@randomTextId">Operazione in corso</span>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('@modalIdHash').modal({ backdrop: 'static', keyboard: false, show: false });
+
+    function displayModalWaiter(id) {
+        $("#ModalWaiter" + (id || '')).modal({ backdrop: 'static', keyboard: false, show: true });
+    }
+
+    function hideModalWaiter(id) {
+        $("#ModalWaiter" + (id || '')).modal('hide');
+    }
+
+    $(function () {
+        var words = [
+            'Operazione in corso'
+        ];
+
+        var i = 0;
+        setInterval(function () {
+            $('@randomTextIdHash').fadeOut(1000, function () {
+                $(this).html(words[i = (i + 1) % words.length]).fadeIn(1000);
+            });
+        }, 8000);
+    });
+
+</script>

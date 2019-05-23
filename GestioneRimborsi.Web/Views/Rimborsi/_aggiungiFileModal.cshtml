@@ -1,0 +1,129 @@
+﻿@model GestioneRimborso
+
+@{
+    IRimborsoService _rimborsoService = (IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborso>();
+}
+
+<div class="modal fade text-left" id="aggiungiFileModal" tabindex="-1" role="dialog" aria-labelledby="aggiungiFileModalTitle" aria-hidden="true">
+    @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "aggiungiFile")
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="aggiungiFileModalTitle">
+                    <i class="fa fa-lg fa-upload"></i>
+                    <span class="text-after-icon">Aggiungi File</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <div class="col-md-4 mr-l mt-10">
+                                <input type="text" id="filename" readonly="readonly" class=" form-control">
+                                <input type="file" class="btn btn-lg mt-10 notdisplayed" id="filesInput" onchange="Handlechange();">
+                            </div>
+                            <div class="col-md-2 mt-10">
+                                <button id="fakeBrowse" type="button" onclick="HandleBrowseClick();" class="btn btn-function">
+                                    <i class=" fa fa-lg fa-folder-open-o">
+                                    </i>
+                                    <span class="text-after-icon">Sfoglia</span>
+                                </button>
+                            </div>
+                            <div class="col-sm-12 mt-10 mb-10">
+                                <div class="col-sm-12">
+                                    <label for="Note" class="control-label fontSizeMedium">Note</label>
+                                    <textarea type="text" class="form-control mb-10" id="txtFileDescriptions" rows="4" placeholder="Inserisci qui le note.." maxlength="225"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-lg btn-default" data-dismiss="modal" onclick="reset();">
+                    <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Annulla</span>
+                </button>
+                <button type="button" class="btn btn-lg btn-function" id="aggiungiFiles" value="Aggiungi File" onclick="aggiungiFiles('@Model.AnnoDocumento','@Model.NumeroDocumento', '@ViewData["Utente"].ToString()');">
+                    <span>Salva</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function aggiungiFiles(annoDoc, NumDoc, Utente) {
+
+        var fileDescriptions = $("#txtFileDescriptions").val();
+
+        displayModalWaiter("aggiungiFile");
+        var xhre = new XMLHttpRequest();
+        var fdata = new FormData();
+        fdata.append("file", document.getElementById('filesInput').files[0]);
+        fdata.append('NumeroDocumento', NumDoc);
+        fdata.append('AnnoDocumento', annoDoc);
+        fdata.append('FileDescription', fileDescriptions);
+        fdata.append('Utente', Utente);
+        xhre.open("POST", "/Rimborsi/AggiungiFile/", true);
+        xhre.send(fdata);
+        var results;
+
+        xhre.onreadystatechange = function () {
+            var content = xhre.responseText;
+            if (content != undefined && content != null && content != '' && content != results) {
+                //notifyInfo(content);
+            }
+            results = xhre.responseText;
+        }
+
+        if (document.getElementById('filesInput').files[0] != null) {
+            var _url;
+            _url = '@Url.Action("ElencoFileRimborso", "Rimborsi")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    AnnoDocumento: annoDoc,
+                    NumeroDocumento: NumDoc,
+                }),
+                success: function (result) {
+                    $("#gridDocAllegatiTableContainer").html(result);
+                    setDocRimbDataTable();
+                    hideModalWaiter("aggiungiFile");
+                    notifyInfo(results);
+                    $('#aggiungiFileModal').modal('hide');
+                    reset();
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("aggiungiFile");
+                    notifyWarning(error);
+                }
+            });
+        }
+        else { hideModalWaiter("aggiungiFile"); notifyWarning("Nessun file selezionato"); }
+    }
+
+    function reset() {
+        $("#txtFileDescriptions").val('');
+        var file = document.getElementById("filesInput");
+        file.value = file.defaultValue;
+        var textinput = document.getElementById("filename");
+        textinput.value = file.defaultValue;
+    }
+
+    function HandleBrowseClick() {
+        var fileinput = document.getElementById("filesInput");
+        fileinput.click();
+    }
+
+    function Handlechange() {
+        var fileinput = document.getElementById("filesInput");
+        var textinput = document.getElementById("filename");
+        textinput.value = fileinput.value.replace("fakepath", "..");
+    }
+
+</script>

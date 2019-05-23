@@ -1,0 +1,30 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model ISubCollection<User>
+
+<div class="list-group">
+    @{
+        foreach (User _u in Model.Items)
+        {
+            String _cssClass = _u.IsActive ? String.Empty : "text-danger";
+            String _icon = _u.IsPrivileged ? "user-secret" : "user";
+            
+            <a href="@CommonUrls.UserDetail(_u.UserId)" class="list-group-item">
+                <div class="row">
+                    <div class="col-sm-2 text-center">
+                        <i class="fa fa-2x fa-fw fa-@_icon @_cssClass" style="margin-top: 4px;"></i>
+                    </div>
+                    <div class="col-sm-10">
+                        <h4 class="list-group-item-heading">@_u.UserId</h4>
+                        <p class="list-group-item-text">
+                            @_u.DisplayText.Truncate(36, true)
+                        </p>
+                    </div>
+                </div>
+                
+            </a>
+        }
+    }
+</div>

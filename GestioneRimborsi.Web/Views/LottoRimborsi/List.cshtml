@@ -1,0 +1,127 @@
+﻿@model List<string>
+
+@{
+    ViewBag.Title = "Gestione Rimborsi";
+
+    if (!CurrentUser.HasPermissionOrIsPrivileged("gri.disposizioni"))
+    {
+        Response.Redirect(CommonUrls.BaseUrl);
+    }
+}
+
+<div class="space-container">
+    <div class="row paddingTop15">
+        <div class="col-sm-12 space-container">
+            <h2 class="mr-l">
+                @CommonSnippets.IconLinkToHomepage
+                /
+                <i class="fa fa-credit-card"></i>
+                <span class="text-after-icon">Gestione disposizioni</span>
+            </h2>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 space-container">
+            <div class="col-sm-2">
+                @Html.Partial("_leftMenu", "GestioneDisposizioni")
+            </div>
+            <div class="col-sm-10">
+                <div class="panel">
+                    <div class="row" id="panelLottoRimborsi">
+                        @Html.Partial("~/views/shared/_modalWaiter.cshtml")
+
+                        <div class="text-center" id="rowFilter">
+                            <div class="btn-group mt-10" role="group">
+                                <div class="btn-group" role="group">
+                                    @{
+                                        var _caret = "";
+                                        var _caretVal = "";
+                                        //if (RevoContext.IdentityManager.CurrentUser.HasPermission("GestioneRimborsi.GestionePermessi.ImpersonificaUtente"))
+                                        if (!RevoContext.IdentityManager.CurrentUser.HasPermission("gri.disposizioni.scegliUtenti"))
+                                        {
+                                            if (Model.Contains(RevoRequest.CurrentUser.UserId))
+                                            {
+                                                _caret = RevoRequest.CurrentUser.UserId;
+                                                _caretVal = _caret;
+                                            }
+                                            else
+                                            {
+                                                _caret = "Seleziona un utente  ";
+                                                _caretVal = "";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            _caret = RevoRequest.CurrentUser.UserId;
+                                            _caretVal = _caret;
+                                        }
+                                    }
+                                    <button type="button" class="btn btn-default dropdown-toggle" id="ddlUsers"
+                                            data-toggle="dropdown" value="@_caretVal">
+                                        @_caret
+                                        <span class="caret"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" id="ddlUsers-list">
+                                        @foreach (var x in Model)
+                                        {
+                                            <li><a href="#">@x.ToString()</a></li>
+                                        }
+                                    </ul>
+                                </div>
+                                <a class="btn btn-default" id="btnSearch" onclick="LoadInnerList()">
+                                    <i class="fa fa-lg fa-search"></i>
+                                    <span class="text-after-icon">Cerca</span>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="breath-on-top-20 col-sm-12 container-information" id="rimborsiTableContainer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts {
+
+    <script>
+
+        $(".application-title").text("Gestione Rimborsi");
+
+        function LoadInnerList() {
+            displayModalWaiter();
+
+            if ($('#ddlUsers').attr('value') != '') {
+                _innerListUrl = '@UrlFor.LottoRimborsi_InnerList()' + $('#ddlUsers').attr('value') + '/';
+            }
+            else {
+                _innerListUrl = '@UrlFor.LottoRimborsi_InnerList()';
+            }
+            $("#rimborsiTableContainer").load(_innerListUrl, function () {
+                hideModalWaiter();
+            });
+        }
+
+        $(function () {
+            @{
+                //if (!RevoContext.IdentityManager.CurrentUser.HasPermission("GestioneRimborsi.GestionePermessi.ImpersonificaUtente"))
+                if (!RevoContext.IdentityManager.CurrentUser.HasPermission("gri.disposizioni.scegliUtenti"))
+                {
+                    @:$('#rowFilter').hide();
+                                                                                                                                                                                }
+             }
+            $('#btnSearch').addClass('disabled');
+            LoadInnerList()
+        });
+
+        $('#ddlUsers-list a').on('click', function () {
+            $('#ddlUsers').html($(this).html() + '   <span class="caret"></span>');
+            $('#ddlUsers').attr('value', $(this).html());
+            $('#btnSearch').removeClass('disabled');
+        })
+
+    </script>
+}

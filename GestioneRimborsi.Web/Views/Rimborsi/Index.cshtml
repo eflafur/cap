@@ -1,0 +1,211 @@
+﻿@{
+    ViewBag.Title = "Index";
+
+    if (!CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi"))
+    {
+        if (CurrentUser.HasPermissionOrIsPrivileged("gri.disposizioni"))
+        {
+            Response.Redirect(CommonUrls.BaseUrl + "/LottoRimborsi/GestioneDisposizioni");
+        }
+        else { Response.Redirect(CommonUrls.BaseUrl); }
+    }
+}
+
+<div class="space-container">
+    <div class="row paddingTop15">
+        <div class="col-sm-12 space-container">
+            @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "")
+            @Html.Partial("~/views/rimborsi/_cercaClienteModal.cshtml")
+            @Html.Partial("~/views/rimborsi/_schedaClienteModal.cshtml", "")
+            @Html.Partial("~/views/Rimborsi/_confermaModificheModal.cshtml", "Confermare il cambiamento dell'IBAN del conto corrente di appoggio del cliente?")
+            <h2 class="mr-l">
+                @CommonSnippets.IconLinkToHomepage
+                /
+                <i class="fa fa-list"></i>
+                <span class="text-after-icon">Gestione Rimborsi</span>
+            </h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 space-container">
+            <div class="col-sm-2">
+                @Html.Partial("_leftMenu", "CercaRimborsi")
+            </div>
+            <div class="col-sm-10">
+                <div class="panel">
+                    <div class="row">
+                        <div class="panel-heading mr-l">
+                            <h4>Cerca rimborsi</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="input-group col-sm-4">
+                                <input type="text" class="form-control mr-l" id="txtSearchTerm" placeholder="Codice Cliente">
+                                <div class="input-group-btn">
+                                    <button type="button" class="btn btn-function " title="Cerca cliente" data-toggle="modal" data-target="#cercaClienteModal" id="btnSearch">
+                                        <i id="iconSearch" class="fa fa-lg fa-ellipsis-h"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-12" id="dettaglioClienteContainer">
+                            </div>
+
+                            @if (CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi"))
+                            {
+                                <div class="col-sm-12">
+                                    <div class="col-sm-12 container-information bg-w" id="rimborsiTableContainer">
+                                        @Html.Raw(HtmlSnippets.Alert.Info("Nessun rimborso da visualizzare..."))
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(".application-title").text("Gestione Rimborsi");
+
+    $(document).ready(function () {
+        activaTab('gestRimb');
+    });
+
+    function activaTab(tab) {
+        $('.menu-tabs a[href="#' + tab + '"]').tab('show');
+    };
+
+    function startSearch(e) {
+        if (e.target.length >= 9 || e.keyCode == 13) {
+            ricercaEsatta();
+            return false;
+        }
+    }
+
+    var queue = 0;
+    var enterPressed = false;
+
+    $("#txtSearchTerm").bind("keyup", function (e) {
+        if (e.keyCode == 8 || e.keyCode == 46) {
+            if ($(this).val().length < 10) {
+                $("#gridRimborsiConfermati").DataTable().clear().draw();
+                $("#lblNominativo").empty();
+            }
+            else {
+                doSearch(e);
+            }
+        }
+    });
+
+    $("#txtSearchTerm").bind("keypress", function (e) {
+        setTimeout(function () { doSearch(e); }, 10);
+    });
+
+    function doSearch(e) {
+        if (e.keyCode == 13) {
+            if (enterPressed) {
+                return;
+            }
+            enterPressed = true;
+            setTimeout(function () {
+                enterPressed = false;
+            }, 1000);
+        }
+        if (queue == 0) {
+            queue = 1;
+            if (e.keyCode == 13 && e.target.value.length < 10) {
+                $("#btnSearch").click();
+            }
+            else if (e.target.value.length >= 10) {
+                ricercaEsatta(e.target.value);
+            }
+            setTimeout(function () { queue = 0; }, 100);
+        }
+    }
+
+    $("#txtSearchTerm").bind("paste", function (e) {
+        if (queue == 0) {
+            queue = 1;
+            setTimeout(function () {
+                var pastedData = e.target.value
+                if (pastedData.length >= 10)
+                    ricercaEsatta(pastedData);
+                setTimeout(function () { queue = 0; }, 100);
+            }, 150);
+        }
+    });
+
+    function ricercaEsatta(_term) {
+
+        var _url;
+        var _user;
+        var _perm;
+
+        _user = $('#ddlUsers').val();
+        if (_term.trim().length < 1) {
+            notifyWarning("Ricerca non valida...");
+            return false;
+        }
+        displayModalWaiter();        
+        $('#iconIBAN').popover('hide');
+
+        if (_user == '' || _user == undefined) {
+            _user = '@RevoRequest.CurrentUser.UserId';
+        }
+
+        var _url2 = "@UrlFor.RimborsiSearch("_term_", "_user_")".replace('_term_', encodeURIComponent(_term)).replace("_user_", encodeURIComponent(_user));
+
+        $.ajax({
+            url: _url2,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+            }),
+            success: function (result) {
+                displayModalWaiter();
+                $("#rimborsiTableContainer").html(result);
+                setRimborsiDataTable();
+                setTimeout(function () { hideModalWaiter(); }, 500);
+            },
+            error: function (request, status, error) {
+                notifyWarning(error);
+                setTimeout(function () { hideModalWaiter(); }, 500);
+            }
+        });
+
+        var _url = "@UrlFor.ClienteSearch("_term_")".replace('_term_', encodeURIComponent(_term));
+
+        $("#dettaglioClienteContainer").load(_url, function () {
+        });
+    }
+
+    $('#ddlUsers-menu a').on('click', function () {
+        $('#ddlUsers').html($(this).html() + '   <span class="caret"></span>');
+        $('#ddlUsers').attr('value', $(this).html());
+    });
+
+    function impostaUtente(utente) {
+        displayModalWaiter();
+        var _term = $("#txtSearchTerm").val();
+        if ((_term.trim().length < 10 || _term.trim().length > 10) && _term.trim().length != 0) {
+            notifyWarning("Inserisci un codice cliente valido...");
+            hideModalWaiter();
+            return false;
+        }
+        var _url2 = "@UrlFor.RimborsiSearch("_term_", "_user_")".replace('_term_', encodeURIComponent(_term)).replace("_user_", encodeURIComponent(utente));
+        $("#rimborsiTableContainer").load(_url2, function () {
+            setRimborsiDataTable();
+        });
+
+        var _url = "@UrlFor.ClienteSearch("_term_")".replace('_term_', encodeURIComponent(_term));
+        $("#dettaglioClienteContainer").load(_url, function () {
+            hideModalWaiter();
+        });
+    }
+
+</script>
+
+
+

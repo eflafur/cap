@@ -1,0 +1,24 @@
+﻿@model String
+
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+
+    var contratti = _fuoriStandardService.GetContrattoByCliente("-1");
+
+    if (Model != "-1")
+    {
+        contratti = _fuoriStandardService.GetContrattoByCliente(Model);
+    }
+}
+
+<label for="CodiceContratto" class="control-label">Codice contratto*</label>
+<select class="form-control selectCaret" id="contratti" name="contratti" disabled:false onchange="filtraPUF();">
+    <option id="all" value="-1">-- Seleziona un contratto --</option>
+    @if (Model != "-1")
+    {
+        foreach (var item in contratti.Items)
+        {
+            <option value="@item.ToString()">@item.ToString()</option>
+        }
+    }
+</select>

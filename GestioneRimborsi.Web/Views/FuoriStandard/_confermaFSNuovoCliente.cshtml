@@ -1,0 +1,45 @@
+﻿@model String
+
+<div class="modal fade text-left" id="confermaFSNuovoCliente" tabindex="-1" role="dialog" aria-labelledby="confermaFSNuovoClienteTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+
+        <div class="modal-content" id="modalConfermaNuovoCliente">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="dismissModalConf();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="confermaFSNuovoClienteModal">
+                    <i class="fa fa-exclamation-triangle text-danger"></i>
+                    <span class="text-after-icon">Conferma</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="col-md-8 col-md-offset-2">
+                            <h2 class="text-danger lead">Attenzione</h2>
+                            <p class="lead">@Model<br /></p>                            
+                        </div>
+                        <div class="modal-footer col-md-12">
+                            <button type="button" class="btn btn-lg btn-default" onclick="dismissModalConf();">
+                                <i class=" fa fa-lg fa-arrow-circle-o-left">
+                                </i><span class="text-after-icon">Annulla</span>
+                            </button>
+                            <button type="button" id="confNuovoCliente" class="btn btn-lg btn-function" onclick="dismissModalConf();">
+                                <span>OK</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('#confermaFSNuovoCliente').modal({ backdrop: 'static', keyboard: true, show: false });
+
+    function dismissModalConf() {
+        $('#confermaFSNuovoCliente').modal('hide');
+    }
+
+</script>

@@ -1,0 +1,17 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    Layout = "~/Views/Shared/_LayoutWithoutLogin.cshtml";
+    ViewBag.Title = "Errore!";
+}
+
+<div class="jumbotron alert-danger text-center">
+    <h1>
+        <span class="fa-stack">
+            <i class="fa fa-bug fa-stack-1x text-info"></i>
+            <i class="fa fa-circle-thin fa-stack-2x"></i>
+        </span>
+    </h1>
+    <p class="breath-on-top-32"><strong>Oooops!</strong></p>
+    <p>Entità non trovata!</p>
+</div>

@@ -1,0 +1,156 @@
+﻿
+$(document).ready(function () {
+    //    $.ajaxSetup({cache:false});
+    $("#brand").text("Clienti CV");
+    displayOff();
+
+    $("#btnUploadFile").click(function () {
+        GetData();
+    });
+
+    $("#tbf1").on('click', '#btn', function () {
+        var lt = $(this).parents("tr").find("td:eq(1)").text();
+        $(this).parents("tr").find("td:eq(1)").html('<a href="#">' + lt + '</a>');
+        $(this).parents("tr").find("td:eq(5)").html('<button class="btn-success btn-sm" ></button>');
+        GetUser(lt);
+    });
+
+    $("#tbf1").on('click', 'a', function () {
+        var lt = $(this).text();
+        GetLotto(lt);
+    });
+
+    $("#tbf2").on('click', 'a', function () {
+        var lt = $(this).text();
+        GetUser(lt);
+    });
+
+});
+
+function displayOff() {
+    $("#tbf1").hide();
+    $("#tbf2").hide();
+    $("#tbf3").hide();
+    $("#btnValidateLot").hide();
+    $("#btn3").hide();
+}
+
+function GetData() {
+    var label = "";
+    $.post(
+        "GetLotto",
+        { lotto: $("#lotto option:selected").val() },
+        function (res) {
+            var x = 0;
+
+            $.each(res, function (index, value) {
+                x++;
+                label = label + '<tr>';
+                label = label + '<td>' + x + '</td>';
+                label = label + '<td>' + value.Settore + '</td>';
+                label = label + '<td>' + value.User + '</td>';
+                label = label + '<td>' + value.Leader + '</td>';
+                label = label + '<td>' + value.Inpiegati + '</td>';
+                if (value.Check === false)
+                    label = label + '<td><button class="btn-danger btn-sm" id="btn" value="' + x + '"></button></td>';
+                else
+                    label = label + '<td><button class="btn-success btn-sm" id="btn" value="' + x + '"></button></td>';
+                label = label + '</tr>';
+            });
+            $("#tbf1").show();
+            $("#tb61").html(label);
+        });
+    return;
+};
+
+function GetCheched() {
+    var dic = {};
+    var ar = [];
+    var lsck = [];
+    var lsck1 = [];
+    var xx = 0;
+
+    $("#tb61 tr").each(function () {
+        if ($(this).find('input[type="checkbox"]').is(':checked')) {
+            r = $(this).find("td:eq(1)").text();
+            $(this).find("td:eq(1)").html('<a href="#">' + r + '</a>');
+            $(this).find("td:eq(5)").html('<button class="btn-success btn-sm" ></button>');
+            lsck.push($(this).find("td:eq(1)").text());
+            ar.push($(this));
+        }
+        else
+            t = 1;
+    });
+    dic["chk"] = ar;
+    if (xx > 0) {
+        $("#tb61 tr").each(function () {
+            r = $(this).find("td:eq(1)").text();
+        });
+        dic["tr"] = r;
+    }
+    else {
+        $("input:checkbox:not(:checked)").each(function (index) {
+            x = index;
+            lsck1[x] = $(this).val();
+        });
+    }
+    Validate(lsck);
+    return ar;
+}
+
+function ParseTable(tb) {
+
+    $("#tb61").empty();
+    $("#tb61").html(tb);
+    $("#tbf1").show();
+}
+
+function Validate(lotti) {
+    $.post(
+        "SgateValidate",
+        { lt: lotti },
+        function (res) {
+        });
+}
+
+function GetLotto(lotto) {
+    var label = "";
+    $.post(
+        "SgateLotti",
+        { lt: lotto },
+        function (res) {
+            $.each(res, function (index, value) {
+                label = label + '<tr>';
+                label = label + '<td><a href="#">' + value.LeaderName + '</a></td>';
+                label = label + '<td>' + value.UserName + '</td>';
+                label = label + '<td>' + value.Role + '</td>';
+                label = label + '<td>' + value.Office + '</td>';
+                label = label + '<td>' + value.Fund + '</td>';
+                label = label + '</tr>';
+            });
+            $("#tbf1").hide();
+            $("#tbf2").show();
+            $("#tb62").html(label);
+        });
+}
+
+function GetUser(lotto) {
+    var label = "";
+    $.post(
+        "SgateUser",
+        { lt: lotto },
+        function (res) {
+            label = label + '<tr>';
+            label = label + '<td>' + res.LeaderName + '</td>';
+            label = label + '<td>' + res.Office + '</td>';
+            label = label + '<td>' + res.Role + '</td>';
+            label = label + '<td>' + res.LeaderId + '</td>';
+            label = label + '</tr>';
+            $("#tbf1").hide();
+            $("#tbf2").hide();
+            $("#tbf3").show();
+            $("#tb63").html(label);
+        });
+}
+
+

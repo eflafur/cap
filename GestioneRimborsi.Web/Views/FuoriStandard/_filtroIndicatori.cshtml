@@ -1,0 +1,229 @@
+﻿@model GestioneRimborsi.Web.Models.IndicatoriModel
+
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+
+    var totaleStandard = _fuoriStandardService.GetTipologieDesc(_fuoriStandardService.GetTipologieByGrouping(RevoRequest.CurrentUser.GroupingCodes.ToList<String>()));
+    String _userGroupId = String.Empty;
+    Object _o = RevoContext.PermissionManager.GetFirstPermissionGroupIdForUser(RevoRequest.CurrentUser.UserId);
+    if (_o != null) { _userGroupId = _o.ToString(); }
+    string pemString = (RevoContext.PermissionManager.GetPermissionGroup(_userGroupId) != null ? RevoContext.PermissionManager.GetPermissionGroup(_userGroupId).DisplayText : "");
+    bool isProcessOwner = (pemString == "FS - Process Owner" ? true : false);
+    Dictionary<string, int> countFS = new Dictionary<string, int>();
+    Dictionary<string, int> countFSAppr = new Dictionary<string, int>();
+
+    List<String> _groups = new List<String>();
+    List<String> listaGruppi = new List<String>();
+    bool check = false;
+    if (Model.Indicatore_Id == "-1" || Model.Indicatore_Id == "")
+    {
+        Model.Indicatore_Id = "n/a";
+    }
+
+    if (Model.Indicatore_Id != "-1" && Model.Indicatore_Id != "")
+    {
+        //_groups.Add(Model.Indicatore_Id);
+        if (Model.Indicatore_Id == "n/a")
+        {
+            _groups = _fuoriStandardService.GetTipologieByGrouping(RevoRequest.CurrentUser.GroupingCodes.ToList<String>());
+        }
+        else { _groups.Add(Model.Indicatore_Id); }
+        try
+        {
+            if (Model.view == "RecuperoFS") { countFS = _fuoriStandardService.GetIndicatoriNonIndennizzabili(_groups); }
+            else if (Model.view == "StoricoFS") { countFS = _fuoriStandardService.GetIndicatoreByGroups(_groups); }
+            else if (Model.view == "ValidazioneFS") { countFS = _fuoriStandardService.GetIndicatoriValidazione(_groups); }
+            else if (Model.view == "RettificheFS") { countFS = _fuoriStandardService.GetIndicatoriForRettifiche(_groups); }
+            else if (Model.view == "ApprovazioneFS")
+            {
+                countFS = _fuoriStandardService.GetIndicatoriForApprover(_groups, isProcessOwner);
+                if (countFS.Count == 0)
+                {
+                    countFSAppr = _fuoriStandardService.GetIndicatoreByGroup(Model.Indicatore_Id);
+                    foreach (var itm in countFSAppr)
+                    {
+                        countFS.Add(itm.Key, 0);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            countFS = new Dictionary<string, int>();
+        }
+
+        List<String> idStandard = new List<string>();
+        if (Model.Indicatore_Id != "n/a")
+        {
+            foreach (var item in countFS.Keys)
+            {
+                idStandard.Add(item);
+            }
+            if (Model.view == "RettificheFS" || Model.view == "StoricoFS")
+            {
+                foreach (var item in totaleStandard.Items)
+                {
+                    foreach (var itm in idStandard)
+                    {
+                        if (itm == item.IDStandard.ToString())
+                        {
+                            check = true;
+                        }
+                    }
+                    if (check == false)
+                    {
+                        idStandard.Add(item.IDStandard.ToString());
+                    }
+                    check = false;
+                }
+            }
+            totaleStandard = _fuoriStandardService.GetIndicatoreByIds(idStandard);
+        }
+        else
+        {
+            //foreach (var item in totaleStandard.Items)
+            //{
+            //    idStandard.Add(item.IDStandard.ToString());
+            //}
+            //totaleStandard = _fuoriStandardService.GetIndicatoreByIds(idStandard);
+            foreach (var item in countFS.Keys)
+            {
+                idStandard.Add(item);
+            }
+            if (Model.view == "RettificheFS" || Model.view == "StoricoFS")
+            {
+                foreach (var item in totaleStandard.Items)
+                {
+                    foreach (var itm in idStandard)
+                    {
+                        if (itm == item.IDStandard.ToString())
+                        {
+                            check = true;
+                        }
+                    }
+                    if (check == false)
+                    {
+                        idStandard.Add(item.IDStandard.ToString());
+                    }
+                    check = false;
+                }
+            }
+            totaleStandard = _fuoriStandardService.GetIndicatoreByIds(idStandard);
+        }
+    }
+    else
+    {
+        var totaleGruppi = _fuoriStandardService.GetTipologieByGrouping(RevoRequest.CurrentUser.GroupingCodes.ToList<String>());
+        Dictionary<string, int> tmp = new Dictionary<string, int>();
+        Dictionary<string, int> _ind = new Dictionary<string, int>();
+        try
+        {
+            if (Model.view == "RecuperoFS") { tmp = _fuoriStandardService.GetIndicatoriNonIndennizzabili(totaleGruppi); }
+            else if (Model.view == "StoricoFS") { tmp = _fuoriStandardService.GetIndicatoreByGroups(totaleGruppi); }
+            else if (Model.view == "ValidazioneFS") { tmp = _fuoriStandardService.GetIndicatoriValidazione(totaleGruppi); }
+            else if (Model.view == "RettificheFS") { tmp = _fuoriStandardService.GetIndicatoriForRettifiche(totaleGruppi); }
+            else if (Model.view == "ApprovazioneFS")
+            {
+                tmp = _fuoriStandardService.GetIndicatoriForApprover(totaleGruppi, isProcessOwner);
+                if (tmp.Count == 0)
+                {
+                    _ind = _fuoriStandardService.GetIndicatoreByGroups(totaleGruppi);
+                    foreach (var item in _ind.Keys)
+                    {
+                        listaGruppi.Add(item);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            tmp = new Dictionary<string, int>();
+        }
+        foreach (var val in tmp)
+        {
+            if (!countFS.ContainsKey(val.Key))
+            {
+                countFS.Add(val.Key, val.Value);
+            }
+            else if (countFS.Where(y => y.Key == val.Key).Select(x => x.Value).FirstOrDefault() == 0)
+            {
+                countFS.Remove(val.Key);
+                countFS.Add(val.Key, val.Value);
+            }
+        }
+
+        foreach (var val in listaGruppi)
+        {
+            if (!countFS.ContainsKey(val))
+            {
+                countFS.Add(val, 0);
+            }
+        }
+        listaGruppi.Clear();
+    }
+}
+
+<div class="col-sm-5 text-right">
+    <label for="contain">Indicatore Standard</label>
+</div>
+<div class="col-sm-7">
+    <select class="form-control selectCaret" id="Indicatore" name="Indicatore">
+        <option value="" selected>-- Seleziona un indicatore standard --</option>
+        @{
+            if (totaleStandard != null)
+            {
+                List<String> optGroups = new List<String>();
+                var prev = "";
+                var current = "";
+                foreach (var item in totaleStandard.Items)
+                {
+                    current = item.DescStandard;
+                    if (current != prev && item.TipoStandard != "Generale")
+                    {
+                        optGroups.Add(current);
+                        prev = item.DescStandard;
+                    }
+                    else if (current != prev && item.TipoStandard != "Specifico" && Model.view != "RecuperoFS" /*&& Model.Indicatore_Id != "-1"*/)
+                    {
+                        optGroups.Add(current);
+                        prev = item.DescStandard;
+                    }
+                }
+                foreach (var item in optGroups)
+                {
+                    <optgroup label="@item.ToString():">
+                        @foreach (var itm in totaleStandard.Items.OrderBy(x=>x.CodicePrestazione))
+                        {
+                            var valore = 0;
+                            foreach (var val in countFS)
+                            {
+                                if (val.Key == itm.IDStandard.ToString())
+                                {
+                                    valore = val.Value;
+                                }
+                            }
+                            if (item.ToString() == itm.DescStandard && (Model.view == "RecuperoFS" || Model.view == "ApprovazioneFS") /*&& itm.TipoStandard != "Generale"*/)
+                            {
+                                if (String.IsNullOrEmpty(itm.CodicePrestazione))
+                                {
+                                    <option value="@itm.IDStandard" data-bind="@itm.UnitaMisura" data-content="@itm.ValStandard">@itm.DescStandard @(valore != 0 ? "(" + valore + ")" : "")</option> }
+                                else
+                                {
+                                    <option value="@itm.IDStandard" data-bind="@itm.UnitaMisura" data-content="@itm.ValStandard">Codice Prestazione: @itm.CodicePrestazione @(valore != 0 ? "(" + valore + ")" : "")</option> }
+                            }
+                            else if (item.ToString() == itm.DescStandard /*&& itm.TipoStandard == "Generale" && Model.view != "RecuperoFS"*/ /*&& Model.Indicatore_Id != "-1"*/)
+                            {
+                                if (String.IsNullOrEmpty(itm.CodicePrestazione))
+                                {
+                                    <option value="@itm.IDStandard" data-bind="@itm.UnitaMisura" data-content="@itm.ValStandard">@itm.DescStandard @(valore != 0 ? "(" + valore + " da validare)" : "")</option> }
+                                else
+                                {
+                                    <option value="@itm.IDStandard" data-bind="@itm.UnitaMisura" data-content="@itm.ValStandard">Codice Prestazione: @itm.CodicePrestazione @(valore != 0 ? "(" + valore + " da validare)" : "")</option> }
+                            }
+                        }
+                    </optgroup>
+                }
+            }
+        }
+    </select>
+</div>
