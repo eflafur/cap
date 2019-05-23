@@ -1,0 +1,15 @@
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\GruppoCap.DAL.Oracle.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\GruppoCap.Core.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\GruppoCap.Utils.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\Oracle.ManagedDataAccess.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\Castle.Windsor.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\FastMember.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\DocumentFormat.OpenXml.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\Castle.Core.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\System.IO.Packaging.dll
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\Castle.Windsor.xml
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\FastMember.pdb
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\FastMember.xml
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\bin\RF_PROD\Castle.Core.xml
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\obj\RF_PROD\GruppoCap.DAL.Oracle.csprojResolveAssemblyReference.cache
+C:\Progetti\Revolution\GruppoCap.DAL.Oracle\obj\RF_PROD\GruppoCap.DAL.Oracle.dll

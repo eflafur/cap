@@ -1,0 +1,4 @@
+C:\Progetti\Revolution\GruppoCap.Utils\bin\Release\GruppoCap.Utils.dll
+C:\Progetti\Revolution\GruppoCap.Utils\bin\Release\GruppoCap.Utils.pdb
+C:\Progetti\Revolution\GruppoCap.Utils\obj\Release\GruppoCap.Utils.dll
+C:\Progetti\Revolution\GruppoCap.Utils\obj\Release\GruppoCap.Utils.pdb

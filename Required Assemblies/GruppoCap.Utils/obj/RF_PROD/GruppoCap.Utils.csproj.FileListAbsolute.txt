@@ -1,0 +1,3 @@
+C:\Progetti\Revolution\GruppoCap.Utils\bin\RF_PROD\GruppoCap.Utils.dll
+C:\Progetti\Revolution\GruppoCap.Utils\obj\RF_PROD\GruppoCap.Utils.dll
+C:\Progetti\Revolution\GruppoCap.Utils\obj\RF_PROD\GruppoCap.Utils.csprojResolveAssemblyReference.cache
