@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C87A3DD2-26AF-4784-8850-92AC402903F7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GruppoCap.Core</RootNamespace>
+    <AssemblyName>GruppoCap.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\Solutions\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RF_TEST|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\RF_TEST\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'RF_PROD|AnyCPU'">
+    <OutputPath>bin\RF_PROD\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Castle.Core, Version=3.3.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\Castle.Core.3.3.3\lib\net45\Castle.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Castle.Windsor">
+      <HintPath>..\Solutions\packages\Castle.Windsor.3.3.0\lib\net45\Castle.Windsor.dll</HintPath>
+    </Reference>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\OpenXMLSDK-MOT.2.6.0.0\lib\DocumentFormat.OpenXml.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="FastMember, Version=1.0.0.9, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\FastMember.1.0.0.11\lib\net40\FastMember.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OpenXmlPowerTools, Version=4.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\OpenXmlPowerTools.4.2\lib\OpenXmlPowerTools.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.IO.Packaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\OpenXMLSDK-MOT.2.6.0.0\lib\System.IO.Packaging.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\Solutions\packages\System.Management.Automation.6.1.7601.17515\lib\net45\System.Management.Automation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Ambient.cs" />
+    <Compile Include="Data\OperationResults\BulkInsertOperationResult.cs" />
+    <Compile Include="Caching\CachingUtils.cs" />
+    <Compile Include="Caching\ICache.cs" />
+    <Compile Include="Caching\Impl\BasicWebCache.cs" />
+    <Compile Include="Caching\Impl\InMemoryCache.cs" />
+    <Compile Include="CastleWindsorGenericTypeResolver.cs" />
+    <Compile Include="Data\Collection\SubCollectionExtensions.cs" />
+    <Compile Include="Data\Collection\ISubCollection.cs" />
+    <Compile Include="Data\Collection\ISubCollectionInfo.cs" />
+    <Compile Include="Data\Collection\SubCollection.cs" />
+    <Compile Include="Data\Collection\SubCollectionInfo.cs" />
+    <Compile Include="Data\IRepository.cs" />
+    <Compile Include="Data\OperationResults\DeleteOperationResult.cs" />
+    <Compile Include="Data\OperationResults\InsertOperationResult.cs" />
+    <Compile Include="Data\OperationResults\IOperationResult.cs" />
+    <Compile Include="Data\OperationResults\OperationResult.cs" />
+    <Compile Include="Data\OperationResults\UpdateOperationResult.cs" />
+    <Compile Include="Data\XlsxExport\xlsxGenerator.cs" />
+    <Compile Include="Entities\ActivityVerb.cs" />
+    <Compile Include="Entities\Company.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Entities\IActivity.cs" />
+    <Compile Include="Entities\ICapGrouping.cs" />
+    <Compile Include="Entities\IApplication.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Entities\IEntity.cs" />
+    <Compile Include="Entities\IPermission.cs" />
+    <Compile Include="Entities\IPermissionGroup.cs" />
+    <Compile Include="Entities\IOrderableEntity.cs" />
+    <Compile Include="Entities\ITrackedEntity.cs" />
+    <Compile Include="Entities\ICredential.cs" />
+    <Compile Include="Entities\IUser.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="IAmbient.cs" />
+    <Compile Include="Interfaces\IGenericTypeResolver.cs" />
+    <Compile Include="Interfaces\IRevoService.cs" />
+    <Compile Include="Interfaces\IRevoContext.cs" />
+    <Compile Include="Interfaces\IRevoServiceProvider.cs" />
+    <Compile Include="Interfaces\IRevoWebRequest.cs" />
+    <Compile Include="Logging\Base\LoggerBase.cs" />
+    <Compile Include="Logging\Common\DummyLogger.cs" />
+    <Compile Include="Logging\Common\EventLogger.cs" />
+    <Compile Include="Logging\Common\LoggerScope.cs" />
+    <Compile Include="Logging\Common\MultiLogger.cs" />
+    <Compile Include="Logging\ILogger.cs" />
+    <Compile Include="Logging\ILoggerScope.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
+    <Compile Include="Mail\IMailSender.cs" />
+    <Compile Include="Mail\SmtpMailSender.cs" />
+    <Compile Include="Managers\IActivityManager.cs" />
+    <Compile Include="Managers\IIdentityManager.cs" />
+    <Compile Include="Managers\IPermissionManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RevoContext.cs" />
+    <Compile Include="RevoContextHelpers.cs" />
+    <Compile Include="RevoServiceBase.cs" />
+    <Compile Include="RevoServiceProvider.cs" />
+    <Compile Include="RevoWebRequest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GruppoCap.Utils\GruppoCap.Utils.csproj">
+      <Project>{578745e5-c348-48a9-9a6d-f7896cb63050}</Project>
+      <Name>GruppoCap.Utils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
