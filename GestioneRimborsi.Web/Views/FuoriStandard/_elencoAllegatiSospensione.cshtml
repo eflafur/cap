@@ -1,0 +1,95 @@
+﻿@model GestioneRimborsi.Web.Models.AllegatiSospensione
+
+@if (Model != null)
+{
+    <label id="labelAllegatiFS" class="text-left">Documenti Allegati</label>
+    <ul title="Documenti Allegati" id="ulAllegatiSosp" class="text-left">
+        @if (Model.allegatiSospensione != null)
+        {
+            foreach (var item in Model.allegatiSospensione.Items)
+            {
+                <li id="liAllegatiFS">
+                    <u><a class="listaAllegati" role="button" onclick="return getAllegatoSosp('@item.NomeFile', '@item.TipoFile');">@item.NomeFile</a></u>
+                    @if (Model.SolaLettura == false)
+                    {
+                        <a class="pull-right padRight10 btnEliminaAllegatoSosp" title="elimina" role="button" onclick="deleteAllegatoSosp('@item.NomeFile','@item.TipoFile','@item.IdSospensione', '@item.IdSospensione')"><i class="fa fa-lg fa-fw fa-trash"></i></a>
+                    }
+                </li>
+            }
+        }
+    </ul>
+}
+
+@if (Model != null)
+{
+    if (Model.SolaLettura == false)
+    {
+        <div class="table-bordered alert-info text-left">
+            <input type="file" class="btn btn-lg mt-10 filesInputHidden notdisplayed" id="filesInputSosp_@Model.RowId" onchange="HandlechangeSosp('@Model.IdSospensione', '@Model.IdFs', '@Model.RowId', event);">
+            <u role="button"><a id="fakeBrowse" onclick="return HandleBrowseClickSosp('@Model.RowId');" class="padLeft10 fakeBrowseSosp" role="button">Allega nuovo...</a></u>
+        </div>
+    }
+}
+
+<script>
+
+    function getAllegatoSosp(nome, tipo) {        
+        window.location.href = '@Html.Raw(Url.Action("DownloadFileSospensione", "FuoriStandard", new { Filename = "_nome_", Extension = "_tipo_" }))'.replace("_nome_", nome).replace("_tipo_", tipo);
+
+        @*var _url = '@Url.Action("DownloadFileSospensione", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                Filename: nome,
+                Extension: tipo
+            }),
+            success: function (result) {
+                if (result == "Error") {
+                    notifyWarning("Errore nel recuperare il file...");
+                }                
+            },
+            error: function (request, status, error) {
+                notifyWarning(error);
+            }
+        });*@
+    }
+
+    function deleteAllegatoSosp(fileName, tipoFile, rowId, idSospensione) {
+        //debugger;
+
+        displayModalWaiter("schedaIndennizzo");
+        var _url;
+        _url = "@Url.Action("EliminaAllegatoSospensione","FuoriStandard")";
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                Filename: fileName,
+                TipoFile: tipoFile,
+                IdSospensione: rowId,
+                RowId: rowId
+            }),
+            success: function (result) {
+                if (result != null) {
+                    notifySuccess("cancellazione eseguita correttamente!");
+                    $("#attachmentsSosp_" + rowId).html(result);
+                    hideModalWaiter("schedaIndennizzo");
+                }
+                else {
+                    notifyWarning("purtroppo la cancellazione non è stata eseguita correttamente..");
+                    hideModalWaiter("schedaIndennizzo");
+                }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyError("purtroppo la cancellazione non è stata eseguita correttamente..(deve essere presente almeno una riga)");
+            }
+        });
+    }
+
+</script>

@@ -1,0 +1,45 @@
+2019-03-29 16:07:42,910 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-29 16:10:27,018 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-29 16:10:27,287 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - GetSepaObjectList: FileName: a.argentieri_201903291610251025 - PkOperazione: a.argentieri
+2019-03-29 16:10:27,299 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - GetSepaObjectList: ConnectionString: Data source=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = dbtesth2o.gruppocap.it)(PORT = 1521))(CONNECT_DATA =(SID = testh2o)));User ID=com20;Password=c0m20 
+2019-03-29 16:10:27,326 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - db.Query<SepaObject> : select * from V_TEST_SEPA where pkOperazione = a.argentieri
+2019-03-29 16:10:31,353 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaHeader()  CompanyNumber(CFIVA): 13187590156 - CompanyOrgId(OrgId): 0448104F - BankAccountNumber(IBANOrd): IT76D0306909521100000005864 - OrgId(CFIVA): 13187590156 - Issr(CUC): 0448104F - InitiatingPartyName(RAGIONESOCIALE): CAP Holding spa
+2019-03-29 16:10:31,354 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaPaymentElement() DebtorName(RAGIONESOCIALE): CAP Holding spa - DebtorTaxID(CFIVA): 13187590156 - DebtorABI(ABIOrd): 03069 - DebtorIBAN(IBANOrd): IT76D0306909521100000005864
+2019-03-29 16:10:31,356 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaCreditTransferTransaction() CreditorName(DescrDest): IMMOBILIARE THEMA SRL - MmbId_ABIDest(ABIDest):  - CreditorTaxID(IdCliente): 0004030381 - CreditorIBAN(IBANDest): BONIFICO_DOMICILIATO - Purpose(Descr50): 2005;3711417 
+2019-03-29 16:10:31,359 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaHeader()  CompanyNumber(CFIVA): 13187590156 - CompanyOrgId(OrgId): 0448104F - BankAccountNumber(IBANOrd): IT76D0306909521100000005864 - OrgId(CFIVA): 13187590156 - Issr(CUC): 0448104F - InitiatingPartyName(RAGIONESOCIALE): CAP Holding spa
+2019-03-29 16:10:31,360 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaCreditTransferTransaction() CreditorName(DescrDest): DE MITRI MARCO - MmbId_ABIDest(ABIDest):  - CreditorTaxID(IdCliente): 0007496054 - CreditorIBAN(IBANDest): BONIFICO_DOMICILIATO - Purpose(Descr50): 2018;16149 
+2019-03-29 16:10:31,366 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader msgId 1/13187590156/20190329161031
+2019-03-29 16:10:31,367 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader NbOfTxs 2
+2019-03-29 16:10:31,368 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader CtrlSum 507.16
+2019-03-29 16:10:31,369 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader InitgPty Nm CAP Holding spa
+2019-03-29 16:10:31,371 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreatePaymentInformationElements PmtInfId 2/13187590156/20190329161031
+2019-03-29 16:13:01,028 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-29 16:13:18,221 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-29 16:13:18,345 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - GetSepaObjectList: FileName: a.argentieri_201903291613171317 - PkOperazione: a.argentieri
+2019-03-29 16:13:18,376 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - GetSepaObjectList: ConnectionString: Data source=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = dbtesth2o.gruppocap.it)(PORT = 1521))(CONNECT_DATA =(SID = testh2o)));User ID=com20;Password=c0m20 
+2019-03-29 16:13:18,384 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - db.Query<SepaObject> : select * from V_TEST_SEPA where pkOperazione = a.argentieri
+2019-03-29 16:13:19,492 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaHeader()  CompanyNumber(CFIVA): 13187590156 - CompanyOrgId(OrgId): 0448104F - BankAccountNumber(IBANOrd): IT76D0306909521100000005864 - OrgId(CFIVA): 13187590156 - Issr(CUC): 0448104F - InitiatingPartyName(RAGIONESOCIALE): CAP Holding spa
+2019-03-29 16:13:19,493 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaPaymentElement() DebtorName(RAGIONESOCIALE): CAP Holding spa - DebtorTaxID(CFIVA): 13187590156 - DebtorABI(ABIOrd): 03069 - DebtorIBAN(IBANOrd): IT76D0306909521100000005864
+2019-03-29 16:13:19,495 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaCreditTransferTransaction() CreditorName(DescrDest): IMMOBILIARE THEMA SRL - MmbId_ABIDest(ABIDest):  - CreditorTaxID(IdCliente): 0004030381 - CreditorIBAN(IBANDest): BONIFICO_DOMICILIATO - Purpose(Descr50): 2005;3711417 
+2019-03-29 16:13:19,498 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaHeader()  CompanyNumber(CFIVA): 13187590156 - CompanyOrgId(OrgId): 0448104F - BankAccountNumber(IBANOrd): IT76D0306909521100000005864 - OrgId(CFIVA): 13187590156 - Issr(CUC): 0448104F - InitiatingPartyName(RAGIONESOCIALE): CAP Holding spa
+2019-03-29 16:13:19,499 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaCreditTransferTransaction() CreditorName(DescrDest): DE MITRI MARCO - MmbId_ABIDest(ABIDest):  - CreditorTaxID(IdCliente): 0007496054 - CreditorIBAN(IBANDest): BONIFICO_DOMICILIATO - Purpose(Descr50): 2018;16149 
+2019-03-29 16:13:19,505 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader msgId 1/13187590156/20190329161319
+2019-03-29 16:13:19,506 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader NbOfTxs 2
+2019-03-29 16:13:19,507 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader CtrlSum 507.16
+2019-03-29 16:13:19,508 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader InitgPty Nm CAP Holding spa
+2019-03-29 16:13:19,510 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreatePaymentInformationElements PmtInfId 2/13187590156/20190329161319
+2019-03-29 16:34:12,181 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-29 16:34:21,502 DEBUG BankXMLManager.WCF.Global [(null)] - Application_Start
+2019-03-29 16:34:21,626 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - GetSepaObjectList: FileName: a.argentieri_201903291634203420 - PkOperazione: a.argentieri
+2019-03-29 16:34:21,633 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - GetSepaObjectList: ConnectionString: Data source=(DESCRIPTION = (ADDRESS = (PROTOCOL = TCP)(HOST = dbtesth2o.gruppocap.it)(PORT = 1521))(CONNECT_DATA =(SID = testh2o)));User ID=com20;Password=c0m20 
+2019-03-29 16:34:21,637 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - db.Query<SepaObject> : select * from V_TEST_SEPA where pkOperazione = a.argentieri
+2019-03-29 16:34:22,710 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaHeader()  CompanyNumber(CFIVA): 13187590156 - CompanyOrgId(OrgId): 0448104F - BankAccountNumber(IBANOrd): IT76D0306909521100000005864 - OrgId(CFIVA): 13187590156 - Issr(CUC): 0448104F - InitiatingPartyName(RAGIONESOCIALE): CAP Holding spa
+2019-03-29 16:34:22,711 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaPaymentElement() DebtorName(RAGIONESOCIALE): CAP Holding spa - DebtorTaxID(CFIVA): 13187590156 - DebtorABI(ABIOrd): 03069 - DebtorIBAN(IBANOrd): IT76D0306909521100000005864
+2019-03-29 16:34:22,713 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaCreditTransferTransaction() CreditorName(DescrDest): IMMOBILIARE THEMA SRL - MmbId_ABIDest(ABIDest):  - CreditorTaxID(IdCliente): 0004030381 - CreditorIBAN(IBANDest): BONIFICO_DOMICILIATO - Purpose(Descr50): 2005;3711417 
+2019-03-29 16:34:22,715 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaHeader()  CompanyNumber(CFIVA): 13187590156 - CompanyOrgId(OrgId): 0448104F - BankAccountNumber(IBANOrd): IT76D0306909521100000005864 - OrgId(CFIVA): 13187590156 - Issr(CUC): 0448104F - InitiatingPartyName(RAGIONESOCIALE): CAP Holding spa
+2019-03-29 16:34:22,716 DEBUG SepaManager.Base.Worker.SepaWorkerManager [(null)] - new SepaCreditTransferTransaction() CreditorName(DescrDest): DE MITRI MARCO - MmbId_ABIDest(ABIDest):  - CreditorTaxID(IdCliente): 0007496054 - CreditorIBAN(IBANDest): BONIFICO_DOMICILIATO - Purpose(Descr50): 2018;16149 
+2019-03-29 16:34:22,722 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader msgId 1/13187590156/20190329163422
+2019-03-29 16:34:22,723 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader NbOfTxs 2
+2019-03-29 16:34:22,725 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader CtrlSum 507.16
+2019-03-29 16:34:22,725 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreateGroupHeader InitgPty Nm CAP Holding spa
+2019-03-29 16:34:22,728 DEBUG SepaManager.Base.Worker.SepaXMLManager [(null)] - CreatePaymentInformationElements PmtInfId 2/13187590156/20190329163422

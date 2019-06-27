@@ -1,0 +1,52 @@
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\log4net.config
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\AppSettings.config
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\BankXMLManager.WCF.dll.config
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\BankXMLManager.WCF.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\BankXMLManager.WCF.pdb
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\log4net.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\SepaManager.Base.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.DAL.Oracle.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Core.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\Oracle.ManagedDataAccess.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Utils.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\Castle.Windsor.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\FastMember.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\DocumentFormat.OpenXml.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\Castle.Core.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\System.IO.Packaging.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\SepaManager.Base.pdb
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\log4net.xml
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.DAL.Oracle.pdb
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Core.pdb
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Utils.pdb
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\Castle.Windsor.xml
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\FastMember.pdb
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\FastMember.xml
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\bin\Castle.Core.xml
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\obj\Debug\BankXMLManager.WCF.csprojResolveAssemblyReference.cache
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\obj\Debug\BankXMLManager.WCF.dll
+C:\Progetti\Revolution\Services\BankXMLManager\BankXMLManager.WCF\obj\Debug\BankXMLManager.WCF.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\log4net.config
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\AppSettings.config
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\BankXMLManager.WCF.dll.config
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\BankXMLManager.WCF.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\BankXMLManager.WCF.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\SepaManager.Base.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.DAL.Oracle.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Core.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\Oracle.ManagedDataAccess.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Utils.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\Castle.Windsor.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\FastMember.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\DocumentFormat.OpenXml.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\System.IO.Packaging.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\SepaManager.Base.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.DAL.Oracle.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Core.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\GruppoCap.Utils.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\Castle.Windsor.xml
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\FastMember.pdb
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\bin\FastMember.xml
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\obj\Debug\BankXMLManager.WCF.csprojResolveAssemblyReference.cache
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\obj\Debug\BankXMLManager.WCF.dll
+C:\Users\a.argentieri\Source\Repos\cap\Required Assemblies\BankXMLManager\BankXMLManager.WCF\obj\Debug\BankXMLManager.WCF.pdb

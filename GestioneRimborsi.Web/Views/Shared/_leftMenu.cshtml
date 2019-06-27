@@ -1,0 +1,181 @@
+﻿@model String
+
+@{
+    bool operatoreGRI = false;
+    bool operatoreGFS = false;
+
+    //if (CurrentUser.HasPermissionOrIsPrivileged("entity.gestionerimborso")
+    // || CurrentUser.HasPermissionOrIsPrivileged("GestioneRimborsi.GestionePermessi.OperatoreRimborso")
+    // || CurrentUser.HasPermissionOrIsPrivileged("GestioneRimborsi.GestionePermessi.OperatoreBonusIdrico")
+    // || CurrentUser.HasPermissionOrIsPrivileged("GestioneRimborsi.GestionePermessi.OperatoreIndennizzi"))
+    //{ operatoreGRI = true; }
+
+    //if (CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.OperatoreFuoriStandard")
+    // || CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.SolaLettura")
+    // || CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.ResponsabileApprovazione")
+    // || CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.AnnullaPrestazione"))
+    //{ operatoreGFS = true; }
+}
+
+<div class="row">
+    <div class="col-sm-12" style="padding-right:0px; padding-left:5px;">
+        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+            @if (RevoRequest.CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi") || operatoreGRI)
+            {
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headingOne">
+                        <a role="button" data-toggle="collapse" class="collapsed" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Gestione rimborsi
+                        </a>
+                    </div>
+                    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                        <a class="col-sm-12 @(Model == "CercaRimborsi" ? "active" : "")" title="Cerca i rimborsi aperti" role="button" href="@UrlFor.HomeRimborsi" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-list"></i>
+                            <span class="text-after-icon">Cerca Rimbosi</span>
+                        </a>
+                        <a class="col-sm-12 @(Model == "AnnullaRimborsi" ? "active" : "")" title="Annulla i rimborsi" role="button" href="@Url.Action("AnnullaRimborsi", "Rimborsi", new { Utente = RevoRequest.CurrentUser.UserId })" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-times-circle"></i>
+                            <span class="text-after-icon">Annulla Rimbosi</span>
+                        </a>
+                        <a class="col-sm-12 @(Model == "ConfermaRimborsi" ? "active" : "")" title="Conferma i rimborsi" role="button" href="@Url.Action("Confermarimborsi", "Rimborsi", new { utente = RevoRequest.CurrentUser.UserId })" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-check-square-o"></i>
+                            <span class="text-after-icon">Conferma Rimbosi</span>
+                        </a>
+                        <a class="col-sm-12 @(Model == "RistampaRimborsi" ? "active" : "")" title="Stampa i rimborsi confermati" role="button" href="@Url.Action("RistampaRimborsi", "Rimborsi", new { Utente = RevoRequest.CurrentUser.UserId })" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-print"></i>
+                            <span class="text-after-icon">Ristampa Rimbosi</span>
+                        </a>
+                        @*@if (RevoRequest.CurrentUser.HasPermissionOrIsPrivileged("GestioneRimborsi.GestionePermessi.OperatoreIndennizzi"))*@
+                        @if (RevoRequest.CurrentUser.GroupingCodes.Contains("gri.OperatoreIndennizzi"))
+                        {
+                            <a class="col-sm-12 @(Model == "IndennizziPagabili" ? "active" : "")" style="padding-right:4px;" title="FuoriStandard pagabili" role="button" href="@Url.Action("IndennizziPagabili", "FuoriStandard")" onclick="displayWaiter();">
+                                <i class="fa fa-fw fa-lg fa-cart-arrow-down"></i>
+                                <span class="text-after-icon">Liquidazione indennizzi</span>
+                            </a>
+                        }
+                        <div class="panel-body">
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard") || operatoreGFS)
+            {
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headingTwo">
+                        <a class="collapsed" id="two" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            Prestazioni
+                        </a>
+                    </div>
+                    <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                        @*@if (CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.OperatoreFuoriStandard"))*@
+                        @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.validazione"))
+                        {
+                            <a class="col-sm-12 @(Model == "ValidazioneFuoriStandard" ? "active" : "")" title="Validazione dei fuori standard" role="button" href="@Url.Action("Index", "FuoriStandard")" onclick="displayWaiter();">
+                                <i class="fa fa-fw fa-lg fa-check-square-o"></i>
+                                <span class="text-after-icon">Validazione</span>
+                            </a>
+                        }
+
+                        @*@if (CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.ResponsabileApprovazione") || CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.AnnullaPrestazione"))*@
+                        @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.approvazione") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.annullaPrestazione"))
+                        {
+                            <a class="col-sm-12 @(Model == "ApprovazioneRettifiche" ? "active" : "")" title="Approvazione errori di compilazione" role="button" href="@Url.Action("ApprovazioneRettifiche", "FuoriStandard")" onclick="displayWaiter();">
+                                <i class="fa fa-fw fa-lg fa-thumbs-o-up"></i>
+                                <span class="text-after-icon">Approvazione</span>
+                            </a>
+                        }
+                        <a class="col-sm-12 @(Model == "VisualizzaStorico" ? "active" : "")" title="storico dei fuori standard" role="button" href="@Url.Action("VisualizzaStorico", "FuoriStandard")" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-book"></i>
+                            <span class="text-after-icon">Visualizza storico</span>
+                        </a>
+                        <div class="col-sm-12 spacerDashed"></div>
+                        @if (CurrentUser.IsPrivileged)
+                        {
+                            <a class="col-sm-12 @(Model == "RegistraFuoriStandard" ? "active" : "")" title="Crea nuovo fuori standard" role="button" href="@Url.Action("RegistraFuoriStandard", "FuoriStandard")" onclick="displayWaiter();">
+                                <i class="fa fa-fw fa-lg fa-plus-square"></i>
+                                <span class="text-after-icon">Inserisci nuovo</span>
+                            </a>
+                        }
+                        @*@if (CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.OperatoreFuoriStandard"))*@
+                        @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.validazione"))
+                        {
+                            <a class="col-sm-12 @(Model == "Rettifiche" ? "active" : "")" title="rettifica/annulla prestazioni" role="button" href="@Url.Action("Rettifiche", "FuoriStandard")" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-edit"></i>
+                            <span class="text-after-icon">Rettifica/Annulla</span>
+                            </a>
+                        }
+                        @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.nonIndennizzabili"))
+                        {
+                            <a class="col-sm-12 @(Model == "RecuperoFuoriStandard" ? "active" : "")" title="associazione cliente" role="button" href="@Url.Action("RecuperoFuoriStandard", "FuoriStandard")" onclick="displayWaiter();">
+                                <i class="fa fa-fw fa-lg fa-chain"></i>
+                                <span class="text-after-icon">Recupera Prestazioni</span>
+                            </a>
+                        }
+
+                        @*@if (CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.GestisciRettifiche"))*@
+                        @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.gestisciRettifiche"))
+                        {
+                            <a class="col-sm-12 @(Model == "GestisciRettifiche" ? "active" : "")" title="gestisci rettifiche" role="button" href="@Url.Action("GestisciRettifiche", "FuoriStandard")" onclick="displayWaiter();">
+                                <i class="fa fa-fw fa-lg fa-calendar-check-o"></i>
+                                <span class="text-after-icon">Gestisci Rettifiche</span>
+                            </a>
+                        }
+                        <div class="col-sm-12 spacerDashed"></div>
+                        @*@if (CurrentUser.HasPermissionOrIsPrivileged("GestioneFuoriStandard.GestionePermessi.ResponsabileApprovazione"))*@
+                        @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.reportPrestazioni"))
+                        {
+                            <a class="col-sm-12 @(Model == "ReportPrestazioni" ? "active" : "")" title="scarica excel" role="button" href="@Url.Action("ReportPrestazioni", "FuoriStandard")" onc onclick="displayWaiter();">
+                                <i class="fa fa-fw fa-lg fa-file-excel-o"></i>
+                                <span class="text-after-icon">Report Prestazioni</span>
+                            </a>
+                        }
+                        <div class="panel-body">
+                        </div>
+                    </div>
+                </div>
+            }
+            @*@if (CurrentUser.HasPermissionOrIsPrivileged("entity.rimborso"))*@
+            @if (CurrentUser.HasPermissionOrIsPrivileged("gri.disposizioni"))
+            {
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headingThree" style="padding-right:10px;">
+                        <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            Gestione disposizioni
+                        </a>
+                    </div>
+                    <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                        <a class="col-sm-12 @(Model == "GestioneDisposizioni" ? "active" : "")" role="button" title="genera file xml rimborsi" href="@UrlFor.LottoRimborsiList" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-credit-card"></i>
+                            <span class="text-after-icon">Genera file xml</span>
+                        </a>
+                        <a class="col-sm-12 @(Model == "ModificaDisposizioniBancarie" ? "active" : "")" role="button" title="Gestione delle disposizioni" href="@UrlFor.GestioneDisposizioniList" onclick="displayWaiter();">
+                            <i class="fa fa-fw fa-lg fa-list-ul"></i>
+                            <span class="text-after-icon">Gestisci disposizioni</span>
+                        </a>
+                        <div class="panel-body">
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    if ($("#collapseTwo a").hasClass("active")) {
+        $("#headingTwo a").click();
+        $("#collapseTwo").addClass("in");
+    }
+    if ($("#collapseThree a").hasClass("active")) {
+        $("#headingThree a").click();
+        $("#collapseThree").addClass("in");
+    }
+    if ($("#collapseOne a").hasClass("active")) {
+        $("#headingOne a").click();
+        $("#collapseOne").addClass("in");
+    }
+
+    function displayWaiter() {
+        displayModalWaiter();
+    }
+</script>

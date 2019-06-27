@@ -1,0 +1,241 @@
+﻿@model ISubCollection<FuoriStandard>
+
+@{
+    ViewBag.Title = "IndennizziPagabili";
+
+    if (!CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi"))
+    {
+        Response.Redirect(CommonUrls.BaseUrl);
+    }
+}
+<div class="row">
+    @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "")
+    @Html.Partial("~/views/FuoriStandard/_confermaModificheModal.cshtml", "Confermare?")
+    <div class="col-sm-12 space-container">
+        <div class="col-sm-12">
+            <div id="rowFilter">
+                <h2>
+                    <a href="@UrlFor.HomeRimborsi" title="torna alla homepage"><i class="fa fa-arrow-left"></i></a>
+                    /
+                    <i class="fa fa-cart-arrow-down"></i>
+                    <span class="text-after-icon">Liquidazione Indennizzi</span>
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 space-container">
+        <div class="col-sm-2">
+            <div class="row">
+                <div class="col-sm-12">
+                    @Html.Partial("_leftMenu", "IndennizziPagabili")
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-10">
+            <div class="col-sm-12 container-information">
+                <div class="col-sm-4">
+                    <h4>Fuori Standard pagabili</h4>
+                </div>
+                <div class="col-sm-12">
+                    <div class="pull-right mr-l" id="numeroPagineContainer">
+                        <select class="form-control selectCaret" id="numeroPagine" name="numeroPagine" onchange="filtraNumeroPagine();">
+                            <option value="5" selected>5</option>
+                            <option value="10">10</option>
+                            <option value="15">15</option>
+                            <option value="20">20</option>
+                            <option value="25">25</option>
+                            <option value="30">30</option>
+                            <option value="35">35</option>
+                            <option value="40">40</option>
+                            <option value="45">45</option>
+                            <option value="50">50</option>
+                        </select>
+                    </div>
+                    <div class="pull-right">
+                        <a role="button" title="scarica contenuto dettagliato in excel" id="esportaPrestazioni" class="btn btn-default mr-l" onclick="showWaiter();"><i class="fa fa-lg fa-file-excel-o"></i></a>
+                    </div>
+                    <div class="col-sm-12 container-information bg-w" id="indennizziPagabiliTableContainer">
+                        @Html.Raw(HtmlSnippets.Alert.Info("Nessun fuoriStandard da visualizzare..."))
+                    </div>
+                    <div class="input-group col-sm-1 pull-left">
+                        <a class="btn btn-function notdisplayed" id="btnSelezionaTutti" onclick="selezionaTutto();">
+                            Seleziona tutti
+                        </a>
+                    </div>
+                    <div class="input-group col-sm-1 pull-left mr-l">
+                        <a class="btn btn-function notdisplayed" id="btnDeseleziona" onclick="deselezionaTutto();">
+                            Deseleziona tutti
+                        </a>
+                    </div>
+                    <div class="input-group col-sm-12 pull-right marginBottom10">
+                        <button type="button" class="btn btn-lg btn-function pull-right mr-l" onclick="approvaIndennizzi();">
+                            <i class=" fa fa-lg fa-check">
+                            </i>
+                            <span class="text-after-icon">Conferma</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(".application-title").text("Gestione Rimborsi");
+
+    $(function () {
+        var _url = '@Url.Action("CercaIndennizziPagabili", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+            }),
+            success: function (result) {
+                displayModalWaiter();
+                $("#indennizziPagabiliTableContainer").html(result);
+                setIndennizziPagabiliDataTable();
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+
+        var _tipologia = "";
+        var _indicatore = "";
+        var _codRintracciabilita = "";
+        var _codCliente = "";
+        var _dataInizio = "";
+        var _dataFine = "";
+        var _inStandard = "";
+        var _checkCliente = true;
+        var _checkIndennizzabile = false;
+
+        var _filteredUrl = '@Html.Raw(Url.Action("ExportPrestazioni", "FuoriStandard", new { view = "DaPagare", tipologia = "_tipologia_", indicatore = "_indicatore_", codRintracciabilita = "_codRintracciabilita_", codCliente = "_codCliente_", dataInizio = "_dataInizio_", dataFine = "_dataFine_", inStandard = "_inStandard_", checkCliente = "_checkCliente_", checkIndennizzabile = "_checkIndennizzabile_" }))'
+            .replace("_tipologia_", _tipologia).replace("_indicatore_", _indicatore).replace("_codRintracciabilita_", _codRintracciabilita).replace("_codCliente_", _codCliente).replace("_dataInizio_", _dataInizio).replace("_dataFine_", _dataFine).replace("_inStandard_", _inStandard).replace("_checkCliente_", _checkCliente).replace("_checkIndennizzabile_", _checkIndennizzabile);
+
+        $("#esportaPrestazioni").attr("href", _filteredUrl);
+    });
+
+    function setIndennizziPagabiliDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridIndennizziPagabili')) {
+            _indennizziPagabiliTable = $('#gridIndennizziPagabili').DataTable();
+        }
+        else {
+            _indennizziPagabiliTable = $('#gridIndennizziPagabili').DataTable({
+                "pageLength": 5,
+                columns: [
+                { "orderable": false, className: "info-column" }, // ICONs
+                { "orderable": false },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                ],
+                order: [7, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $(function () {
+        setIndennizziPagabiliDataTable();
+        //$("#headingOne a").click();
+    });
+
+    function selezionaTutto() {
+        var allPages = _indennizziPagabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]').prop('checked', true);
+        return;
+    }
+
+    function deselezionaTutto() {
+        var allPages = _indennizziPagabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]').prop('checked', false);
+        return;
+    }
+
+    function approvaIndennizzi() {
+        var items = [];
+        var allPages = _indennizziPagabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]:checked').each(function () {
+            var status = $(this).val();
+            items.push(status)
+        });
+
+        if (items.length == 0) {
+            notifyWarning("Nessuna riga selezionata..."); return false;
+        }
+
+        $('#confermaModifiche').modal('show');
+
+        $("#confMod").off().click(function () {
+            displayModalWaiter();
+
+            var _url;
+            _url = '@Url.Action("IndePagabili", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    FuoriStandardDataCliente: items,
+                    Note: $("#txtFileDescriptions").val(),
+                }),
+                success: function (result) {
+                    if (result == "") {
+                        notifySuccess("Completato");
+                        var _url2 = '@Url.Action("CercaIndennizziPagabili", "FuoriStandard")';
+                        $("#indennizziPagabiliTableContainer").load(_url2, function () {
+                            setIndennizziPagabiliDataTable();
+                        });
+                        hideModalWaiter();
+                    }
+                    else {
+                        hideModalWaiter();
+                        notifyError(result);
+                    }
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter();
+                    notifyWarning(error);
+                }
+            });
+        });
+        var _tipologia = "";
+        var _indicatore = "";
+        var _codRintracciabilita = "";
+        var _codCliente = "";
+        var _dataInizio = "";
+        var _dataFine = "";
+        var _inStandard = "";
+        var _checkCliente = true;
+        var _checkIndennizzabile = false;
+
+        var _filteredUrl = '@Html.Raw(Url.Action("ExportPrestazioni", "FuoriStandard", new { view = "DaPagare", tipologia = "_tipologia_", indicatore = "_indicatore_", codRintracciabilita = "_codRintracciabilita_", codCliente = "_codCliente_", dataInizio = "_dataInizio_", dataFine = "_dataFine_", inStandard = "_inStandard_", checkCliente = "_checkCliente_", checkIndennizzabile = "_checkIndennizzabile_" }))'
+            .replace("_tipologia_", _tipologia).replace("_indicatore_", _indicatore).replace("_codRintracciabilita_", _codRintracciabilita).replace("_codCliente_", _codCliente).replace("_dataInizio_", _dataInizio).replace("_dataFine_", _dataFine).replace("_inStandard_", _inStandard).replace("_checkCliente_", _checkCliente).replace("_checkIndennizzabile_", _checkIndennizzabile);
+
+        $("#esportaPrestazioni").attr("href", _filteredUrl);
+    }
+
+    function filtraNumeroPagine() {
+        var table = $('#gridIndennizziPagabili').DataTable();
+        table.page.len($("#numeroPagine").val()).draw();
+    }
+
+    function showWaiter() {
+        displayModalWaiter();
+        setTimeout(function () {
+            hideModalWaiter();
+        }, 3500)
+    }
+
+</script>

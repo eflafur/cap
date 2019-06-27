@@ -1,0 +1,75 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+@using GruppoCap.Security.PEM
+
+@model IList<IPermissionGroup>
+
+@{
+    ViewBag.Title = "Permission Groups list";
+}
+
+<div class="row">
+
+    <div class="col-sm-2">
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="nav nav-pills nav-stacked detail-menu">
+                    @Html.AreaMenuLink("Permissions", "fa-cube", CommonUrls.Permissions)
+                    @Html.AreaMenuLink("Permission Groups", "fa-cubes", CommonUrls.PermissionGroups, true)
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-10">
+
+        <div class="row grid-title">
+            <div class="col-sm-6">
+                <h1>
+                    <i class="fa fa-cubes"></i> Permission Groups List
+                </h1>
+            </div>
+            <div class="col-sm-6 text-right" >
+                <button type="button" class="btn btn-default title-bar-entity-button" data-toggle="modal" data-target="#createPermissionGroupModal">
+                    <i class="fa fa-lg fa-cubes"></i>
+                    <span class="text-after-icon">New Permission Group</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="row">
+
+            <div class="col-sm-12 breath-on-top-32" id="permissionGroupTableContainer" style="display: block;">
+
+                @if(Model.Count > 0)
+                {
+                    @Html.Partial("_permissionGroupList", Model)
+                }
+                else
+                {
+                    <div class="alert alert-info" role="alert" style="padding-top: 24px;">
+                        <h4><strong><i class="fa fa-lg fa-frown-o"></i></strong><span class="text-after-icon"><strong>No groups here!</strong> It looks like nobody needs them...</span></h4>
+                    </div>
+                }               
+
+            </div>
+
+        </div>
+        
+    </div>
+
+    @Html.Partial("_createPermissionGroup")
+
+</div>
+
+@section scripts {
+<script>
+
+    $(function () {
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+</script>
+}

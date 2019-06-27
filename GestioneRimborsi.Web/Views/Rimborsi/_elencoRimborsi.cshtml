@@ -1,0 +1,113 @@
+﻿@model ISubCollection<GestioneRimborso>
+
+@{
+    string nominativo = null;
+    if (Model != null)
+    {
+        if (ViewData["UserName"] != null)
+        {
+            nominativo = "Elenco rimborsi cliente:  " + ViewData["UserName"].ToString().Replace("\"", "--").Replace("'", "’").Replace("&", "e");
+        }
+    }
+}
+
+@{
+    if (Model == null)
+    {
+        @Html.Raw(HtmlSnippets.Alert.Info("Nessun rimborso da visualizzare..."))
+    }
+    else
+    {
+        <table id="gridRimborsi" class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="text-left">Anno</th>
+                    <th class="text-left">Numero</th>
+                    <th class="text-left">Tipo Rimborso</th>
+                    <th class="text-left">Data</th>
+                    <th class="text-right">Importo</th>
+                    <th class="text-center">Stato</th>
+                    <th class="text-left">Data Inserimento</th>
+                    <th class="text-left">Utente</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+        foreach (GestioneRimborso _r in Model.Items)
+        {
+            String _trClass = String.Empty;
+            String _trIcon = String.Empty;
+
+            <tr onclick="loadRimborsoDetail('@_r.AnnoDocumento', '@_r.NumeroDocumento', '@_r.CodiceCliente');" class="@_trClass">
+                <td class="text-left">@Html.Raw(_trIcon)</td>
+                <td class="text-left">@_r.AnnoDocumento</td>
+                <td class="text-left">@_r.NumeroDocumento</td>
+                <td class="text-left">@_r.TipoDocumento</td>
+                <td class="text-left">@_r.DataEmissione</td>
+                <td class="text-right">@_r.ImportoTotaleRimborso €</td>
+                <td class="text-center">@_r.StatoDocumento</td>
+                <td class="text-left">@_r.DataInserimento</td>
+                <td class="text-left">@_r.UtenteInserimento</td>
+            </tr>
+        }
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<script>
+
+    $("#lblNominativo").text('@nominativo');
+    if ($("#lblNominativo").text() != "") {
+        $("#omino").removeClass("invisible");
+    }
+    else { $("#omino").addClass("invisible"); }
+
+    var _rimborsiTable;
+
+    function setRimborsiDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridRimborsi')) {
+            _rimborsiTable = $('#gridRimborsi').DataTable();
+        }
+        else {
+            _rimborsiTable = $('#gridRimborsi').DataTable({
+                "pageLength": 5,
+                columns: [
+                { "orderable": false },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+                ],
+                order: [1, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $(function () {
+        setRimborsiDataTable();
+    });
+
+    function loadRimborsoDetail(AnnoDocumento, NumeroDocumento, CodCliente) {
+        displayModalWaiter();
+        var _user = $('#ddlUsers').val();
+        if (_user == '' || _user == undefined) {
+            _user = '@RevoRequest.CurrentUser.UserId';
+        }
+        var _url = "@Url.Action("DettaglioRimborso", "Rimborsi",
+            new { AnnoDocumento = "_annoDocumento_", NumeroDocumento = "_numeroDocumento_", CodCliente = "_codCliente_", Utente = "_user_", })"
+                .replace('_annoDocumento_', AnnoDocumento)
+                .replace('_numeroDocumento_', NumeroDocumento)
+                .replace('_codCliente_', CodCliente)
+                .replace('_user_', _user);
+        window.location.href = _url;
+    }
+
+</script>
+

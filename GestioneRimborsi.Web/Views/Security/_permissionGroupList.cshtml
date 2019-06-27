@@ -1,0 +1,49 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model IList<IPermissionGroup>
+
+<table id="gridPermissionGroups" class="table table-condensed table-hover">
+    <thead>
+        <tr>
+            <th width="3%"></th>
+            <th>Nome</th>
+            <th>Descrizione</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            foreach (IPermissionGroup _pg in Model)
+            {
+                String _trIcon = String.Empty;
+
+                if (_pg.IsPrivileged)
+                {
+                    _trIcon += CommonSnippets.IsPrivileged;
+                }
+
+                <tr onclick="loadPermissionGroupDetail('@_pg.PermissionGroupId');" >
+                    <td>@Html.Raw(_trIcon)</td>
+                    <td>@_pg.Title</td>
+                    <td>@_pg.Description</td>
+                    <td>
+                        @*<a class="deleteButtonInList" href="javascript:void(0);" onclick="loadPermissiongGroupDeletePreview('@_pg.PermissionGroupId');"><i class="fa fa-lg fa-fw fa-trash"></i></a>*@
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<script>
+    $('.deleteButtonInList').click(function (event) {
+        event.stopPropagation();
+    });
+
+    function loadPermissionGroupDetail(permissionGroupId) {
+        var _url = "@CommonUrls.PermissionGroupDetail("_permissionGroupId_")".replace('_permissionGroupId_', permissionGroupId);
+        window.location.href = _url;
+    }
+</script>

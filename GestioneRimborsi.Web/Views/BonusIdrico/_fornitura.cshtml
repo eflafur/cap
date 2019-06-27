@@ -1,0 +1,60 @@
+﻿
+
+@using GestioneRimborsi.Core
+
+@model List<BIContratto>
+
+
+<div class="row" id="forn">
+    <div class="col-md-12">
+        <input type="text" id="i1" placeholder="inserire codice fornitura.." />
+        <button type="button" class="btn btn-success" id="frz1">Forza validazione</button>
+        <button type="button" class="btn btn-success" id="rival1">Rivalida</button>
+    </div>
+</div>
+
+@*<div class="row">
+        <div class=" col-md-12" id="i3">
+
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    <p>@item.codiceFiscale</p>
+
+                }
+            }
+        </div>
+    </div>*@
+
+
+<div class="row">
+    <div class=" col-md-6" id="contratto">
+        <table id="tbforn1" class="table table-bordered" ">
+            <thead id="thd">
+                <tr>
+                    <th>Nome</th>
+                    <th>CodiceFiscale</th>
+                    <th>Indirizzo Fornitura</th>
+                </tr>
+            </thead>
+            <tbody id="contratto1"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row">
+    <div class=" col-md-6" id="i2">
+        <table id="tbforn1" class="table table-bordered" ">
+            <thead id="thd">
+                <tr>
+                    <th>Codice</th>
+                </tr>
+            </thead>
+            <tbody id="tbd1"></tbody>
+        </table>
+    </div>
+</div>
+
+
+

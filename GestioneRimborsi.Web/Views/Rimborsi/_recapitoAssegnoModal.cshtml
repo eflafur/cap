@@ -1,0 +1,72 @@
+﻿@model GestioneRimborso
+
+@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+
+    var beneficiario = _clienteService.ClienteByID(Model.CodiceCliente);
+    if (Model.StatoDocumento == "MOD")
+    {
+        if (!string.IsNullOrEmpty(Model.Beneficiario) && Model.TipoRimborso == "ASS")
+        {
+            beneficiario = Model.Beneficiario;
+        }
+    }
+}
+
+<div class="modal fade text-left" id="recapitoAssegno" tabindex="-1" role="dialog" aria-labelledby="recapitoAssagnoModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="recapitoAssagnoModalTitle">
+                    <i class="fa fa-lg fa-inbox"></i>
+                    <span class="text-after-icon">Recapito Assegno</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        @{
+                            var attributes = new Dictionary<String, Object>();
+                            attributes.Add("role", "form");
+                            attributes.Add("class", "breath-on-top-8");
+                        }
+
+                        @using (Html.BeginForm("RecapitoAssegno", "Rimborsi", FormMethod.Post, attributes))
+                        {
+                            if (Model != null)
+                            {
+                                @Html.Hidden("RimborsoID", Model.NumeroDocumento)
+                                @Html.Hidden("CodCliente", Model.CodiceCliente)
+                                <div class="row">
+                                    <div class="col-sm-12">
+                                        <div class="form-group">
+                                            <label for="BeneficiarioAssegno" class="control-label">Beneficiario assegno</label>
+                                            @Html.TextBox("BeneficiarioAssegno", beneficiario, new { @class = "form-control", placeholder = "Beneficiario assegno" })
+                                            <label for="Indirizzo" class="control-label">Indirizzo</label>
+                                            @Html.TextBox("Indirizzo", Model.IndirizzoAssegno, new { @class = "form-control", placeholder = "Indirizzo" })
+                                            <label for="Localita" class="control-label">Località</label>
+                                            @Html.TextBox("Localita", Model.LocalitaAssegno, new { @class = "form-control", placeholder = "Localita" })
+                                            <label for="CAP" class="control-label">CAP</label>
+                                            @Html.TextBox("CAP", Model.CapAssegno, new { @class = "form-control", placeholder = "CAP" })
+                                            <label for="Provincia" class="control-label">Provincia</label>
+                                            @Html.TextBox("Provincia", Model.ProvinciaAssegno, new { @class = "form-control", placeholder = "Provincia" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-lg btn-default" data-dismiss="modal" onclick="ripristinaRecapitoAssegno();">
+                                        <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Annulla</span>
+                                    </button>
+                                    <button type="button" class="btn btn-lg btn-function" data-dismiss="modal">
+                                        <span>Salva</span>
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

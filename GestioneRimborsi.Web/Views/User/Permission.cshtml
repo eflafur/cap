@@ -1,0 +1,154 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model User
+@{
+    ViewBag.Title = "{0}'s Permissions".FormatWith(Model.FirstName.ToLower().ToTitleCase());
+
+    IUser _currentUser = RevoRequest.CurrentUser;
+
+    IList<IPermissionGroup> _groups = RevoContext.PermissionManager.BrowsePermissionGroups(RevoRequest.CurrentUser.IsPrivileged);
+}
+
+<div class="row">
+
+    <div class="col-sm-12">
+
+        <div class="row grid-title">
+            <div class="col-sm-12">
+                <h1>
+                    <a href="@CommonUrls.Users" title="Users list"><i class="fa fa-fw fa-users"></i></a>
+                    /
+                    <a href="@CommonUrls.UserDetail(Model.UserId)" title="User detail"><i class="fa fa-fw fa-user"></i></a>
+                    /
+                    @ViewBag.Title
+                </h1>
+            </div>
+            
+        </div>
+
+        @{
+            if (_groups.HasValues())
+            {
+                <div class="row">
+
+                    <div class="col-sm-12">
+
+                        <div class="panel panel-info breath-on-top-32">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    <i class="fa fa-lg fa-cubes"></i>
+                                    <span class="text-after-icon">Assign <strong>@Model.FirstName.ToLower().ToTitleCase()</strong> to a Group</span>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="row">
+                                    <div class="col-sm-11">
+                                        <div class="form-group">
+                                            <label for="ddlPermissionGroup" class="control-label">Select permission group</label>
+                                            <select class="form-control" id="ddlPermissionGroups">
+                                                <option id="group_@Guid.Empty.ToString()">User not present in any permission group...</option>
+                                                @{
+                                                    String _userGroupId = String.Empty;
+
+                                                    Object _o = RevoContext.PermissionManager.GetFirstPermissionGroupIdForUser(Model.UserId);
+                                                    if (_o != null)
+                                                    {
+                                                        _userGroupId = _o.ToString();
+                                                    }
+
+                                                    String _selected;
+                                                    foreach (IPermissionGroup _pg in _groups)
+                                                    {
+                                                        _selected = _pg.PermissionGroupId == _userGroupId ? "selected" : String.Empty;
+                                                        <option @_selected id="group_@_pg.PermissionGroupId">@_pg.Title</option>
+                                                    }
+                                                }
+                                            </select>
+                                            <span class="glyphicon glyphicon-chevron-down form-control-icon" aria-hidden="true"></span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-1" style="padding-top: 22px; padding-left: 3px !important;">
+                                        <a class="btn btn-primary" href="javascript:void(0);" onclick="setUserPermissionGroup();">
+                                            <i id="iconSave" class="fa fa-lg fa-save"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+        }
+
+        <div class="row">
+
+            <div class="col-sm-12" id="userPermissionContainer" style="display: block;">
+
+                @Html.Partial("~/Views/Security/_userPermissions.cshtml", Model)
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section scripts {
+<script>
+    $(function () {
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    function setUserPermissionGroup() {
+        var _url;
+        var _userId, _permissionGroupId;
+
+        startSaveOperation('iconSave');
+
+        _userId = '@Model.UserId';
+        _permissionGroupId = $("#ddlPermissionGroups option:selected").attr("id").replace("group_", "");
+
+        _url = "@CommonUrls.PermissionSetGroupForUser("_userId_", "_permissionCode_")".replace('_permissionGroupId_', _permissionGroupId).replace('_userId_', _userId);
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                userId: _userId,
+                permissionGroupId: _permissionGroupId
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+
+                    var _refreshUrl = '@Url.Action("GetUserPermissionList", "Security", new { userId = Model.UserId })';
+                    $("#userPermissionContainer").fadeOut(function () {
+                        $("#userPermissionContainer").html('<div class="text-center breath-on-top-32"><i class="fa fa-5x fa-pulse fa-spinner"></i></div>');
+                        $("#userPermissionContainer").fadeIn(function () {
+                            $("#userPermissionContainer").load(_refreshUrl);
+                        });
+                    });
+
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio dei dati');
+            }
+        }).done(function () {
+            endSaveOperation('iconSave');
+        }); // end ajax call
+    } // saveUser
+
+</script>
+}

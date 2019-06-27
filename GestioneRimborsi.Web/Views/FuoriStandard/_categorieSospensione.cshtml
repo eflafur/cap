@@ -1,0 +1,11 @@
+﻿@model List<CategoriaSospensione>
+<select id="categorieSospensioni" name="CATEGORIA_SOSPENSIONE" class="form-control" onchange="loadTipiSospensioni(false)">
+    <option value="-1">-- Seleziona una categoria --</option> 
+    @if (Model != null)
+    {
+        foreach (var item in Model)
+        {
+            <option value="@item.ID_CATEGORIA_SOSPENSIONE">@item.DESC_CATEGORIA_SOSPENSIONE</option>
+        }
+    }
+</select>

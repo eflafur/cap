@@ -1,0 +1,81 @@
+﻿@using GruppoCap
+@using GruppoCap.Core
+
+@{
+    IUser _user = RevoRequest.CurrentUser;
+    
+    if(_user == null)
+    {
+        Response.Redirect(CommonUrls.UserNotAuthenticated);
+    }
+       
+    if(_user.IsActive == false)
+    {
+        Response.Redirect(CommonUrls.UserNotEnabled);
+    }   
+      
+    if(_user.IsEnabledForApplication(Ambient.CurrentApplicationId) == false)
+    {
+        Response.Redirect(CommonUrls.UserNotPrivileged);
+    }
+
+    if (_user.HasPermissionOrIsPrivileged("administration.manage") == false)
+    {
+        Response.Redirect(CommonUrls.UserNotEnabled);
+    }
+}
+
+
+<div class="row">
+
+    <div class="col-sm-2">
+        @Html.Partial("_administrationMenu")
+    </div>
+
+    <div class="col-sm-10">
+
+        <div class="jumbotron">
+            <p style="font-variant: small-caps;">Gestione Rimborsi</p>
+            <h1>
+                <i class="fa fa-lg fa-cogs"></i>
+                <span class="text-after-icon">Setup Panel</span>
+            </h1>
+            
+            <br/>
+
+            <h3 class="breath-on-top-32"><span style="font-variant: small-caps;">Ambient</span> <strong>@Ambient.Current.ToUpper()</strong></h3>
+
+            <h3 class="breath-on-top-32" style="font-variant: small-caps;">Application:</h3>
+            @Ambient.CurrentApplicationId - @Ambient.CurrentApplicationName
+
+            <h3 style="font-variant: small-caps;">ConnectionString name:</h3>
+            @Ambient.CurrentApplicationConnectionStringName()
+
+            <h3 style="font-variant: small-caps;">ConnectionString:</h3>
+            @Ambient.CurrentApplicationConnectionString()
+        </div>
+        
+    </div>
+
+</div>
+
+<script>
+    $(function () {
+
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // INIT JQUERY DATEPICKER
+        $('.datepicker').datepicker({
+            format: 'dd/mm/yyyy'
+            , weekStart: 1
+        });
+
+        // NOW I'M JUST DETECTING IT, BUT I WILL STORE THIS INFO INTO A COOKIE
+        // BECAUSE I WILL NOT PRESENT THE ALERT MORE THAN ONCE...
+        if (detectIE() != false) {
+            $("#ie-detected").show();
+        }
+    });
+
+</script>

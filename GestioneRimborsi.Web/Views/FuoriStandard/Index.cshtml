@@ -1,0 +1,629 @@
+﻿@using GestioneRimborsi.Web.Models;
+
+@{
+    ViewBag.Title = "Index";
+
+    if (!CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.validazione"))
+    {
+        if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.approvazione") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.annullaPrestazione"))
+        {
+            Response.Redirect(CommonUrls.BaseUrl + "/FuoriStandard/ApprovazioneRettifiche");
+        }
+        else if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.storico"))
+        {
+            Response.Redirect(CommonUrls.BaseUrl + "/FuoriStandard/VisualizzaStorico");
+        }
+        else if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.nonIndennizzabili"))
+        {
+            Response.Redirect(CommonUrls.BaseUrl + "/FuoriStandard/RecuperoFuoriStandard");
+        }
+        else if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.gestisciRettifiche"))
+        {
+            Response.Redirect(CommonUrls.BaseUrl + "/FuoriStandard/GestisciRettifiche");
+        }
+        else if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.reportPrestazioni"))
+        {
+            Response.Redirect(CommonUrls.BaseUrl + "/FuoriStandard/ReportPrestazioni");
+        }
+        else { Response.Redirect(CommonUrls.BaseUrl); }
+    }
+
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+
+    var sortColumn = "nessunElemento";
+    var sortType = "nessunOrdinamento";
+    var page = 1;
+}
+<div class="row">
+    @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "")
+    @Html.Partial("~/views/FuoriStandard/_schedaFuoriStandard.cshtml", null)
+    @Html.Partial("~/views/FuoriStandard/_ricercaAvanzataModal.cshtml")
+    <div class="col-sm-12 space-container">
+        <div class="col-sm-12">
+            <div id="rowFilter">
+                <h2>
+                    @CommonSnippets.IconLinkToHomepage
+                    /
+                    <i class="fa fa-check-square-o"></i>
+                    <span class="text-after-icon">Validazione Fuori Standard</span>
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-12 space-container">
+        <div class="col-sm-2">
+            <div class="row">
+                <div class="col-sm-12">
+                    @Html.Partial("_leftMenu", "ValidazioneFuoriStandard")
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-10">
+            <div class="row container-fluid">
+                <div id="recuperoPrestazioniContainer" class="col-sm-12">
+                    <div class="container-fluid filterContainer">
+                        <div class="oneSixthLeft">
+                            <div class="dropdown" data-bind="@String.Format("firstTime")" id="dropDownFilters">
+                                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" onclick="caricaFiltriPrestazioni();" aria-expanded="false">
+                                    <span class="fa fa-filter"></span>
+                                    <span class="text-after-icon mr-r">Filtri</span><span class="text-after-icon caret"></span>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-left" role="menu" id="menuFiltri">
+
+                                </div>
+                            </div>
+                            @*@Html.Partial("~/views/FuoriStandard/_dropDownFilters.cshtml", new GestioneRimborsi.Web.Models.UnifiedSearchModel("ValidazioneFS", new List<UnifiedSearchOptions>() {
+                                UnifiedSearchOptions.CaseId, UnifiedSearchOptions.CodCliente, UnifiedSearchOptions.DataFineAttivita,
+                                UnifiedSearchOptions.IndicatoreStd, UnifiedSearchOptions.Tipologia}))*@
+                        </div>
+                        <div class="pull-right mr-r mr-l" id="numeroPagineContainer">
+                            <select class="form-control selectCaret" id="numeroPagine" name="numeroPagine" onchange="filtraNumeroPagine();">
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="20">20</option>
+                                <option value="25">25</option>
+                                <option value="30">30</option>
+                                <option value="35">35</option>
+                                <option value="40">40</option>
+                                <option value="45">45</option>
+                                <option value="50">50</option>
+                            </select>
+                        </div>
+                        <div class="pull-right">
+                            <a role="button" title="scarica contenuto dettagliato in excel" id="esportaPrestazioni" class="btn btn-default mr-l" onclick="showWaiter();"><i class="fa fa-lg fa-file-excel-o"></i></a>
+                        </div>
+                        <div class="col-sm-3 pull-right">
+                            <div class="btn-group pull-left" id="TuttiPendChiusi" role="group" aria-label="Basic example">
+                                <button type="button" title="Fuori Standard in attesa di validazione" id="Tutti" value="T" class="btn btn-secondary btn-default btnGroupFS actived" onclick="cercaFuoriStandard(event,'@sortColumn', '@sortType', '@page');"><i class="fa fa-lg fa-list"></i></button>
+                                <button type="button" title="Fuori Standard in attesa di approvazione" id="Pend" value="A" class="btn btn-secondary btn-default btnGroupFS" onclick="getPendenti();"><i class="fa fa-lg fa-gears"></i></button>
+                                <button type="button" title="Fuori Standard rifiutati" id="Chiusi" value="R" class="btn btn-secondary btn-default btnGroupFS" onclick="getRifiutati();"><i class="fa fa-lg fa-ban"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-sm-12 cointainerTableFuoriStandard bg-w" id="indennizziTableContainer">
+                                @Html.Partial("~/views/FuoriStandard/_elencoFuoriStandardAperti.cshtml", null)
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="div-span-info">
+                                <a class="close" data-dismiss="alert" aria-label="close">×</a>
+                                <i class="fa fa-lg fa-info-circle"></i><span> Individua il documento da gestire , quindi fai click sull'icona <i id="imgInfoPanel" class="fa fa-arrow-circle-right"></i> per <span id="txtInfoPanel">aprire la maschera di validazione.</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(".application-title").text("Gestione Fuori Standard");
+
+    $(function () {
+        $('#dataFine').datetimepicker();
+    });
+
+    $(function () {
+        $('#dataInizio').datetimepicker();
+    });
+
+    $("#Tutti").css({
+        "background-color": "#3E7819",
+        "border-color": "#3E7819",
+        "color": "white",
+    });
+
+    function filtraDati(sortColumn, sortType, page) {
+
+        $("#imgInfoPanel").removeClass("fa-eye");
+        $("#imgInfoPanel").addClass("fa-arrow-circle-right");
+        $("#txtInfoPanel").text("aprire la maschera di validazione.");
+
+        $("#Tutti").css({
+            "background-color": "#3E7819",
+            "border-color": "#3E7819",
+            "color": "white",
+        });
+
+        $("#Tutti").addClass("actived");
+        $("#Pend").removeClass("actived");
+        $("#Chiusi").removeClass("actived");
+
+        $("#Chiusi").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+        $("#Pend").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+        displayModalWaiter();
+
+        var _codGruppo = $("#codGruppo option:selected").val();
+        if (_codGruppo == null) {
+            _codGruppo = $("#codGruppo").data("bind");
+        }
+
+        var counts = 0;
+
+        var _url = '@Url.Action("CercaFuoriStandardByTipologia", "FuoriStandard", new { CodGruppo = "_codGruppo_" })'.replace('_codGruppo_', encodeURIComponent(_codGruppo));
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                CodGruppo: _codGruppo,
+            }),
+            success: function (result) {
+                $("#indennizziTableContainer").html(result);
+                setIndennizziDataTable();
+                filtraNumeroPagine();
+                if (sortType == "asc") {
+                    page = parseInt(page) + 2;
+                    $("." + sortColumn).click();
+                    $("li.paginate_button:nth-child(" + page + ")").click();
+                }
+                else if (sortType == "desc") {
+                    page = parseInt(page) + 2;
+                    $("." + sortColumn).click();
+                    $("." + sortColumn).click();
+                    $("li.paginate_button:nth-child(" + page + ")").click();
+                }
+
+                $(".modal-backdrop").addClass("invisible");
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+
+        var _tipologia = $("#Tipologia option:selected").val();
+        var _indicatore = $("#Indicatore option:selected").val();
+        var _codRintracciabilita = $("#codRintracciabilita").val().trim();
+        var _codCliente = $("#codiceCliente").val().trim();
+        var _dataInizio = $("#censitoDal").val();
+        if (_dataInizio != undefined && _dataInizio != null && _dataInizio != '')
+            _dataInizio = new Date(_dataInizio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _dataFine = $("#censitoAl").val();
+        if (_dataFine != undefined && _dataFine != null && _dataFine != '')
+            _dataFine = new Date(_dataFine.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _inStandard = $("#flgInStandard option:selected").val();
+        var _checkCliente = true;
+        var _checkIndennizzabile = false;
+
+        var _filteredUrl = '@Html.Raw(Url.Action("ExportPrestazioni", "FuoriStandard", new { view = "DaValidare", tipologia = "_tipologia_", indicatore = "_indicatore_", codRintracciabilita = "_codRintracciabilita_", codCliente = "_codCliente_", dataInizio = "_dataInizio_", dataFine = "_dataFine_", inStandard = "_inStandard_", checkCliente = "_checkCliente_", checkIndennizzabile = "_checkIndennizzabile_" }))'
+            .replace("_tipologia_", _tipologia).replace("_indicatore_", _indicatore).replace("_codRintracciabilita_", _codRintracciabilita).replace("_codCliente_", _codCliente).replace("_dataInizio_", _dataInizio).replace("_dataFine_", _dataFine).replace("_inStandard_", _inStandard).replace("_checkCliente_", _checkCliente).replace("_checkIndennizzabile_", _checkIndennizzabile);
+
+        $("#esportaPrestazioni").attr("href", _filteredUrl);
+    }
+
+    function cercaFuoriStandard(e, sortColumn, sortType, page) {
+        if (e != null) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        $("#imgInfoPanel").removeClass("fa-eye");
+        $("#imgInfoPanel").addClass("fa-arrow-circle-right");
+        $("#txtInfoPanel").text("aprire la maschera di validazione.");
+
+        $("#Tutti").css({
+            "background-color": "#3E7819",
+            "border-color": "#3E7819",
+            "color": "white",
+        });
+
+        $("#Tutti").addClass("actived");
+        $("#Pend").removeClass("actived");
+        $("#Chiusi").removeClass("actived");
+
+        $("#Chiusi").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+        $("#Pend").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+
+
+        var codRintracciabilita = $("#codRintracciabilita").val();
+        if ($("#codRintracciabilita").val() != null) {
+            codRintracciabilita = $("#codRintracciabilita").val().trim();
+        }
+
+        var codCliente = $("#codiceCliente").val();
+        if ($("#codiceCliente").val() != null) {
+            codCliente = $("#codiceCliente").val().trim();
+        }
+
+        var _checkLoadFilters = $("#flgInStandard").val();
+        if (_checkLoadFilters == null) {
+            window.location.reload();
+            hideModalWaiter();
+            return;
+        }
+
+        displayModalWaiter();
+
+        var _tipologia = $("#codGruppo option:selected").val();
+        if (_tipologia == null) {
+            //hideModalWaiter();
+            //return;
+            _tipologia = $("#codGruppo").data("bind");
+        }
+
+        var _url = '@Url.Action("CercaFsRettifiche", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                view: "RettificheFS",
+                tipologia: _tipologia,
+                indicatore: $("#Indicatore option:selected").val(),
+                codRintracciabilita: codRintracciabilita,
+                codCliente: codCliente,
+                dataInizio: $("#censitoDal").val(),
+                dataFine: $("#censitoAl").val(),
+                inStandard: $("#flgInStandard option:selected").val(),
+                stato: ""
+            }),
+            success: function (result) {
+                $("#indennizziTableContainer").html(result);
+                setIndennizziDataTable();
+                filtraNumeroPagine();
+                if (sortType == "asc") {
+                    page = parseInt(page) + 2;
+                    $("." + sortColumn).click();
+                    $("li.paginate_button:nth-child(" + page + ")").click();
+                }
+                else if (sortType == "desc") {
+                    page = parseInt(page) + 2;
+                    $("." + sortColumn).click();
+                    $("." + sortColumn).click();
+                    $("li.paginate_button:nth-child(" + page + ")").click();
+                }
+                $(".modal-backdrop").addClass("invisible");
+                $(".dropdown").removeClass("open");
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+
+        var _indicatore = $("#Indicatore option:selected").val();
+        var _codRintracciabilita = codRintracciabilita;
+        var _codCliente = codCliente;
+        var _dataInizio = $("#censitoDal").val();
+        if (_dataInizio != undefined && _dataInizio != null && _dataInizio != '')
+            _dataInizio = new Date(_dataInizio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _dataFine = $("#censitoAl").val();
+        if (_dataFine != undefined && _dataFine != null && _dataFine != '')
+            _dataFine = new Date(_dataFine.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _inStandard = $("#flgInStandard option:selected").val();
+        var _checkCliente = true;
+        var _checkIndennizzabile = false;
+
+        var _filteredUrl = '@Html.Raw(Url.Action("ExportPrestazioni", "FuoriStandard", new { view = "RettificheFS", tipologia = "_tipologia_", indicatore = "_indicatore_", codRintracciabilita = "_codRintracciabilita_", codCliente = "_codCliente_", dataInizio = "_dataInizio_", dataFine = "_dataFine_", inStandard = "_inStandard_", stato = "", checkCliente = "_checkCliente_", checkIndennizzabile = "_checkIndennizzabile_" }))'
+            .replace("_tipologia_", _tipologia).replace("_indicatore_", _indicatore).replace("_codRintracciabilita_", _codRintracciabilita).replace("_codCliente_", _codCliente).replace("_dataInizio_", _dataInizio).replace("_dataFine_", _dataFine).replace("_inStandard_", _inStandard).replace("_checkCliente_", _checkCliente).replace("_checkIndennizzabile_", _checkIndennizzabile);
+
+        $("#esportaPrestazioni").attr("href", _filteredUrl);
+    }
+
+    function setIndennizziDataTable() {
+        if ($.fn.dataTable.isDataTable('#gridIndennizzi')) {
+            _indennizziTable = $('#gridIndennizzi').DataTable();
+        }
+        else {
+            _indennizziTable = $('#gridIndennizzi').DataTable({
+                language: {
+                    info: "Record da <strong>_START_</strong> a <strong>_END_</strong> di <strong>_TOTAL_</strong>",
+                    infoEmpty: "",
+                    zeroRecords: "",
+                    emptyTable: "<div class='row' style='padding-top:10px;'><div class='col-sm-1 text-right'><span class='fa fa-3x fa-arrow-up'></span></div><div class='col-sm-11'><span style='font-size:18px;'>Nessuna prestazione individuata. Fai click su 'Filtri' per impostare i parametri di ricerca, e individuare la prestazione desiderata.</span></div></div>",
+                    paginate: {
+                        first: "<<",
+                        previous: "<",
+                        next: ">",
+                        last: ">>",
+                    },
+                },
+                "pageLength": 5,
+                columns: [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                { "orderable": false },
+                ],
+                order: [9, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    $(function () {
+        setIndennizziDataTable();
+        //$("#headingTwo a").click();
+    });
+
+    function getPendenti() {
+
+        $("#imgInfoPanel").removeClass("fa-arrow-circle-right");
+        $("#imgInfoPanel").addClass("fa-eye");
+        $("#txtInfoPanel").text("visualizzare le informazioni correlate.");
+
+        $("#Pend").css({
+            "background-color": "#3E7819",
+            "border-color": "#3E7819",
+            "color": "white",
+        });
+
+        $("#Pend").addClass("actived");
+        $("#Tutti").removeClass("actived");
+        $("#Chiusi").removeClass("actived");
+
+        $("#Chiusi").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+        $("#Tutti").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+        var _tipologia = $("#codGruppo option:selected").val();
+        if (_tipologia == null) {
+            _tipologia = $("#codGruppo").data("bind");
+        }
+
+        var codRintracciabilita = $("#codRintracciabilita").val();
+        if ($("#codRintracciabilita").val() != null) {
+            codRintracciabilita = $("#codRintracciabilita").val().trim();
+        }
+
+        var codCliente = $("#codiceCliente").val();
+        if ($("#codiceCliente").val() != null) {
+            codCliente = $("#codiceCliente").val().trim();
+        }
+
+        displayModalWaiter();
+
+        var _url = '@Url.Action("CercaFsRettifiche", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                view: "RettificheFS",
+                tipologia: _tipologia,
+                indicatore: $("#Indicatore option:selected").val(),
+                codRintracciabilita: codRintracciabilita,
+                codCliente: codCliente,
+                dataInizio: $("#censitoDal").val(),
+                dataFine: $("#censitoAl").val(),
+                inStandard: "FS",
+                stato: "daApprovareSolaLettura"
+            }),
+            success: function (result) {
+                $("#indennizziTableContainer").html(result);
+                setIndennizziDataTable();
+                filtraNumeroPagine();
+                $(".dropdown").removeClass("open");
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+
+        var _indicatore = $("#Indicatore option:selected").val();
+        var _codRintracciabilita = codRintracciabilita;
+        var _codCliente = codCliente;
+        var _dataInizio = $("#censitoDal").val();
+        if (_dataInizio != undefined && _dataInizio != null && _dataInizio != '')
+            _dataInizio = new Date(_dataInizio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _dataFine = $("#censitoAl").val();
+        if (_dataFine != undefined && _dataFine != null && _dataFine != '')
+            _dataFine = new Date(_dataFine.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _inStandard = "FS";
+        var _checkCliente = true;
+        var _checkIndennizzabile = false;
+
+        var _filteredUrl = '@Html.Raw(Url.Action("ExportPrestazioni", "FuoriStandard", new { view = "RettificheFS", tipologia = "_tipologia_", indicatore = "_indicatore_", codRintracciabilita = "_codRintracciabilita_", codCliente = "_codCliente_", dataInizio = "_dataInizio_", dataFine = "_dataFine_", inStandard = "_inStandard_", stato = "daApprovare", checkCliente = "_checkCliente_", checkIndennizzabile = "_checkIndennizzabile_" }))'
+            .replace("_tipologia_", _tipologia).replace("_indicatore_", _indicatore).replace("_codRintracciabilita_", _codRintracciabilita).replace("_codCliente_", _codCliente).replace("_dataInizio_", _dataInizio).replace("_dataFine_", _dataFine).replace("_inStandard_", _inStandard).replace("_checkCliente_", _checkCliente).replace("_checkIndennizzabile_", _checkIndennizzabile);
+
+        $("#esportaPrestazioni").attr("href", _filteredUrl);
+    }
+
+    function getRifiutati() {
+
+        $("#imgInfoPanel").removeClass("fa-arrow-circle-right");
+        $("#imgInfoPanel").addClass("fa-eye");
+        $("#txtInfoPanel").text("visualizzare le informazioni correlate.");
+
+        $("#Chiusi").css({
+            "background-color": "#3E7819",
+            "border-color": "#3E7819",
+            "color": "white",
+        });
+
+        $("#Chiusi").addClass("actived");
+        $("#Tutti").removeClass("actived");
+        $("#Pend").removeClass("actived");
+
+        $("#Tutti").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+        $("#Pend").css({
+            "background-color": "#F8F8F8",
+            "border-color": "#3E7819",
+            "color": "#3E7819",
+        });
+
+        var codRintracciabilita = $("#codRintracciabilita").val();
+        if ($("#codRintracciabilita").val() != null) {
+            codRintracciabilita = $("#codRintracciabilita").val().trim();
+        }
+
+        var codCliente = $("#codiceCliente").val();
+        if ($("#codiceCliente").val() != null) {
+            codCliente = $("#codiceCliente").val().trim();
+        }
+
+        displayModalWaiter();
+
+        var _tipologia = $("#codGruppo option:selected").val();
+        if (_tipologia == null) {
+            _tipologia = $("#codGruppo").data("bind");
+        }
+
+        var _url = '@Url.Action("CercaFsRettifiche", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                view: "RettificheFS",
+                tipologia: _tipologia,
+                indicatore: $("#Indicatore option:selected").val(),
+                codRintracciabilita: codRintracciabilita,
+                codCliente: codCliente,
+                dataInizio: $("#censitoDal").val(),
+                dataFine: $("#censitoAl").val(),
+                inStandard: "FS",
+                stato: "Rifiutate"
+            }),
+            success: function (result) {
+                $("#indennizziTableContainer").html(result);
+                setIndennizziDataTable();
+                filtraNumeroPagine();
+                $(".dropdown").removeClass("open");
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+
+        var _indicatore = $("#Indicatore option:selected").val();
+        var _codRintracciabilita = codRintracciabilita;
+        var _codCliente = codCliente;
+        var _dataInizio = $("#censitoDal").val();
+        if (_dataInizio != undefined && _dataInizio != null && _dataInizio != '')
+            _dataInizio = new Date(_dataInizio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _dataFine = $("#censitoAl").val();
+        if (_dataFine != undefined && _dataFine != null && _dataFine != '')
+            _dataFine = new Date(_dataFine.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$2/$1/$3")).toISOString()
+        var _inStandard = "FS";
+        var _checkCliente = true;
+        var _checkIndennizzabile = false;
+
+        var _filteredUrl = '@Html.Raw(Url.Action("ExportPrestazioni", "FuoriStandard", new { view = "RettificheFS", tipologia = "_tipologia_", indicatore = "_indicatore_", codRintracciabilita = "_codRintracciabilita_", codCliente = "_codCliente_", dataInizio = "_dataInizio_", dataFine = "_dataFine_", inStandard = "_inStandard_", stato = "Rifiutate", checkCliente = "_checkCliente_", checkIndennizzabile = "_checkIndennizzabile_" }))'
+            .replace("_tipologia_", _tipologia).replace("_indicatore_", _indicatore).replace("_codRintracciabilita_", _codRintracciabilita).replace("_codCliente_", _codCliente).replace("_dataInizio_", _dataInizio).replace("_dataFine_", _dataFine).replace("_inStandard_", _inStandard).replace("_checkCliente_", _checkCliente).replace("_checkIndennizzabile_", _checkIndennizzabile);
+
+        $("#esportaPrestazioni").attr("href", _filteredUrl);
+    }
+
+    function filtraNumeroPagine() {
+        var table = $('#gridIndennizzi').DataTable();
+        table.page.len($("#numeroPagine").val()).draw();
+    }
+
+    function caricaFiltriPrestazioni() {
+        var firstTime = false;
+
+        if (($("#dropDownFilters").data("bind") == "firstTime")) {
+            firstTime = true;
+        }
+
+        if (firstTime == true) {
+
+            var _url = '@Url.Action("FiltraDatiDropdown", "FuoriStandard")';
+            //, new { view = "_view_" })'.replace("_view_", view)
+            displayModalWaiter();
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    view: "ValidazioneFS",
+                    firstTime: firstTime,
+                }),
+                success: function (result) {
+                    $("#dropDownFilters").data("bind", "noFirstTime");
+                    $("#menuFiltri").html(result);
+                    hideModalWaiter();
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter();
+                    notifyWarning(error + ", riprova più tardi..");
+                }
+            });
+        }
+    }
+
+    function showWaiter() {
+        displayModalWaiter();
+        setTimeout(function () {
+            hideModalWaiter();
+        }, 3500)
+    }
+
+</script>
+

@@ -1,0 +1,778 @@
+﻿@model GestioneRimborso
+
+@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+    IRimborsoService _rimborsoService = (IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborso>();
+
+
+    ISubCollection <AllegatoRimborso> rimbDoc = null;
+    rimbDoc = _rimborsoService.GetElencoDocumenti(Model.AnnoDocumento, Model.NumeroDocumento);
+
+    ISubCollection<DettaglioRimborso> rimbDett = null;
+    ISubCollection<InsolutoBolletta> insoluti = null;
+    Decimal totale = Model.ImportoTotaleRimborso;
+    Decimal Mandato = 0;
+    IBAN ibanEntity = _clienteService.GetIBAN(Model.CodiceCliente);
+
+    var cliente = _clienteService.InfoCliente(Model.CodiceCliente);
+    var recapito = _clienteService.InfoRecapito(Model.CodicePuntoFornitura, Model.NumeroDocumento, Model.TipoDocumento, Model.CodiceCliente);
+    if (Model.StatoDocumento == "INS" && Model.TipoDocumento == "BIIN")
+    {
+        Model.Provincia = cliente.Provincia;
+        Model.Localita = cliente.Comune;
+        Model.Strada = cliente.Strada;
+        Model.Civico = cliente.NumeroCivico;
+        Model.CAP = cliente.CAP;
+        Model.Beneficiario = cliente.ragioneSocialeCliente;        
+        Model.Intestazione = cliente.ragioneSocialeCliente;
+    }
+    if (Model.StatoDocumento == "INS" && recapito != null)
+    {
+        Model.Provincia = recapito.Provincia;
+        Model.Localita = recapito.Comune;
+        Model.Strada = recapito.Strada;
+        Model.Civico = recapito.NumeroCivico;
+        Model.CAP = recapito.CapSpedizione;
+        Model.Beneficiario = _clienteService.ClienteByID(Model.CodiceCliente);
+        Model.CapAssegno = recapito.CapSpedizione;
+        Model.IndirizzoAssegno = recapito.Strada + " " + recapito.NumeroCivico;
+        Model.LocalitaAssegno = recapito.Comune;
+        Model.ProvinciaAssegno = recapito.Provincia;
+        Model.Intestazione = recapito.RagioneSociale;
+    }
+    else if (Model.StatoDocumento == "MOD" && recapito != null)
+    {
+        if (string.IsNullOrEmpty(Model.Beneficiario))
+        { Model.Beneficiario = _clienteService.ClienteByID(Model.CodiceCliente); }
+
+        if (string.IsNullOrEmpty(Model.Localita))
+        { Model.Localita = recapito.Comune; }
+
+        if (string.IsNullOrEmpty(Model.Strada))
+        { Model.Strada = recapito.Strada; }
+
+        if (string.IsNullOrEmpty(Model.Civico))
+        { Model.Civico = recapito.NumeroCivico; }
+
+        if (string.IsNullOrEmpty(Model.CAP))
+        { Model.CAP = recapito.CapSpedizione; }
+
+        if (string.IsNullOrEmpty(Model.Provincia))
+        { Model.Provincia = recapito.Provincia; }
+
+        if (string.IsNullOrEmpty(Model.CapAssegno))
+        { Model.CapAssegno = recapito.CapSpedizione; }
+
+        if (string.IsNullOrEmpty(Model.IndirizzoAssegno))
+        { Model.IndirizzoAssegno = recapito.Strada + " " + recapito.NumeroCivico; }
+
+        if (string.IsNullOrEmpty(Model.LocalitaAssegno))
+        { Model.LocalitaAssegno = recapito.Comune; }
+
+        if (string.IsNullOrEmpty(Model.ProvinciaAssegno))
+        { Model.ProvinciaAssegno = recapito.Provincia; }
+
+        if (string.IsNullOrEmpty(Model.Intestazione))
+        { Model.Intestazione = recapito.RagioneSociale; }
+    }
+
+    CoordinateBancarie DatiIBAN = null;
+    string IBAN = "";
+    if (Model.StatoDocumento == "MOD")
+    {
+        var IBANHelper = new IBANHelper();
+        IBAN = IBANHelper.CalcolaIBAN(Model.ABI, Model.CAB, Model.ContoCorrente, Model.CIN);
+    }
+    if (ibanEntity != null)
+    {
+        IBAN = ibanEntity.CodiceIBAN;
+    }
+    DatiIBAN = _clienteService.GetDatiIBAN(Model.CodiceCliente, Model.CodicePuntoFornitura, Model.NumeroDocumento, Model.TipoDocumento);
+    if (DatiIBAN != null)
+    {
+        if (!string.IsNullOrEmpty(DatiIBAN.ABI) && string.IsNullOrEmpty(IBAN))
+        {
+            var IBANHelper = new IBANHelper();
+            var CIN = IBANHelper.CalcolaCIN(DatiIBAN.ABI, DatiIBAN.CAB, DatiIBAN.ContoCorrente);
+            IBAN = IBANHelper.CalcolaIBAN(DatiIBAN.ABI, DatiIBAN.CAB, DatiIBAN.ContoCorrente, CIN);
+
+        }
+        else if (string.IsNullOrEmpty(DatiIBAN.ABI) && ibanEntity != null)
+        {
+            IBAN = ibanEntity.CodiceIBAN;
+        }
+    }
+
+    insoluti = _clienteService.GetInsoluti(Model.CodiceCliente, Model.AnnoDocumento, Model.NumeroDocumento, Model.TipoDocumento);
+    rimbDett = _rimborsoService.GetRimborsoDettaglio(Model.AnnoDocumento, Model.NumeroDocumento);
+    if (rimbDett != null && rimbDett.Items.Count > 0)
+    {
+        var rimb = rimbDett.Items.FirstOrDefault(x => x.TipoRimborso == "MAND" || x.TipoRimborso == "PRBO");
+        if (rimb != null)
+        {
+            Mandato = rimb.Importo;
+        }
+    }
+
+    totale = Model.ImportoTotaleRimborso;
+    ViewBag.Title = "DettaglioRimborso";
+    bool IsSuperUser = RevoRequest.CurrentUser.IsSuperUser();
+}
+
+<div class="row width100">
+    <div class="col-sm-12 space-container mr-l">
+        <div class="col-sm-11 mr-l">
+            @if (IsSuperUser && 1 == 0)
+            {
+                <div class="container-information pull-right">
+                    <span class="btn-lg">
+                        Impersonificazione utente:
+                        <b class="btn-lg">@ViewData["Utente"].ToString()</b>
+                    </span>
+                </div>
+            }
+            <h1>
+                <a href="@UrlFor.HomeRimborsi" title="torna alla homepage"><i class="fa fa-arrow-left"></i></a>
+                /
+                <i class="fa fa-credit-card"></i>
+                <span class="text-after-icon">Scheda Rimborso</span>
+            </h1>
+        </div>
+    </div>
+</div>
+
+<div class="row mr-l">
+    @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "")
+    @Html.Partial("~/views/rimborsi/_beneficiarioModal.cshtml", Model)
+    @Html.Partial("~/views/rimborsi/_intestazioneLettera.cshtml", Model)
+    @Html.Partial("~/views/rimborsi/_recapitoAssegnoModal.cshtml", Model)
+    @Html.Partial("~/views/rimborsi/_aggiungiFileModal.cshtml", Model)
+    @Html.Partial("~/views/rimborsi/_confermaModificheModal.cshtml", "Cancellare il documento?")
+
+    <div class="col-sm-12">
+        @if (Model.TipoDocumento == "Bonus" || Model.TipoDocumento == "BIIN")
+        {
+            <div class="col-sm-12">
+                <div class="col-sm-11 alert-warning text-center" id="txtBonusIdrico">
+                    BONUS IDRICO
+                </div>
+            </div>
+        }
+
+        @if (Model.TipoDocumento == "FuoriStandard")
+        {
+            <div class="col-sm-12">
+                <div class="col-sm-11 alert-warning text-center" id="txtIndennizzo">
+                    INDENNIZZO
+                </div>
+            </div>
+        }
+        <label class="control-label col-md-11 col-xs-12 information-label">
+            <i id="omino" class="fa fa-2x fa-user"></i><label class="text-after-icon fontSizeMedium">Utente:</label><span id="infoDatiClienteRimborso">@Model.CodiceCliente (@cliente.codClienteIntegra) @cliente.ragioneSocialeCliente</span>
+            <br />
+            <br />
+            <i id="doc" class="fa fa-2x fa-sticky-note"> </i><label class="text-after-icon fontSizeMedium">Documento:</label><span id="infoDatiRimborso">@Model.TipoDocumento @Model.AnnoDocumento n. @Model.NumeroDocumento</span>
+            <br />
+            <label id="lblTitleImporto">Importo: </label><span id="txtImportoTotale" class="mr-l"> € @Model.ImportoTotaleRimborso </span>
+        </label>
+    </div>
+</div>
+
+<div class="row mr-l">
+    <div class="col-sm-11 space-container bg-w paddingTop15">
+        <div class="col-sm-7">
+            <div class="col-sm-12 container-information bg-w" id="gridInsolutiTableContainer">
+                <h3>Insoluti Cliente</h3>
+                <table id="grigliaInsoluti" class="table table-condensed table-hover">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="text-left">Cod. Bolletta</th>
+                            <th class="text-left">Data Scad.</th>
+                            <th class="text-right">Importo in compensazione</th>
+                            <th class="text-right">Residuo Bolletta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            foreach (GestioneRimborsi.Core.InsolutoBolletta _ins in insoluti.Items)
+                            {
+                                String _trClass = String.Empty;
+
+                                <tr class="@_trClass insoluti" onclick="selectRow(event);">
+                                    <td class="text-left">
+                                        <input class="chkSelectRow" type="checkbox" id="chk_@_ins.CodiceBolletta" checked="@Convert.ToBoolean(_ins.Gestito)" onclick="editImporto('@_ins.CodiceBolletta',event);" />
+                                    </td>
+                                    <td class="text-left CodiceBolletta">@_ins.CodiceBolletta</td>
+                                    <td class="text-left">@_ins.Scadenza.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-right"><input type="hidden" id="txtHidden_@_ins.CodiceBolletta" value="@_ins.ImportoDaCompensare" /><input type="text" class="form-control importoDaCompensare" id="txt_@_ins.CodiceBolletta" value="@_ins.ImportoDaCompensare" onchange="setImpoTot(event,'@_ins.CodiceBolletta');" readonly disabled /> </td>
+                                    <td class="text-right"><span id="resBol_@_ins.CodiceBolletta">@_ins.ResiduoBolletta</span></td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-sm-5">
+            <div class="col-sm-12 container-information bg-w" id="gridDocumentazioneRimborso">
+                @if (RevoRequest.CurrentUser.IsSuperUser() || (Model.StatoDocumento == "MOD" && Model.UtenteInserimento == RevoRequest.CurrentUser.UserId) || Model.StatoDocumento == "INS")
+                {
+                    <button type="button" class="btn btn-function pull-right mt-10 mb-10" data-toggle="modal" data-target="#aggiungiFileModal">
+                        <i class="fa fa-lg fa-copy">
+                        </i>
+                        <span class="text-after-icon">Aggiungi file</span>
+                    </button>
+                }
+                <h3 class="mt-10">Documentazione allegata</h3>
+                <div class="col-sm-12" id="gridDocAllegatiTableContainer">
+                    @Html.Partial("_elencoFileRimborsi", rimbDoc)
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mr-l">
+    <div class="col-sm-11 space-container bg-w">
+        <div class="col-sm-12">
+            <div class="col-sm-12 container-information bg-w paddingBottom20">
+                <h3>Regole per la restituzione</h3>
+                <div class="col-sm-3 mt-10">
+                    <label class="control-label fontSizeMedium">Mandato di pagamento:</label>
+                    <div class="input-group col-sm-10">
+                        <input type="hidden" id="hiddenMandato" value="@Mandato" />
+                        <input type="text" class="form-control text-right" id="txtMandato" value="@Mandato" onchange="setMandato(event);">
+                        <div class="input-group-btn">
+                            <button type="button" id="compensaMandato" class="btn btn-default" title="compensa il totale" onclick="compensazioneMandato();">
+                                <i id="iconCalculator" class="fa fa-lg fa-calculator"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-5 mt-10">
+                    <label class="control-label fontSizeMedium">Tipo Rimborso:</label>
+                    <select class="form-control selectCaret" id="RegoleRestituzione" name="RegoleRestituzione" data-bind="@(Model != null ? Model.TipoDocumento : "") ">
+                        @if (Model.TipoRimborso == "BON" && Model.TipoDocumento != "Bonus")
+                        {
+                            <option value="BON" selected>Bonifico</option>
+                        }
+                        else if (Model.TipoDocumento != "Bonus")
+                            {
+                            <option value="BON">Bonifico</option>
+                        }
+                        @*@if (Model.TipoRimborso == "ASS" && Model.TipoDocumento != "Bonus" && Model.TipoDocumento != "BIIN")
+                        {
+                            <option value="ASS" selected>Assegno</option>
+                        }
+                        else if (Model.TipoDocumento != "Bonus" && Model.TipoDocumento != "BIIN")
+                        {
+                            <option value="ASS">Assegno</option>
+                        }*@
+                        @if (Model.TipoRimborso == "PRB" && Model.TipoDocumento != "BIIN")
+                        {
+                            <option value="PRB" selected>Accredito</option>
+                        }
+                        else if (Model.TipoDocumento != "BIIN")
+                        {
+                            <option value="PRB">Accredito</option>
+                        }
+                        @if (Model.TipoRimborso == "BOD")
+                        {
+                            <option value="BOD" selected>Bonifico in circolarità</option>
+                        }
+                        else
+                        {
+                            <option value="BOD">Bonifico in circolarità</option>
+                        }
+                    </select>
+                    <button type="button" class="btn btn-function mt-10 pull-left" data-toggle="modal" data-target="#intestazioneLettera" onclick="saveIntestazioneLettera();">
+                        <i class="fa fa-lg fa-envelope">
+                        </i>
+                        <span class="text-after-icon">Intestazione Lettera</span>
+                    </button>
+                    <div class="isBON col-sm-5">
+                        <button type="button" class="btn btn-function mt-10" data-toggle="modal" data-target="#impostaBeneficiario" onclick="saveBeneficiario();">
+                            <i class="fa fa-lg fa-user"></i>
+                            <span class="text-after-icon">Beneficiario</span>
+                        </button>
+                    </div>
+                    @*<div class="isASS col-sm-5">
+                        <button type="button" class="btn btn-function mt-10" data-toggle="modal" data-target="#recapitoAssegno" onclick="saveRecapitoAssegno();">
+                            <i class="fa fa-lg fa-inbox"></i>
+                            <span class="text-after-icon">Recapito Assegno</span>
+                        </button>
+                    </div>*@
+
+                </div>
+                <div class="col-sm-4 mt-10">
+                    <div class="isBON">
+                        <label class="control-label isBON fontSizeMedium">IBAN:</label>
+                        <input type="text" class="form-control text-left" id="txtIBAN" value="@IBAN" disabled>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-12 container-information bg-w mt-10 paddingBottom20">
+                <label class="pull-left mt-10 fontSizeMedium">Totale:</label>
+                <input class="pull-left mt-10 mr-l text-right txtTotaleRimborso" type="text" id="txtTotale" value="0" disabled>
+                <label class="pull-left mt-10 mr-l fontSizeMedium">su:</label>
+                <input class="pull-left mt-10 mr-l text-right txtTotaleRimborso" type="text" value='@totale' id="txtSu" disabled>
+                @*@if (RevoRequest.CurrentUser.IsSuperUser() || (Model.StatoDocumento == "MOD" && Model.UtenteInserimento == RevoRequest.CurrentUser.UserId) || Model.StatoDocumento == "INS")
+                {
+                    <button type="button" class="btn btn-function mt-10 mr-l" id="registraRimborso" onclick="registraRimborso();" disabled>Registra</button>
+                }*@
+                
+                <button type="button" class="btn btn-function mt-10 mr-l" id="registraRimborso" onclick="registraRimborso();" disabled>Registra</button>
+              
+                  <a id="btnEsci" class="btn btn-function mt-10 mr-l" href='@UrlFor.HomeRimborsi'>Esci</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(".application-title").text("Gestione Rimborsi");
+    
+    if($("#RegoleRestituzione").data("bind").trim() == "BIIN"){
+        $("#RegoleRestituzione").val("BOD");
+    }
+
+    function registraRimborso() {
+
+        if(!verificaValiditaDati()) {
+            return;
+        }
+
+        $("#Registra").attr("disabled","True").attr("readonly","true");
+        var nuovoBeneficiario = $("#Beneficiario").val();
+        if ($("#RegoleRestituzione").val() == "ASS")
+        {
+            nuovoBeneficiario = $("#BeneficiarioAssegno").val();
+        }
+        var _json = {
+            annoDocumento:'@Model.AnnoDocumento',
+            numeroDocumento:'@Model.NumeroDocumento',
+            utenteInserimento: '@ViewData["Utente"].ToString()',
+            tipoDocumento:'@Model.TipoDocumento',
+            tipoRimborso:$("#RegoleRestituzione").val(),
+            codiceCliente:'@Model.CodiceCliente',
+            codicePuntoFornitura: '@Model.CodicePuntoFornitura',
+            IBAN:$("#txtIBAN").val(),
+            intestazioneAlt:$("#NomeIntestazioneLettera").val(),
+            localitaAlt:$("#LocalitaIntestazioneLettera").val(),
+            indirizzoAlt:$("#IndirizzoIntestazioneLettera").val(),
+            civicoAlt:$("#CivicoIntestazioneLettera").val(),
+            CAPAlt:$("#CAPIntestazioneLettera").val(),
+            provinciaAlt:$("#ProvinciaIntestazioneLettera").val(),
+            beneficiario:nuovoBeneficiario,
+            indirizzoAssegno:$("#Indirizzo").val(),
+            localitaAssegno:$("#Localita").val(),
+            CAPAssegno:$("#CAP").val(),
+            provinciaAssegno:$("#Provincia").val(),
+            codiceAzienda:'@Model.CodiceAzienda',
+            righeRimborso:[],
+        }
+
+        var allPages = _insolutiTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]:checked').each(function () {
+            var numeroBolletta = $(this).find('.CodiceBolletta');
+            var cifra = parseFloat($(this).parent().parent().find(".importoDaCompensare").val().replace(",","."));
+            if(cifra > 0)
+            {
+                _json.righeRimborso.push({
+                    tipoRimborso: 'INSO',
+                    codiceBolletta: $(this).parent().parent().find(".CodiceBolletta").text(),
+                    importo : parseFloat($(this).parent().parent().find(".importoDaCompensare").val().replace(",",".")),
+                });
+            }
+        });
+        var tipoRimborso = $("#RegoleRestituzione").val();
+        var cifraMandato = parseFloat($("#txtMandato").val().replace(",","."));
+        if(cifraMandato > 0)
+        {
+            _json.righeRimborso.push({
+                tipoRimborso : tipoRimborso == "BON" || tipoRimborso == "ASS" || tipoRimborso == "BOD" ? "MAND" : "PRBO",
+                importo: parseFloat($("#txtMandato").val().replace(",",".")),
+            });
+        }
+        else
+        {
+            _json.tipoRimborso = '@Model.TipoRimborso';
+        }
+
+        displayModalWaiter();
+        var _url = '@Url.Action("SalvaRimborsi", "Rimborsi")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({rimborso:_json}),
+            success: function (result) {
+                if (result == '')
+                {
+                    notifySuccess("Registrazione completata");
+                    setTimeout(function(){
+                        window.location = '@UrlFor.HomeRimborsi';
+                    },1000);
+                }
+                else{ hideModalWaiter(); notifyError("Errore durante la registrazione del rimborso" + result + " ");}
+            },
+            error: function (request, status, error) {
+                $("#Registra").removeAttr("disabled").removeAttr("readonly");
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function verificaValiditaDati() {
+
+        if ($('#RegoleRestituzione').val() == 'BON')
+        {
+            if ($('#Beneficiario').val() == '')
+            {
+                notifyWarning("Beneficiario non inserito...");
+                return false;
+            }
+
+            if ($('#txtIBAN').val() == '' && parseFloat($("#txtMandato").val().replace(",",".")) != 0)
+            {
+                notifyWarning("IBAN non inserito...");
+                return false;
+            }
+        }
+
+        if($('#NomeIntestazioneLettera').val().trim() == ''){
+            notifyWarning("Nome intestazione lettera non inserito..."); return false;}
+        if($('#IndirizzoIntestazioneLettera').val().trim() == ''){
+            notifyWarning("Indirizzo intestazione lettera non inserito..."); return false;}
+        if($('#CivicoIntestazioneLettera').val().trim() == ''){
+            notifyWarning("Civico intestazione lettera non inserito..."); return false;}
+        if($('#CAPIntestazioneLettera').val().trim() == ''){
+            notifyWarning("CAP intestazione lettera non inserito..."); return false;}
+        if($('#ProvinciaIntestazioneLettera').val().trim() == '' || $('#ProvinciaIntestazioneLettera').val().trim().length < 2){
+            notifyWarning("Provincia intestazione lettera non inserita correttamente..."); return false;}
+
+        if ($('#RegoleRestituzione').val() == 'ASS')
+        {
+            if($('#Indirizzo').val() == ''){
+                notifyWarning("Indirizzo assegno non inserito..."); return false;}
+            if($('#Localita').val() == ''){
+                notifyWarning("Località assegno non inserita..."); return false;}
+            if($('#CAP').val() == ''){
+                notifyWarning("CAP assegno non inserito..."); return false;}
+            if($('#Provincia').val() == ''){
+                notifyWarning("Provincia assegno non inserita..."); return false;}
+        }
+        return true;
+    }
+
+    function compensazioneMandato(){
+        var amount = parseFloat($("#txtTotale").val())
+        $("#txtTotale").val(parseFloat($("#txtTotale").val()) - parseFloat($("#txtMandato").val().replace(",",".")));
+        if (parseFloat($("#txtSu").val().replace(",",".")) > parseFloat($("#txtTotale").val()))
+        {
+            $("#txtMandato").val(String(Math.round((parseFloat($("#txtSu").val().replace(",",".")) - parseFloat($("#txtTotale").val()))*100000)/100000).replace(".",","));
+            $("#txtMandato").change();
+            if (parseFloat($("#txtSu").val().replace(",",".")) == parseFloat($("#txtTotale").val())){
+                $("#registraRimborso").removeAttr("disabled");}
+            return;
+        }
+        else
+        {
+            $("#txtMandato").val(0);
+            $("#txtMandato").change();
+            return;
+        }
+    }
+
+    function editImporto(id, event) {
+
+        if (event.target.checked == true) {
+
+            $("#txt_" + id).removeAttr("readonly");
+            $("#txt_" + id).removeAttr("disabled");
+            var txtSu = parseFloat($("#txtSu").val().replace(",","."));
+            var txtTotale =  parseFloat($("#txtTotale").val());
+            var resBol = document.getElementById("resBol_" + id).innerText;
+            if((txtSu-txtTotale) < resBol.replace(",","."))
+            {
+                if (parseFloat($("#txtSu").val().replace(",",".")) >= parseFloat($("#txtTotale").val()))
+                {
+                    var txt_ = $("#txt_" + id).val(parseFloat(txtSu - txtTotale)).val();
+                    $("#txt_" + id).val(parseFloat(txt_).toFixed(2).replace(".",","));
+                    $("#txtHidden_" + id).val(parseFloat(txt_).toFixed(2).replace(".",","));
+                    if (!isAmount($("#txt_" + id).val()))
+                    {
+                        $("#txt_" + id).val("0");
+                        $("#txtHidden_" + id).val("0");
+                    }
+                    ricalcolo();
+                    if (parseFloat($("#txtSu").val().replace(",",".")) == parseFloat($("#txtTotale").val())){
+                        $("#registraRimborso").removeAttr("disabled");}
+                    return;
+                }
+                else
+                {
+                    $("#txt_" + id).val("0");
+                    $("#txtHidden_" + id).val("0");
+                    if (!isAmount($("#txt_" + id).val()))
+                    {
+                        $("#txt_" + id).val("0");
+                    }
+                    ricalcolo();
+                    return;
+                }
+            }
+            var amount = document.getElementById("resBol_" + id).innerText;
+            $("#txt_" + id).val(amount);
+        }
+        else {
+            $("#txt_" + id).val("0");
+            $("#txtHidden_" + id).val("0");
+            $("#txt_" + id).attr("readonly", true);
+            $("#txt_" + id).attr("disabled", true);
+        }
+        ricalcolo();
+    };
+    function isAmount(value) {
+        var amountTxt = value.replace(",", ".");
+        if (isNaN(parseFloat(amountTxt))) {
+            return false;
+        }
+        return true;
+    }
+
+    function setMandato(event) {
+        if (!isAmount(event.target.value) || parseFloat(event.target.value.replace(",",".")) < 0)
+        {
+            $("#txtMandato").val("0");
+            $("#hiddenMandato").val("0");
+        }
+        else
+        {
+            var txtSu = parseFloat($("#txtSu").val().replace(",","."));
+            var txtTotale =  parseFloat($("#txtTotale").val());
+            var txtMandato = $("#txtMandato").val().replace(",",".");
+            var hiddenMandato = $("#hiddenMandato").val().replace(",",".");
+            if(txtTotale+(txtMandato-hiddenMandato) <= txtSu)
+            {
+                var valore = $("#txtMandato").val(event.target.value.replace(",",".")).val();
+                $("#txtMandato").val(parseFloat(valore).toFixed(2).replace(".",","));
+                $("#hiddenMandato").val(parseFloat(valore).toFixed(2).replace(".",","));
+            }
+            else
+            {
+                $("#txtMandato").val($("#hiddenMandato").val());
+            }
+        }
+        ricalcolo();
+    }
+
+    function setImpoTot(event, id) {
+        if (!isAmount(event.target.value) || parseFloat(event.target.value.replace(",",".")) < 0)
+        {
+            $("#txt_" + id).val("0");
+            $("#txtHidden_" + id).val("0");
+        }
+        else
+        {
+            var txtSu = parseFloat($("#txtSu").val().replace(",","."));
+            var txtTotale =  parseFloat($("#txtTotale").val());
+            var txtInsoluto = $("#txt_" + id).val().replace(",",".");
+            var hiddenInsoluto = $("#txtHidden_" + id).val().replace(",",".");
+            if(txtTotale+(parseFloat(txtInsoluto)-parseFloat(hiddenInsoluto)) <= txtSu)
+            {
+                txtInsoluto = $("#txt_" + id).val().replace(".",",");
+                var txtBolletta = document.getElementById("resBol_" + id).innerText;
+                var txtBol = txtBolletta.replace(",",".");
+                if(txtInsoluto.replace(",",".") < parseFloat(txtBol))
+                {
+                    var valore = $("#txt_" + id).val(event.target.value.replace(",",".")).val();
+                    $("#txt_" + id).val(parseFloat(valore).toFixed(2).replace(".",","));
+                    $("#txtHidden_" + id).val(parseFloat(valore).toFixed(2).replace(".",","));
+                }
+                else
+                {
+                    var amount = document.getElementById("resBol_" + id).innerText;
+                    $("#txt_" + id).val(amount);
+                    $("#txtHidden_" + id).val(amount);
+                }
+            }
+            else
+            {
+                $("#txt_" + id).val($("#txtHidden_" + id).val());
+            }
+        }
+        ricalcolo();
+    }
+
+    function getAmount(value) {
+        if (isAmount(value)) {
+            return parseFloat(value.replace(",", "."));
+        }
+        return 0;
+    }
+
+    function ricalcolo() {
+        var importoTotaleDaCompensare = 0;
+        var totale = @totale.ToString().Replace(",",".");
+        var allPage = _insolutiTable.cells().nodes();
+        $(allPage).find('.importoDaCompensare').each(function () {
+            importoTotaleDaCompensare = importoTotaleDaCompensare + parseFloat($(this).val().replace(",", "."));
+        });
+
+        var mandato = getAmount($("#txtMandato").val());
+
+        $("#txtTotale").val((importoTotaleDaCompensare + mandato).toFixed(2));
+
+        if (totale.toFixed(2) === ((importoTotaleDaCompensare + mandato).toFixed(2)))
+            $("#registraRimborso").removeAttr("disabled");
+        else
+            $("#registraRimborso").attr("disabled","true");
+    }
+
+    function setInsolutiDataTable() {
+        if ($.fn.dataTable.isDataTable('#grigliaInsoluti')) {
+            _insolutiTable = $('#grigliaInsoluti').DataTable();
+        }
+        else {
+            _insolutiTable = $('#grigliaInsoluti').DataTable({
+                "pageLength": 5,
+                columns: [
+                { "orderable": false, className: "info-column" },
+                null,
+                null,
+                null,
+                null,
+                ],
+                order: [3, 'desc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+
+    function setDocRimbDataTable() {
+        if ($.fn.dataTable.isDataTable('#grigliaDocAllegati')) {
+            _docRimborsoTable = $('#grigliaDocAllegati').DataTable();
+        }
+        else {
+            _docRimborsoTable = $('#grigliaDocAllegati').DataTable({
+                "pageLength": 4,
+                columns: [
+                null,
+                null,
+                null,
+                { "orderable": false},
+                { "orderable": false, className: "info-column" },
+                ],
+                order: [0, 'asc']
+            });
+        }
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+
+    $(function () {
+
+        setInsolutiDataTable();
+
+        setDocRimbDataTable();
+
+        setTipoRimborso();
+
+        checkCorrispondenzaIBAN();
+
+        ricalcolo();
+    });
+
+    function setTipoRimborso(){
+        $('[class^=is]').hide();
+        var value = $("#RegoleRestituzione option:selected").val();
+        var theDiv = $(".is" + value).show();
+    }
+
+    $("#RegoleRestituzione").change(function () {
+        var value = $("#RegoleRestituzione option:selected").val();
+        var theDiv = $(".is" + value);
+
+        $('[class^=is]').slideUp();
+        theDiv.slideDown();
+    });
+
+    function saveBeneficiario()
+    {
+        var benef = $("#Beneficiario");
+        benef.data("save",benef.val());
+    };
+    function ripristinaBeneficiario() {
+        var benef = $("#Beneficiario");
+        var save = benef.data("save");
+        benef.val(save).removeData("save");
+
+    };
+
+    function saveRecapitoAssegno()
+    {
+        $("#BeneficiarioAssegno").data("save",$("#BeneficiarioAssegno").val());
+        $("#Indirizzo").data("save",$("#Indirizzo").val());
+        $("#Localita").data("save",$("#Localita").val());
+        $("#CAP").data("save",$("#CAP").val());
+        $("#Provincia").data("save",$("#Provincia").val());
+    };
+
+    function ripristinaRecapitoAssegno(){
+        $("#BeneficiarioAssegno").val($("#BeneficiarioAssegno").data("save")).removeData("save");
+        $("#Indirizzo").val($("#Indirizzo").data("save")).removeData("save");
+        $("#Localita").val($("#Localita").data("save")).removeData("save");
+        $("#CAP").val($("#CAP").data("save")).removeData("save");
+        $("#Provincia").val($("#Provincia").data("save")).removeData("save");
+    };
+
+    function saveIntestazioneLettera()
+    {
+        $("#NomeIntestazioneLettera").data("save",$("#NomeIntestazioneLettera").val());
+        $("#IndirizzoIntestazioneLettera").data("save",$("#IndirizzoIntestazioneLettera").val());
+        $("#CivicoIntestazioneLettera").data("save",$("#CivicoIntestazioneLettera").val());
+        $("#CAPIntestazioneLettera").data("save",$("#CAPIntestazioneLettera").val());
+        $("#LocalitaIntestazioneLettera").data("save",$("#LocalitaIntestazioneLettera").val());
+        $("#ProvinciaIntestazioneLettera").data("save",$("#ProvinciaIntestazioneLettera").val());
+    };
+
+    function ripristinaIntestazioneLettera(){
+        $("#NomeIntestazioneLettera").val($("#NomeIntestazioneLettera").data("save")).removeData("save");
+        $("#IndirizzoIntestazioneLettera").val($("#IndirizzoIntestazioneLettera").data("save")).removeData("save");
+        $("#CivicoIntestazioneLettera").val($("#CivicoIntestazioneLettera").data("save")).removeData("save");
+        $("#CAPIntestazioneLettera").val($("#CAPIntestazioneLettera").data("save")).removeData("save");
+        $("#LocalitaIntestazioneLettera").val($("#LocalitaIntestazioneLettera").data("save")).removeData("save");
+        $("#ProvinciaIntestazioneLettera").val($("#ProvinciaIntestazioneLettera").data("save")).removeData("save");
+    };
+
+    function setIBAN(){
+        $("#IBAN").val($("#txtIBAN").val());
+        checkiban();
+    }
+
+    function checkCorrispondenzaIBAN(){
+        if ($("#txtIBAN").val() != '@IBAN'){
+            $("#iconWarning").removeClass("invisible");
+            $("#btnIBANWarning").removeClass("invisible");
+        }
+        else {
+            $("#iconWarning").addClass("invisible");
+            $("#btnIBANWarning").addClass("invisible");
+        }
+        return;
+    }
+
+    function selectRow(e)
+    {
+        if (e.target.type != "checkbox") {
+            var tr = $(e.target).parent();
+            $(':checkbox', tr).trigger("click");
+        }
+    }
+
+</script>

@@ -1,0 +1,305 @@
+﻿@model GestioneRimborsi.Web.Models.SospensioneModel
+
+<div id="schedaSospensioni">
+    <div class="modal fade text-left" id="sospensioniModal" tabindex="-1" role="dialog" aria-labelledby="sospensioniModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg" id="containerModalSospensione">
+            <div class="modal-content" id="nuovaSospensione">
+                @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "sospensioni")
+                <div class="modal-header" id="headerModalSospensione">
+                    <button type="button" class="close" onclick="dismissModalSospensioni();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                    <h4 id="sospensioniModalTitle">
+                        Aggiungi/Modifica sospensione
+                    </h4>
+                </div>
+                @using (Html.BeginForm("AggiornaSospensione", "FuoriStandard", FormMethod.Post, new { @id = "FormSospensioni" }))
+            {
+                    <div class="modal-body" id="bodyNuoveSospensioni">
+                        <div class="form-sospensioni">
+                            @Html.Hidden("ROW_ID", Model.ROW_ID, new { @class = "emptyField" })                            
+                            @Html.Hidden("ID_SOSPENSIONE", Model.ID_SOSPENSIONE, new { @class = "emptyField" })
+                            @Html.Hidden("ID_INDENNIZZO", Model.ID_INDENNIZZO)
+                            @Html.Hidden("NUMERO_PRESTAZIONE", Model.NUMERO_PRESTAZIONE)
+                            @Html.Hidden("ID_STANDARD", Model.ID_STANDARD)
+                            @*@Html.Hidden("EDIT", true)*@
+                            <div class="row fuoriStandard-heading-row">
+                                <div class="col-sm-6">
+                                    <div id="dataInizioSospensioneContainer" class="input-group input-append date">
+                                        @{var _data = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 0,0,0);
+                                            DateTime _dataInizio = _data; DateTime _dataFine = _data; DateTime _dataComunicazione = _data;
+                                            if (Model.DATA_INIZIO_SOSPENSIONE != null && Model.DATA_INIZIO_SOSPENSIONE != DateTime.MinValue)
+                                            {
+                                                _dataInizio = Model.DATA_INIZIO_SOSPENSIONE;
+                                            }
+                                            if (Model.DATA_FINE_SOSPENSIONE != null && Model.DATA_FINE_SOSPENSIONE != DateTime.MinValue)
+                                            {
+                                                _dataFine = Model.DATA_FINE_SOSPENSIONE;
+                                            }
+                                            if (Model.DATA_COMUNICAZIONE != null && Model.DATA_COMUNICAZIONE != DateTime.MinValue)
+                                            {
+                                                _dataComunicazione = Model.DATA_COMUNICAZIONE;
+                                            }
+                                        }
+
+                                        <input class="form-control" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="dataInizioSospensione" name="DATA_INIZIO_SOSPENSIONE" value="@_dataInizio" onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" />
+                                        <span class="input-group-btn add-on">
+                                            <button class="btn btn-default h-btn-new" type="button">
+                                                <i class="fa fa-lg fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div id="dataFineSospensioneContainer" class="input-group input-append date">
+                                        <input class="form-control" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="dataFineSospensione" name="DATA_FINE_SOSPENSIONE" value="@_dataFine" onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" />
+                                        <span class="input-group-btn add-on">
+                                            <button class="btn btn-default h-btn-new" type="button">
+                                                <i class="fa fa-lg fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>                                
+                            </div>
+
+                            <div class="row fuoriStandard-caption-row">
+                                <div class="col-sm-6">
+                                    <span for="DataInizioSospensione" class="control-label">Data inizio</span>
+                                </div>
+                                <div class="col-sm-6">
+                                    <span for="DataFineSospensione" class="control-label">Data fine</span>
+                                </div>                                
+                            </div>
+
+                            <div class="row fuoriStandard-heading-row">
+                                <div class="col-sm-4">
+                                    @Html.Hidden("selectedCategoria", Model.CATEGORIA_SOSPENSIONE, new { @class = "emptyField" })
+                                    <div id="categoriaContainer">
+                                        @Html.Partial("~/Views/FuoriStandard/_categorieSospensione.cshtml", new List<CategoriaSospensione>())
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    @Html.Hidden("selectedTipoSospensione", Model.TIPO_SOSPENSIONE, new { @class = "emptyField" })
+                                    <div id="tipoSospensioneContainer">
+                                        @Html.Partial("~/Views/FuoriStandard/_tipiSospensione.cshtml", new List<TipoSospensione>())
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div id="dataComunicazioneContainer" class="input-group input-append date">
+                                        @if (Model.DATA_COMUNICAZIONE != null && Model.DATA_COMUNICAZIONE != DateTime.MinValue)
+                                        {
+                                            <input class="form-control emptyField" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="dataComunicazione" name="DATA_COMUNICAZIONE" value="@_dataComunicazione" onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" />
+                                        }
+                                        else
+                                        {
+                                            <input class="form-control emptyField" data-format="dd/MM/yyyy HH:mm:ss" type="text" id="dataComunicazione" name="DATA_COMUNICAZIONE" value="" onkeydown="setDateValue(event, event.target.value)" onblur="setDateOnBlur(event)" onkeyup="setDateValue(event, event.target.value)" />
+                                        }
+                                        <span class="input-group-btn add-on">
+                                            <button class="btn btn-default h-btn-new" type="button">
+                                                <i class="fa fa-lg fa-calendar"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row fuoriStandard-caption-row">
+                                <div class="col-sm-4">
+                                    <span for="categorieSospensioni" class="control-label">Categoria</span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <span for="tipiSospensioni" class="control-label">Tipologia</span>
+                                </div>
+                                <div class="col-sm-4">
+                                    <span for="DataComunicazione" class="control-label">Comunicato il</span>
+                                </div>
+                            </div>
+
+                            <div class="row fuoriStandard-heading-row">
+                                <div class="col-sm-12">
+                                    <textarea rows="2" id="noteSospensione" name="NOTE" class="form-control emptyField">@Model.NOTE</textarea>
+                                </div>
+                            </div>
+                            <div class="row fuoriStandard-caption-row">
+                                <div class="col-sm-12">
+                                    <span for="noteSospensione" class="control-label">Note</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <a class="btn btn-default pull-left annullaSalvaSospensione" onclick="dismissModalSospensioni();">
+                            @*<i class="fa fa-lg fa-backward"></i>*@<span class="">Annulla</span>
+                        </a>
+                        <button class="btn btn-function annullaSalvaSospensione" type="button" onclick="validateForm('@Model.ROW_ID')" id="confSospensione">
+                            @*<i class="fa fa-lg fa-save"></i>*@<span class="">Salva</span>
+                        </button>
+                    </div>
+                                            }
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    $(function () {
+      
+        $('#dataInizioSospensioneContainer').datetimepicker({
+            format: 'dd/MM/yyyy hh:mm:ss'            
+        });
+        $('#dataFineSospensioneContainer').datetimepicker({
+            format:'dd/MM/yyyy hh:mm:ss'
+        });
+        $('#dataComunicazioneContainer').datetimepicker({
+            format: 'dd/MM/yyyy hh:mm:ss'                        
+        });
+        $("#dataComunicazioneContainer").datetimepicker('disable');       
+        
+        var picker;
+        var now = new Date();
+        var saveDate;
+        if ($("#dataInizioSospensione").val() == '') {
+            picker = $('#dataInizioSospensioneContainer').data('datetimepicker');
+            picker.setLocalDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));            
+        }
+        else {
+            saveDate = $("#dataInizioSospensione").val();
+            picker = $('#dataInizioSospensioneContainer').data('datetimepicker');
+            setStartEndDate(picker);
+            $("#dataInizioSospensione").val(saveDate);
+        }
+        if ($("#dataFineSospensione").val() == '') {
+            picker = $('#dataFineSospensioneContainer').data('datetimepicker');
+            picker.setLocalDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));           
+        }
+        else {
+            saveDate = $("#dataFineSospensione").val();
+            picker = $('#dataFineSospensioneContainer').data('datetimepicker');
+            setStartEndDate(picker);
+            $("#dataFineSospensione").val(saveDate);
+        }
+        if ($("#dataComunicazione").val() == '') {
+            picker = $('#dataComunicazioneContainer').data('datetimepicker');
+            picker.setLocalDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+            //picker.setStartDate(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
+        }
+        else {
+            saveDate = $("#dataComunicazione").val();
+            picker = $('#dataComunicazioneContainer').data('datetimepicker');
+            picker.setLocalDate(new Date(picker.getDate().getFullYear(), picker.getDate().getMonth(), picker.getDate().getDate()));            
+            $("#dataComunicazione").val(saveDate);
+        }
+
+        //if ($("#dataFineSospensione").val() == "") {
+        //    var picker = $('#dataFineSospensioneContainer').data('datetimepicker');
+        //    var parts = $("#dataFineSospensione").val();
+        //    var parts2 = parts.split("/");
+        //    var cars = [parts2[1], parts2[0], parts2[2]];
+        //    var carsJoin = cars.join("/");           
+        //    picker.setLocalDate(new Date(carsJoin));
+        //}        
+    });
+
+    function setStartEndDate(picker) {
+        picker.setLocalDate(new Date(picker.getDate().getFullYear(), picker.getDate().getMonth(), picker.getDate().getDate()));
+        var pickerInizioPrestazione = $('#calendarDiv3').data('datetimepicker');
+        picker.setStartDate(new Date(pickerInizioPrestazione.getDate().getFullYear(), pickerInizioPrestazione.getDate().getMonth(), pickerInizioPrestazione.getDate().getDate() + 1));
+        var pickerFinePrestazione = $('#calendarDiv4').data('datetimepicker');
+        picker.setEndDate(new Date(pickerFinePrestazione.getDate().getFullYear(), pickerFinePrestazione.getDate().getMonth(), pickerFinePrestazione.getDate().getDate() + 1));
+    }
+
+    function dismissModalSospensioni() {
+        $('#sospensioniModal').modal('hide');
+    }
+
+    function validateForm(rowId) {        
+        //var check = true;
+        if ($("#dataInizioSospensione").val() == "") {
+            notifyWarning("Selezionare la data di inizio sospensione");
+            //check = false;
+            return;
+        }
+        if ($("#dataFineSospensione").val() == "") {
+            notifyWarning("Selezionare la data di fine sospensione");
+            //check = false;
+            return;
+        }
+        if ($("#categorieSospensioni").val() == "-1") {
+            notifyWarning("Selezionare la categoria della sospensione");
+            //check = false;
+            return;
+        }
+        if ($("#tipiSospensioni").val() == "-1") {
+            notifyWarning("Selezionare la tipologia della sospensione");
+            //check = false;
+            return;
+        }
+        if ($("#noteSospensione").val().trim() == "") {
+            notifyWarning("Inserire una nota");
+            //check = false;
+            return;
+        }
+        if (getDate($('#dataInizioSospensione').val()) < getDate($('#calendar3').val()) && getDate($('#dataInizioSospensione').val()).getDate() < getDate($('#calendar3').val()).getDate()) {
+            notifyWarning("la data di inizio sospensione è minore della data di inizio prestazione...");
+            return;
+        }
+        if (getDate($('#dataInizioSospensione').val()) > getDate($('#calendar4').val()) && getDate($('#dataInizioSospensione').val()).getDate() > getDate($('#calendar4').val()).getDate()) {
+            notifyWarning("la data di inizio sospensione è maggiore della data di fine prestazione...");
+            return;
+        }
+        if (getDate($('#dataFineSospensione').val()) > getDate($('#calendar4').val()) && getDate($('#dataFineSospensione').val()).getDate() > getDate($('#calendar4').val()).getDate()) {
+            notifyWarning("la data di fine sospensione è maggiore della data di fine prestazione...");
+            return;
+        }
+        if (getDate($('#dataFineSospensione').val()) < getDate($('#dataInizioSospensione').val())) {
+            notifyWarning("la data di fine sospensione è minore della data di inizio sospensione...");
+            return;
+        }
+        //if (check) {
+            displayModalWaiter("schedaIndennizzo");
+            $.ajax({
+                data: $("#FormSospensioni").serializeObject(),
+                type: $("#FormSospensioni").attr('method'),
+                url: $("#FormSospensioni").attr('action'),
+                success: function (result) {                    
+                    if (result.length > 200) {
+                        $("#sospensioniContainer").html(result);
+                        setSospensioniDataTable();
+                        $("#sospensioniModal").modal("hide");
+                        $("#FormSospensioni .emptyField").val("");
+                        $("#FormSospensioni select").val("-1");
+                        hideModalWaiter("schedaIndennizzo");
+                        //notifySuccess("Sospensione aggiornata con successo");
+                    }
+                    else { hideModalWaiter("schedaIndennizzo"); notifyWarning(result); }
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning(error);
+                }
+            });
+
+        //}
+        //return false;
+    }
+
+    $.fn.serializeObject = function () {
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function () {
+            if (o[this.name]) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
+
+</script>

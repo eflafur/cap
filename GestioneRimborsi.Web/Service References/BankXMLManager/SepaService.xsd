@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://tempuri.org/" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:81/BankXMLManager/SepaService.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/SepaManager.Base" />
+  <xs:element name="CreateXml">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="FileName" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="PkOperazione" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="Autore" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="CreateXmlResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="CreateXmlResult" type="xs:long" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetXmlDocument">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="SepaHederID" type="xs:long" />
+        <xs:element minOccurs="0" name="regenerate" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetXmlDocumentResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/SepaManager.Base" minOccurs="0" name="GetXmlDocumentResult" nillable="true" type="q1:BankXMLOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RegenerateXmlDocument">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="pkOperazione" type="xs:long" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RegenerateXmlDocumentResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/SepaManager.Base" minOccurs="0" name="RegenerateXmlDocumentResult" nillable="true" type="q2:BankXMLOutput" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

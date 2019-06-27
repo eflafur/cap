@@ -1,0 +1,170 @@
+﻿@model ISubCollection<SepaHeader>
+
+@{
+    bool privileged = false;
+
+    if (Model != null)
+    {
+        if (RevoRequest.CurrentUser.IsSuperUser() || RevoContext.IdentityManager.CurrentUser.IsPrivileged)
+        {
+            privileged = true;
+        }
+    }
+}
+
+@{
+    foreach (SepaHeader _h in Model.Items)
+    {
+        <li class="item-disposizione list-group-item" id='@_h.ID' onclick="selectRow('@_h.ID', '@_h.Created.ToShortDateString()', '@_h.Autore')">
+            <div class="row">
+                <div class="col-sm-4">
+                    <span>#: <strong>@_h.ID</strong></span>
+                </div>
+                <div class="col-sm-6 text-center no-padding">
+                    <span>Del: <strong>@_h.Created.ToShortDateString()</strong></span>
+                </div>
+                <div class="col-sm-1 text-center fa-hover no-padding" onclick="downloadDisposizione('@_h.ID', '@_h.BloccatoDa');">
+                    <a> <span class="fa fa-lg @(String.IsNullOrEmpty(_h.BloccatoDa)? "fa-download" : "fa-download") @(!String.IsNullOrEmpty(_h.BloccatoDa)? "disposizione-disabled":"")"></span> </a>
+                </div>
+                <div class="col-sm-1 text-center fa-hover no-padding" onclick="downloadCsvDisposizione('@_h.ID', '@_h.BloccatoDa');">
+                    <a> <span class="fa fa-lg @(String.IsNullOrEmpty(_h.BloccatoDa) ? "fa-file-excel-o" : "fa-file-excel-o") @(!String.IsNullOrEmpty(_h.BloccatoDa)? "disposizione-disabled":"")"></span> </a>
+                </div>
+            </div>
+            <div class="row row-margin">
+                <div class="col-sm-10 border-top">
+                    <span>Di: @_h.Autore</span>
+                </div>
+
+                <div class="col-sm-2 text-center fa-hover no-padding" onclick="bloccaDisposizione('@_h.ID', '@_h.BloccatoDa', '@_h.Autore')">
+                    <a> <span id="locked" class="fa fa-lg @(String.IsNullOrEmpty(_h.BloccatoDa)? "fa-unlock-alt" : "fa-lock") @(!String.IsNullOrEmpty(_h.BloccatoDa)? "lock-disposizione":"")"></span> </a>
+                </div>
+            </div>
+        </li>
+    }
+}
+
+<script>
+
+    $(".lock-disposizione").css({
+        "color": "red",
+    });
+
+    @{
+        if (!RevoContext.IdentityManager.CurrentUser.IsSuperUser())
+        {
+            @:$(".disposizione-disabled").css({ "color": "lightgray", });
+                    @:$(".disposizione-disabled").attr("disabled", "disabled");
+                }
+    }
+
+    function downloadDisposizione(id, bloccatoDa) {
+        if (bloccatoDa == null || bloccatoDa == "") {
+            window.location = '@UrlFor.DownloadDisposizioni'.replace("_id_", id);
+        }
+        @{
+            if (RevoContext.IdentityManager.CurrentUser.IsSuperUser())
+                {
+                    @:window.location = '@UrlFor.DownloadDisposizioni'.replace("_id_", id);
+                                }
+        }
+    }
+
+    function downloadCsvDisposizione(id, bloccatoDa) {
+        if (bloccatoDa == null || bloccatoDa == "") {
+            window.location = '@UrlFor.DownloadCsvDisposizioni'.replace("_id_", id);
+        }
+        @{
+            if (RevoContext.IdentityManager.CurrentUser.IsSuperUser())
+            {
+                @:window.location = '@UrlFor.DownloadCsvDisposizioni'.replace("_id_", id);
+                    }
+        }
+    }
+
+    function selectRow(id, creazione, autore) {
+        displayModalWaiter();
+        var _url = '@Url.Action("SearchSepaCreditTransaction", "GestioneDisposizioni", new { id = "_id_" })'.replace('_id_', encodeURIComponent(id));
+
+        $(".list-group-item").removeClass("selected");
+        $("#" + id).addClass("selected");
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                id: id
+            }),
+            success: function (result) {
+                $("#transactionTableContainer").html(result);
+                setTransactionDataTable();
+                hideModalWaiter();
+
+                $("#t1").text("Disposizione #: "); $("#t2").text("" + id);
+                $("#t3").text(" creata in data "); $("#t4").text(creazione);
+                $("#t5").text(" generata da: "); $("#t6").text(autore);
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function bloccaDisposizione(id, autoreBlocco, utente) {
+
+        if ('@privileged' == "True" && autoreBlocco != null && autoreBlocco != '') {
+            $('#confermaModifiche').modal('show');
+
+            $("#confMod").off().click(function () {
+                bloccaSblocca(id, autoreBlocco);
+            });
+        }
+        else { bloccaSblocca(id, autoreBlocco, utente); }
+    }
+
+    function bloccaSblocca(id, autoreBlocco, utente) {
+        displayModalWaiter();
+        var _url = '@Url.Action("BloccaDisposizione", "GestioneDisposizioni", new { id = "_id_", autoreBlocco = "_autore_" })'
+                    .replace('_id_', encodeURIComponent(id).replace('_autore_', encodeURIComponent(autoreBlocco)));
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                id: id,
+                autore: autoreBlocco
+            }),
+            success: function (result) {
+                if (result != "") {
+                    var user = "";
+                    if ($("#listaAutori option:selected").val() != "-1") {
+                        if ($("#listaAutori option:selected").val() != "" && $("#listaAutori option:selected").val() != null) {
+                            _innerListUrl = '@UrlFor.GestioneDisposizioni_InnerSepaList()' + $("#listaAutori option:selected").val() + '/';
+                            user = $("#listaAutori option:selected").val();
+                        }
+                        else {
+                            _innerListUrl = '@UrlFor.GestioneDisposizioni_InnerSepaList()';
+                        }
+                        evaluateInnerListUrl(_innerListUrl, user);
+                        $("#" + id).click();
+                        $("#" + id).addClass("selected");
+                    }
+                    else {
+                        _innerListUrl = '@UrlFor.GestioneDisposizioni_SearchSepaHeader()';
+                        evaluateInnerListUrl(_innerListUrl, user);
+                        $("#" + id).click();
+                        $("#" + id).addClass("selected");
+                    }
+                }
+                else { hideModalWaiter(); notifyWarning("Privilegi insufficienti per eseguire l'operazione."); }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+</script>

@@ -1,0 +1,77 @@
+﻿@model ISubCollection<GestioneRimborso>
+
+@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+    IRimborsoService _rimborsoService = (IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborso>();
+}
+
+@{
+    if (Model == null)
+    {
+        @Html.Raw(HtmlSnippets.Alert.Info("Nessun rimborso..."))
+    }
+    else
+    {
+        <table id="gridRimborsiAnnullabili" class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="text-left">Sel</th>
+                    <th class="text-left">Anno</th>
+                    <th class="text-left">Numero</th>
+                    <th class="text-left">Tipo Rimborso</th>
+                    <th class="text-right">Importo</th>
+                    <th class="text-center">Stato</th>
+                    <th class="text-left">Cliente</th>
+                    <th class="text-left">Data Inserimento</th>
+                    <th class="text-left">Utente Inserimento</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (GestioneRimborso _r in Model.Items)
+                    {
+                        String _trClass = String.Empty;
+                        String _trIcon = String.Empty;
+
+
+                        <tr class="@_trClass" onclick="selectRow(event);">
+                            <td class="text-left">@Html.Raw(_trIcon)</td>
+                            <td class="text-left chk"><input id="selezioneRimborso" value="@_r.NumeroDocumento;@_r.AnnoDocumento;@_r.CodiceCliente" class="sel chkSelectRow" type="checkbox" /></td>
+                            <td class="text-left">@_r.AnnoDocumento</td>
+                            <td class="text-left">@_r.NumeroDocumento</td>
+                            <td class="text-left">@_rimborsoService.GetTipoRimborso(_r.TipoRimborso)</td>
+                            <td class="text-right">@_r.ImportoTotaleRimborso €</td>
+                            <td class="text-centert">@_rimborsoService.GetStatoDocumento(_r.StatoDocumento)</td>
+                            <td class="text-left">@_clienteService.ClienteByID(_r.CodiceCliente)</td>
+                            <td class="text-left">@_r.DataInserimento</td>
+                            <td class="text-left">@_r.UtenteInserimento</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        <div class="input-group col-sm-1 pull-left mb-15">
+            <a class="btn btn-function" onclick="selezionaTutto();">
+                Seleziona tutti
+            </a>
+        </div>
+        <div class="input-group col-sm-1 pull-left mr-l mb-15">
+            <a class="btn btn-function" onclick="deselezionaTutto();">
+                Deseleziona tutti
+            </a>
+        </div>
+    }
+}
+
+<script>
+
+    function selectRow(e) {
+        if (e.target.type != "checkbox") {
+            var tr = $(e.target).parent();
+            $(':checkbox', tr).trigger("click");
+        }
+    }
+
+</script>

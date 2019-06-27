@@ -1,0 +1,312 @@
+﻿@using GestioneRimborsi.Web.Models;
+
+@model  UnifiedSearchModel
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+    IRettificaFuoriStandardService _rettificaFuoriStandardService = (IRettificaFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<RettificaFuoriStandard>();
+
+    var totaleGruppi = _fuoriStandardService.GetTipologieByGrouping(RevoRequest.CurrentUser.GroupingCodes.ToList<String>());
+
+    String _userGroupId = String.Empty;
+    Object _o = RevoContext.PermissionManager.GetFirstPermissionGroupIdForUser(RevoRequest.CurrentUser.UserId);
+    if (_o != null) { _userGroupId = _o.ToString(); }
+    string pemString = (RevoContext.PermissionManager.GetPermissionGroup(_userGroupId) != null ? RevoContext.PermissionManager.GetPermissionGroup(_userGroupId).DisplayText : "");
+    bool isProcessOwner = (pemString == "FS - Process Owner" ? true : false);
+
+    List<String> listaGruppi = new List<String>();
+    bool check = false;
+    Dictionary<string, int> countFS = new Dictionary<string, int>();
+    Dictionary<string, int> totalCountFS = new Dictionary<string, int>();
+    string formName = Model["FormName"].ToString();
+
+    try
+    {
+
+        if (formName == "RecuperoFS") { countFS = _fuoriStandardService.GetCountFuoriStandardNonIndennizzabili(totaleGruppi); }
+        else if (formName == "StoricoFS") { countFS = _fuoriStandardService.GetCountFuoriStandardTutti(totaleGruppi); }
+        else if (formName == "ValidazioneFS") { countFS = _fuoriStandardService.GetCountFuoriStandardDaValidare(totaleGruppi); }
+        else if (formName == "RettificheFS") { countFS = _fuoriStandardService.GetCountFuoriStandard(totaleGruppi); }
+        else if (formName == "ApprovazioneFS") { countFS = _rettificaFuoriStandardService.GetCountRettificheDaApprovare(totaleGruppi, isProcessOwner); }
+        if (formName == "ApprovazioneFS" && !isProcessOwner && !RevoRequest.CurrentUser.HasPermissionFor("gfs.fuoriStandard.annullaPrestazione")) { countFS = _rettificaFuoriStandardService.GetCountNotCanceled(totaleGruppi, isProcessOwner); }
+        if (formName == "ApprovazioneFS" && pemString != "FS - Process Owner" && pemString != "FS - Manager" && RevoRequest.CurrentUser.HasPermissionFor("gfs.fuoriStandard.annullaPrestazione")) { countFS = _rettificaFuoriStandardService.GetCountRettificheDaAnnullare(totaleGruppi); }
+        foreach (var item in totaleGruppi)
+        {
+            foreach (var itm in countFS)
+            {
+                if (item == itm.Key)
+                {
+                    totalCountFS.Add(itm.Key, itm.Value);
+                    check = true;
+                }
+            }
+            if (check == false)
+            {
+                totalCountFS.Add(item, 0);
+            }
+            check = false;
+        }
+    }
+    catch (Exception ex)
+    {
+        countFS = new Dictionary<string, int>();
+    }
+
+    var sortColumn = "nessunElemento";
+    var sortType = "nessunOrdinamento";
+    var page = 1;
+}
+
+<form class="form-horizontal" role="form">
+    @if ((bool)Model[UnifiedSearchOptions.FlagCodCliente])
+            {
+        <div class="row container-fluid containerFilterRow" id="containerFlagCodCliente">
+            <div class="col-sm-5 text-right">
+                <label class="interruttore">
+                    <input type="checkbox" id="checkCliente" onclick="checkCodCliente(event);" checked>
+                    <span class="scorrimento round"></span>
+                </label>
+            </div>
+            <div class="col-sm-7" id="">
+                <span id="switchFlagCodCliente">Prestazioni senza codice cliente</span>
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.FlagIndennizzabile])
+            {
+        <div class="row container-fluid containerFilterRow" id="containerFlagIndennizzabile">
+            <div class="col-sm-5 text-right">
+                <label class="interruttore">
+                    <input type="checkbox" id="checkIndennizzabile" onclick="checkFlagIndennizzabile(event);">
+                    <span class="scorrimento round"></span>
+                </label>
+            </div>
+            <div class="col-sm-7" id="">
+                <span id="switchFlagIndennizzabile">Prestazioni non indennizzabili</span>
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.Tipologia])
+            {
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">Tipologia</label>
+            </div>
+            <div class="col-sm-7" id="tipoIndennizziContainer">
+                @if (countFS.Count == 1)
+                {
+                    <span value="@countFS.FirstOrDefault().Key" data-bind="@countFS.FirstOrDefault().Key" id="codGruppo" name="codGruppo">@countFS.FirstOrDefault().Key (@countFS.FirstOrDefault().Value)</span>
+                }
+                else
+                {
+                    <select class="form-control selectCaret" id="codGruppo" name="codGruppo" onchange="cercaIndicatoriGruppo('@formName');">
+                        <option value="-1" selected>-- Seleziona una tipologia --</option>
+                        @*@foreach (var item in countFS)
+                            {
+                                <option value="@item.Key">@item.Key (@item.Value)</option>
+                            }*@
+                        @foreach (var item in totalCountFS)
+                        {
+                            if (formName == "ApprovazioneFS" || formName == "RecuperoFS")
+                            {
+                                <option value="@item.Key">@item.Key @(item.Value == 0 ? "" : String.Format("({0})", item.Value))</option> }
+                            else
+                            {
+                                <option value="@item.Key">@item.Key @(item.Value == 0 ? "" : String.Format("({0} da validare)", item.Value))</option> }
+                        }
+
+                        @*@if (formName == "ApprovazioneFS")
+                            {
+                                foreach (var item in listaGruppi)
+                                {
+                                    <option value="@item">@item</option>
+                                }
+                            }*@
+                    </select>
+                }
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.IndicatoreStd])
+            {
+        <div class="row container-fluid containerFilterRow" id="containerIndicatori">
+            @if (countFS.Count == 1 && listaGruppi.Count == 0)
+                {
+                @Html.Partial("~/Views/FuoriStandard/_filtroIndicatori.cshtml", new GestioneRimborsi.Web.Models.IndicatoriModel { view = formName, Indicatore_Id = countFS.FirstOrDefault().Key, firstTime = false })
+            }
+            else
+            {
+                @Html.Partial("~/Views/FuoriStandard/_filtroIndicatori.cshtml", new GestioneRimborsi.Web.Models.IndicatoriModel { view = formName, Indicatore_Id = "-1", firstTime = false })
+            }
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.CaseId])
+    {
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">Codice Rintracciabilità</label>
+            </div>
+            <div class="col-sm-7">
+                <input id="codRintracciabilita" class="form-control" type="text" placeholder="Codice Rintracciabilità">
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.CodCliente])
+    {
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">Codice Cliente / Ragione Sociale</label>
+            </div>
+            <div class="col-sm-7">
+                <input id="codiceCliente" class="form-control" type="text" placeholder="Codice Cliente o Ragione Sociale">
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.DataFineAttivita])
+            {
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">Data fine attività tra il</label>
+            </div>
+            <div class="col-sm-7">
+                <div id="dataInizio" class="input-group input-append date">
+                    <input class="form-control" data-format="dd/MM/yyyy" type="text" id="censitoDal" name="censitoDal" value="" />
+                    <span class="input-group-btn add-on">
+                        <button class="btn btn-default h-btn-new" type="button">
+                            <i class="fa fa-lg fa-calendar"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">e il</label>
+            </div>
+            <div class="col-sm-7">
+                <div id="dataFine" class="input-group input-append date">
+                    <input class="form-control" data-format="dd/MM/yyyy" type="text" id="censitoAl" name="censitoAl" value="" />
+                    <span class="input-group-btn add-on">
+                        <button class="btn btn-default h-btn-new" type="button">
+                            <i class="fa fa-lg fa-calendar"></i>
+                        </button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.InFuoriStd])
+            {
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">In / Fuori Standard</label>
+            </div>
+            <div class="col-sm-7">
+                <select class="form-control selectCaret" id="flgInStandard">
+                    <option value="Tutti">Tutti</option>
+                    <option value="S">In Standard</option>
+                    <option value="FS" selected>Fuori Standard</option>
+                </select>
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.SoloFuoriStd])
+            {
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">In / Fuori Standard</label>
+            </div>
+            <div class="col-sm-7">
+                <select class="form-control selectCaret" id="flgInStandard">
+                    @*<option value="Tutti">Tutti</option>*@
+                    @*<option value="S">In Standard</option>*@
+                    <option value="FS" selected>Fuori Standard</option>
+                </select>
+            </div>
+        </div>
+    }
+    @if ((bool)Model[UnifiedSearchOptions.FuoriStandardStorico])
+            {
+        <div class="row container-fluid containerFilterRow">
+            <div class="col-sm-5 text-right">
+                <label for="contain">In / Fuori Standard</label>
+            </div>
+            <div class="col-sm-7">
+                <select class="form-control selectCaret" id="flgInStandard">
+                    <option value="Tutti">Tutti</option>
+                    <option value="S">In Standard (Rettificati)</option>
+                    <option value="FS" selected>Fuori Standard</option>
+                </select>
+            </div>
+        </div>
+    }
+    <div class="row container-fluid filterSearchButton">
+        <button class="btn btn-function pull-right" onclick="return cercaFuoriStandard(event, '@sortColumn', '@sortType', '@page');">
+            <span class="fa fa-search"></span><span class="text-after-icon">Ricerca</span>
+        </button>
+    </div>
+</form>
+
+
+<script>
+    $(function () {
+        $('#dataFine').datetimepicker();
+    });
+
+    $(function () {
+        $('#dataInizio').datetimepicker();
+    });
+
+    function cercaIndicatoriGruppo(view) {
+        var _optionGruppo = $("#codGruppo option:selected").val();
+
+        if ($("#codGruppo option:selected").val() == null) {
+            _optionGruppo = $("#codGruppo").data("bind");
+        }
+
+        var _url = '@Url.Action("FiltraDatiIndicatori", "FuoriStandard", new { view = "_view_", OptionGruppo = "_optiongruppo_", firstTime = "_firstTime_" })'.replace("_view_", view).replace("_optiongruppo_", _optionGruppo).replace("_firstTime_", false);
+
+        displayModalWaiter();
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                view: view,
+                OptionGruppo: _optionGruppo,
+                firstTime: false,
+            }),
+            success: function (result) {
+                $("#containerIndicatori").html(result);
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error + ", riprova più tardi..");
+            }
+        });
+    }
+
+    function checkCodCliente(event) {
+        if (!$('#checkCliente').prop('checked')) {
+            //$("#switchFlagCodCliente").text("Prestazioni con codice cliente");
+            $('#checkCliente').removeAttr('checked');
+        }
+        else {
+            $('#checkCliente').attr('checked');
+            //$("#switchFlagCodCliente").text("Prestazioni senza codice cliente");
+        }
+    }
+
+    function checkFlagIndennizzabile(event) {
+        if (!$('#checkIndennizzabile').prop('checked')) {
+            //$("#switchFlagIndennizzabile").text("Prestazioni non indennizzabili");
+            $('#checkIndennizzabile').removeAttr('checked');
+        }
+        else {
+            $('#checkIndennizzabile').attr('checked');
+            //$("#switchFlagIndennizzabile").text("Prestazioni indennizzabili");
+        }
+    }
+
+</script>

@@ -1,0 +1,203 @@
+﻿@model GestioneRimborsi.Web.Models.AnnoBloccatoModel
+
+<div id="schedaModificaDataBlocco">
+    <div class="modal fade text-left" id="modalModificaDataBlocco" tabindex="-1" role="dialog" aria-labelledby="modificaDataBloccoModalTitle" aria-hidden="true">
+        @Html.Partial("~/views/rimborsi/_smallModalWaiter.cshtml", "aggiornaDataBlocco")
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" id="headerModificaDataBLocco">
+                    <button type="button" class="close" onclick="dismissModalModificaDataBlocco();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="ModificaDataBloccoModalTitle">
+                        <span class="text-after-icon sizeXLarge">Gestisci rettifiche</span>
+                    </h4>
+                </div>
+                <div class="modal-body" id="bodyModificaDataBlocco">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <span class="fontSizeMedium">
+                                Seleziona un anno di competenza, quindi la data al di là della quale non sarà più possibile modificare le prestazioni dell'anno selezionato.
+                            </span>
+                            <br>
+                            <span class="fontSizeMedium">
+                                Per confermare, premi salva.
+                            </span>
+                        </div>
+                    </div>
+                    <div class="container-fluid" id="containerModificaDataBlocco">
+                        <div class="row fuoriStandard-heading-row">
+                            <div class="col-sm-5">
+                                <select id="selectAnnoCompetenza" name="ANNO_COMPETENZA" class="form-control" onchange="setDateIntervals()">
+                                    @if (Model != null && Model.edit == true)
+                                    {
+                                        <option value="@Model.annoBloccato.ANNO_COMPETENZA" selected>@Model.annoBloccato.ANNO_COMPETENZA</option> }
+                                    else if (Model != null)
+                                    {
+                                        if (Model.annoBloccato != null)
+                                        {
+                                            for (var annoBloccato = Model.annoBloccato.ANNO_COMPETENZA + 1; annoBloccato < DateTime.Now.Year; annoBloccato++)
+                                            //var annoBloccato = Model.annoBloccato.ANNO_COMPETENZA;
+                                            {
+                                                @*if (annoBloccato + 1 < DateTime.Now.Year)
+                                                    {
+                                                        <option value="@(DateTime.Now.Year - 1)">@(DateTime.Now.Year - 1)</option> }
+                                                    else if (annoBloccato + 1 == DateTime.Now.Year && DateTime.Now > Model.annoBloccato.DATA_BLOCCO.AddDays(365))
+                                                    {
+                                                        <option value="@(DateTime.Now.Year)">@(DateTime.Now.Year)</option> }*@
+                                                <option value="@annoBloccato">@annoBloccato</option>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @*<option value="@(DateTime.Now.Year - 1)">@(DateTime.Now.Year - 1)</option>*@
+                                    for (var anno = DateTime.Now.Year - 1; anno >= 2010; anno--)
+                                    {
+                                        <option value="@anno">@anno</option>
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <option value="-1" selected disabled></option> }
+                                </select>
+                            </div>
+
+                            <div class="col-sm-1" id="">
+                            </div>
+                            <div class="col-sm-5">
+                                <div id="calendarDataBlocco" class="input-group input-append date">
+                                    @if (Model != null && Model.edit == true && Model.annoBloccato.DATA_BLOCCO != null)
+                                    { <input class="form-control" data-format="dd/MM/yyyy" type="text" id="dataBlocco" name="dataBlocco" value='@Model.annoBloccato.DATA_BLOCCO.ToShortDateString()' /> }
+                                    else
+                                    { <input class="form-control" data-format="dd/MM/yyyy" type="text" id="dataBlocco" name="dataBlocco" value="" /> }
+                                    <span class="input-group-btn add-on">
+                                        <button class="btn btn-default h-btn-new" type="button">
+                                            <i class="fa fa-lg fa-calendar"></i>
+                                        </button>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-sm-1" id="">
+                            </div>
+                        </div>
+                        <div class="row fuoriStandard-caption-row">
+                            <div class="col-sm-5">
+                                <span for="AnnoCompetenza" class="control-label">Anno competenza</span>
+                            </div>
+                            <div class="col-sm-1" id="">
+                            </div>
+                            <div class="col-sm-5">
+                                <span for="DataBlocco" class="control-label">Data di attivazione blocco</span>
+                            </div>
+                            <div class="col-sm-1" id="">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" id="footerModificaDataBLocco">
+                        <a class="btn btn-lg btn-default pull-left" onclick="dismissModalModificaDataBlocco()">
+                            <span class="">Annulla</span>
+                        </a>
+                        @if (Model != null)
+                        { <a class="btn btn-lg btn-function" id="confermaModifiche" onclick="aggiornaDataBlocco('@Model.edit.ToString()')"><span class="">Salva</span></a> }
+                        else
+                        { <a class="btn btn-lg btn-function" id="confermaModifiche" onclick="aggiornaDataBlocco(false)"><span class="">Salva</span></a> }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function dismissModalModificaDataBlocco() {
+        $('#modalModificaDataBlocco').modal('hide');
+    }
+
+    $(function () {
+        if ($("#selectAnnoCompetenza option").length == 0) {
+            $("#selectAnnoCompetenza").attr("disabled", "disabled");
+            $("#calendarDataBlocco").datetimepicker("disable");
+        }
+        if ($("#selectAnnoCompetenza option").length == 1) {
+            $("#selectAnnoCompetenza").attr("disabled", "disabled");
+        }
+        $('#calendarDataBlocco').datetimepicker();
+        var now = new Date();
+        var picker = $('#calendarDataBlocco').data('datetimepicker');
+        var annoSel = parseInt($("#selectAnnoCompetenza option:selected").val());
+        if (!isNaN(annoSel)) {
+            if ($("#dataBlocco").val() == "" && parseInt(annoSel + 1) == now.getFullYear()) {
+                picker.setLocalDate(new Date(annoSel + 1, now.getMonth(), now.getDate()));
+            }
+            else if ($("#dataBlocco").val() == "") {
+                picker.setLocalDate(new Date(annoSel + 1, 0, 1));
+            }
+            picker.setStartDate(new Date(annoSel + 1, 0, 2));
+            picker.setEndDate(new Date(annoSel + 1, 11, 32));
+        }
+        else {
+            picker.setStartDate(new Date(now.getFullYear(), 0, 2));
+            picker.setEndDate(new Date(now.getFullYear(), 11, 32));
+        }
+    });
+
+    function setDateIntervals() {
+        var now = new Date();
+        var picker = $('#calendarDataBlocco').data('datetimepicker');
+        var annoSel = parseInt($("#selectAnnoCompetenza option:selected").val());
+        if (!isNaN(annoSel)) {
+            picker.setLocalDate(new Date(annoSel + 1, 0, 1));
+            picker.setStartDate(new Date(annoSel + 1, 0, 2));
+            picker.setEndDate(new Date(annoSel + 1, 11, 32));
+        }
+        else {
+            picker.setStartDate(new Date(now.getFullYear(), 0, 2));
+            picker.setEndDate(new Date(now.getFullYear(), 11, 32));
+        }
+    }
+
+    function aggiornaDataBlocco(edit) {
+        if ($('#selectAnnoCompetenza option:selected').val() == null) {
+            notifyWarning("Selezionare l'anno di competenza..."); return;
+        }
+        if ($('#dataBlocco').val() == '') {
+            notifyWarning("Selezionare la data di attivazione blocco..."); return;
+        }
+        displaySmallModalWaiter("aggiornaDataBlocco");
+        var nuovoBlocco = true;
+        if (edit == 'True') {
+            nuovoBlocco = false;
+        }
+        var _url = '@Url.Action("AggiornaDataBlocco", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                nuovoBlocco: nuovoBlocco,
+                annoCompetenza: $("#selectAnnoCompetenza option:selected").val(),
+                dataBlocco: $('#dataBlocco').val()
+            }),
+            success: function (result) {
+                $("#gestisciRettificheTableContainer").html(result);
+                setGRettificheDataTable();
+                var now = new Date();
+                if ($('#gridRettificheGestite').DataTable().rows().nodes().length > 0) {
+                    $("#modificaDataBlocco").removeClass("disabled");
+                }
+                if ($("#" + (now.getFullYear() - 1) + "_id").length > 0) {
+                    $("#containerAddData").css({ "cursor": "not-allowed" });
+                    $("#aggiungiDataBlocco").addClass("disabled");
+                }
+                $("#modalModificaDataBlocco").modal("hide");
+                hideSmallModalWaiter("aggiornaDataBlocco");
+            },
+            error: function (request, status, error) {
+                hideSmallModalWaiter("aggiornaDataBlocco");
+                notifyWarning(error);
+            }
+        });
+    }
+
+</script>

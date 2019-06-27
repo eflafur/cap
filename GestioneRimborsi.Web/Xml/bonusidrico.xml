@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:richiesteSgate
+    xmlns:xsd="http://www.sgate.ancitel.it/idrico/xsd/">
+    <xsd:messaggio>
+        <xsd:richiesta>
+            <xsd:protocolloDomanda>42531242</xsd:protocolloDomanda>
+            <xsd:protocolloRichiesta>42531259</xsd:protocolloRichiesta>
+            <xsd:tipologiaDomanda>NUOVA</xsd:tipologiaDomanda>
+            <xsd:richiedente>
+                <xsd:nome>EMANUELE</xsd:nome>
+                <xsd:cognome>ANDREOLI</xsd:cognome>
+                <xsd:codiceFiscale>NDRMNL77E25F205P</xsd:codiceFiscale>
+                <xsd:documentoRiconoscimento tipo="ALTRO">
+                    <xsd:numero>S</xsd:numero>
+                    <xsd:data>2018-01-10</xsd:data>
+                    <xsd:enteRilascio>COMUNE DI MULAZZANO</xsd:enteRilascio>
+                </xsd:documentoRiconoscimento>
+            </xsd:richiedente>
+            <xsd:residenza>
+                <xsd:comune>015140</xsd:comune>
+                <xsd:areaDiCircolazione>VIA 4 NOVEMBRE</xsd:areaDiCircolazione>
+                <xsd:numeroCivico>114</xsd:numeroCivico>
+                <xsd:cap>20077</xsd:cap>
+            </xsd:residenza>
+            <xsd:fornitura>
+                <xsd:fornituraIndividuale>
+                    <xsd:codiceUtente>1234567890</xsd:codiceUtente>
+                    <xsd:intestatario>
+                        <xsd:nome>EMANUELE</xsd:nome>
+                        <xsd:cognome>ANDREOLI</xsd:cognome>
+                        <xsd:codiceFiscale>NDRMNL77E25F205P</xsd:codiceFiscale>
+                        <xsd:documentoRiconoscimento tipo="ALTRO">
+                            <xsd:numero>S</xsd:numero>
+                            <xsd:data>2018-01-10</xsd:data>
+                            <xsd:enteRilascio>COMUNE DI MULAZZANO</xsd:enteRilascio>
+                        </xsd:documentoRiconoscimento>
+                    </xsd:intestatario>
+                    <xsd:indirizzo>
+                        <xsd:comune>015140</xsd:comune>
+                        <xsd:areaDiCircolazione>VIA 4 NOVEMBRE</xsd:areaDiCircolazione>
+                        <xsd:numeroCivico>114</xsd:numeroCivico>
+                        <xsd:cap>20077</xsd:cap>
+                    </xsd:indirizzo>
+                </xsd:fornituraIndividuale>
+            </xsd:fornitura>
+            <xsd:bonus>
+                <xsd:componentiFamigliaAnagrafica>4</xsd:componentiFamigliaAnagrafica>
+                <xsd:dataDisponibilita>2018-11-19</xsd:dataDisponibilita>
+                <xsd:dataAmmissione>2018-11-19</xsd:dataAmmissione>
+                <xsd:dataPresentazione>2018-10-10</xsd:dataPresentazione>
+                <xsd:dataInizioAgevolazione>2019-01-01</xsd:dataInizioAgevolazione>
+                <xsd:dataFineAgevolazione>2019-12-31</xsd:dataFineAgevolazione>
+                <xsd:fruizioneContinuativa>false</xsd:fruizioneContinuativa>
+            </xsd:bonus>
+        </xsd:richiesta>
+    </xsd:messaggio>
+</xsd:richiesteSgate>

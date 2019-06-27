@@ -1,0 +1,143 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Core.Permission
+@using GruppoCap.Authentication.Core
+@using GruppoCap.Security.PEM
+
+@model User
+
+@{
+    IPermissionManager PEM = RevoContext.PermissionManager;
+    
+    IList<IPermission> _permissions;
+    _permissions = PEM.BrowsePermissions(RevoRequest.CurrentUser.IsPrivileged);
+
+    Boolean? _directGrant;
+    Boolean? _inheritedGrant;
+
+    String _grantIcon, _deleteIconShow;
+}
+
+<div class="row">
+    <div class="col-sm-12">
+    @{
+        String _lastCategoryName = String.Empty;
+        foreach (IPermission _p in _permissions)
+        {
+            if (_p.CategoryName != _lastCategoryName)
+            {
+                <h4 class="permission-category">@_p.CategoryName</h4>
+            }
+
+            <div class="row permission-row">
+                <div class="col-sm-2 permission-code">@_p.PermissionCode</div>
+                <div class="col-sm-8 permission-description">@_p.Description</div>
+                @{
+                    _directGrant = PEM.GetUserGrantDirect(_p.PermissionCode, Model.UserId);
+                    _inheritedGrant = PEM.GetUserGrantWithFallback(_p.PermissionCode, Model.UserId);
+
+                    if(_directGrant.HasValue)
+                    {
+                        _grantIcon = _directGrant.Value ? CommonSnippets.AllowedGrant : CommonSnippets.DeniedGrant;
+                        <div class="col-sm-1 text-right">
+                            <a id="a_change_@_p.PermissionId" href="javascript:void(0);" onclick="changeDirectGrant('@_p.PermissionCode', '@Model.UserId');">
+                                @_grantIcon.ToRaw()
+                            </a>
+                        </div>
+                    
+                        _deleteIconShow = String.Empty;
+                    }
+                    else
+                    {
+                        _grantIcon = _inheritedGrant.Value ? CommonSnippets.InheritedAllowedGrant : CommonSnippets.InheritedDeniedGrant;
+                        <div class="col-sm-1 text-right">
+                            <a id="a_change_@_p.PermissionId" href="javascript:void(0);" onclick="changeDirectGrant('@_p.PermissionCode', '@Model.UserId');">
+                                @_grantIcon.ToRaw()
+                            </a>
+                        </div>
+
+                        _deleteIconShow = "display: none;";
+                    }
+
+                    <div class="col-sm-1 text-left" style="padding-top: 8px;">
+                        <span class="text-after-icon" id="a_delete_@_p.PermissionId" style="@_deleteIconShow">
+                            <a href="javascript:void(0);" onclick="deleteDirectGrant('@_p.PermissionCode', '@Model.UserId');">
+                                <i class="fa fa-lg fa-fw fa-trash"></i>
+                            </a>
+                        </span>
+
+                    </div>
+                }
+
+            </div>
+
+            _lastCategoryName = _p.CategoryName;
+
+        }
+    }
+    </div>
+</div>
+
+
+<script>
+    function changeDirectGrant(permissionCode, userId) {
+        var _url = "@CommonUrls.PermissionSetUserGrant("_permissionCode_", "_userId_")".replace('_permissionCode_', permissionCode).replace('_userId_', userId);
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                permissionCode: permissionCode,
+                userId: userId
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                    $('#a_change_' + result.data.permissionId).html('' + result.data.htmlGrant + '');
+                    $('#a_delete_' + result.data.permissionId).show();
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio dei dati');
+            }
+        }).done(function () {
+
+        }); // end ajax call
+    }
+
+    function deleteDirectGrant(permissionCode, userId) {
+        var _url = "@CommonUrls.PermissionRemoveUserGrant("_permissionCode_", "_userId_")".replace('_permissionCode_', permissionCode).replace('_userId_', userId);
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                permissionCode: permissionCode,
+                userId: userId
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                    $('#a_change_' + result.data.permissionId).html('' + result.data.htmlGrant + '');
+                    $('#a_delete_' + result.data.permissionId).hide();
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio dei dati');
+            }
+        }).done(function () {
+
+        }); // end ajax call
+    }
+
+</script>

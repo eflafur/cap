@@ -1,0 +1,174 @@
+﻿@using GruppoCap
+@using GruppoCap.Core
+
+@{
+    IUser _user = RevoRequest.CurrentUser;
+
+    if (_user == null)
+    {
+        Response.Redirect(CommonUrls.UserNotAuthenticated);
+    }
+
+    if (_user.IsActive == false)
+    {
+        Response.Redirect(CommonUrls.UserNotEnabled);
+    }
+
+    if (_user.IsEnabledForApplication(Ambient.CurrentApplicationId) == false)
+    {
+        Response.Redirect(CommonUrls.UserNotPrivileged);
+    }
+
+    IApplication _currentApplication;
+    _currentApplication = ((IApplicationService)RevoContext.ServiceProvider.GetServiceFor<Application>()).GetById(Ambient.CurrentApplicationId);
+   
+    if (_currentApplication == null)
+    {
+        Response.Redirect(CommonUrls.ApplicationNotEnabled);
+    }
+
+    if (_currentApplication.IsActive == false)
+    {
+        Response.Redirect(CommonUrls.ApplicationNotEnabled);
+    }
+
+    if (_currentApplication.IsInMaintenance)
+    {
+        Response.Redirect(CommonUrls.ApplicationInMaintenance);
+    }
+}
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>@Ambient.CurrentApplicationName</title>
+
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700,300italic,400italic,600italic,700italic' rel='stylesheet' type='text/css' />
+    <link href='http://fonts.googleapis.com/css?family=Oswald:400,700,300' rel='stylesheet' type='text/css'>
+
+
+    
+
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/plugin-css")
+    @Styles.Render("~/Content/custom-css")
+
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/standard")
+
+
+    @*@Scripts.Render("~/bundles/jqueryui")*@
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+
+@Scripts.Render("~/bundles/plugin")
+@Scripts.Render("~/bundles/moment-js")
+@Scripts.Render("~/bundles/gruppocap-custom")
+
+
+</head>
+<body>
+
+    <div class="container-fluid">
+
+        <nav class="navbar navbar-default navbar-fixed-top navbar-amiacque" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="@CommonUrls.BaseUrl">
+                        <img alt="Cap Holding" src="~/img/logo-cap-amiacque.png" />
+                        <span class="application-title" style="font-size:34px">@Ambient.CurrentApplicationName e Fuori Standard</span>
+                    </a>
+                </div>
+                @Html.Partial("_userLogin")
+            </div>
+        </nav>
+
+        @if ((Ambient.Current.ToLower() != "prod") || (Ambient.Current.ToLower() == "prod" && CurrentUser.IsPrivileged))
+        {
+            <span class="version-ribbon-@Ambient.Current"></span>
+        }
+
+        <div class="small-device">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="panel panel-warning">
+                        <div class="panel-heading">
+                            <i class="fa fa-lg fa-danger"></i>
+                            <span>Risoluzione non supportata</span>
+                        </div>
+                        <div class="panel-body">
+                            <p>
+                                Ci dispiace ma <strong>@Ambient.CurrentApplicationName</strong> non supporta una risoluzione tanto bassa... I device supportati vanno dagli small tablet in su...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mainContent">
+
+            @*<div class="alert alert-warning alert-dismissible browser-compatibility" role="alert" id="ie-detected" style="display:none;">
+                    <button type="button" class="close" data-dismiss="alert">
+                        <span aria-hidden="true">&times;</span><span class="sr-only">Chiudi</span>
+                    </button>
+                    <h4>Attenzione...</h4>
+                    <p>Internet Explorer è un browser particolare... per quanto tutte le funzionalità di <strong>@ViewBag.Title</strong> siano pienamente supportate, ti consigliamo di utilizzare le ultime versioni di <strong>Chrome</strong> o <strong>Firefox</strong> per una migliore esperienza d'utilizzo...</p>
+                </div>*@
+
+            @{
+                if (_currentApplication.MaintenanceWarning.IsNullOrWhiteSpace() == false)
+                {
+                    <div class="alert alert-warning alert-dismissible" role="alert">
+                        <button type="button" class="close" data-dismiss="alert">
+                            <span aria-hidden="true">&times;</span><span class="sr-only">Chiudi</span>
+                        </button>
+                        <h4>
+                            <i class="fa fa-lg fa-bullhorn"></i>
+                            <span class="text-after-icon">Avviso per manutenzione schedulata</span>
+                        </h4>
+                        <p>@_currentApplication.MaintenanceWarning</p>
+                    </div>
+                }
+            }
+
+            @RenderBody()
+
+        </div>
+
+        <div class="clearfix"></div>
+
+        <footer>
+            <nav class="navbar navbar-default navbar-fixed-bottom cap-footer" role="navigation">
+                <div class="container-fluid">
+
+                    @RenderSection("detail_scroller", required: false)
+
+                    <div class="row" style="margin-bottom: 8px">
+                        <div class="col-sm-6">
+                            <p class="text-left footer-links">
+
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="text-right footer-credits">
+                                v.@Ambient.CurrentApplicationVersion - Application & DB Administration
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </footer>
+
+    </div> <!-- container fluid ends -->
+    
+
+
+
+
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>

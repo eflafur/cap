@@ -1,0 +1,95 @@
+﻿
+<div class="modal fade" id="createCapGroupingModal" tabindex="-1" role="dialog" aria-labelledby="createCapGroupingModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createCapGroupingModalTitle">
+                    <i class="fa fa-lg fa-desktop"></i>
+                    <span class="text-after-icon">Nuovo raggruppamento</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                
+                <div class="row">
+
+                    <div class="col-sm-12">
+
+                        <form role="form" class="breath-on-top-8">
+
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="form-group">
+                                        <label for="txtCapGroupingCode" class="control-label">Cap Grouping Code</label>
+                                        <input type="text" class="form-control input-lg" id="txtCapGroupingCode" placeholder="inserisci il codice">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label for="txtDescription" class="control-label">Descrizione</label>
+                                        <input type="text" class="form-control input-lg" id="txtDescription" placeholder="inserisci il titolo / descrizione">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">
+                    <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Torna alla lista raggruppamenti</span>
+                </button>
+                <a id="btnCreateCapGrouping" class="btn btn-lg btn-primary" href="javascript:void(0);" onclick="createCapGrouping();">
+                    <i id="iconSave" class="fa fa-lg fa-save"></i><span class="text-after-icon">Salva</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    function createCapGrouping() {
+
+        var _url;
+        var _code, _description;
+
+        startSaveOperation('iconSave');
+
+        _url = '@Url.Action("Create", "CapGrouping")';
+
+        _code = $("#txtCapGroupingCode").val();
+        _description = $("#txtDescription").val();
+        
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                capGroupingCode: _code,
+                description: _description
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio dei dati');
+            }
+        }).done(function () {
+            endSaveOperation('iconSave');
+            $('#createCapGroupingModal').modal('hide');
+        }); // end ajax call
+    } // saveUser
+</script>

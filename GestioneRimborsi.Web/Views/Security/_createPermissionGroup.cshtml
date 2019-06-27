@@ -1,0 +1,101 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+<div class="modal fade" id="createPermissionGroupModal" tabindex="-1" role="dialog" aria-labelledby="createPermissionGroupModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="createPermissionGroupModalTitle">
+                    <i class="fa fa-lg fa-cubes"></i>
+                    <span class="text-after-icon">New Permission Group</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                
+                <div class="row">
+
+                    <div class="col-sm-12">
+
+                        <form role="form" class="breath-on-top-8">
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label for="txtTitle" class="control-label">Title</label>
+                                        <input type="text" class="form-control input-lg" id="txtTitle" placeholder="insert title" maxlength="50">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <div class="form-group">
+                                        <label for="txtDescription" class="control-label">Description</label>
+                                        <textarea class="form-control" id="txtDescription" placeholder="insert description" maxlength="500" ></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-lg btn-default" data-dismiss="modal">
+                    <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Annulla</span>
+                </button>
+                <a class="btn btn-lg btn-primary" href="javascript:void(0);" onclick="createPermissionGroup();">
+                    <i id="iconSave" class="fa fa-lg fa-save"></i><span class="text-after-icon">Salva</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        
+    });
+
+    function createPermissionGroup() {
+
+        var _url;
+        var _title, _description;
+
+        startSaveOperation('iconSave');
+
+        _url = '@Url.Action("CreatePermissionGroup", "Security")';
+
+        _title = $("#txtTitle").val();
+        _description = $("#txtDescription").val();
+        
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                title: _title,
+                description: _description
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Something gone wrong trying to save the datas...');
+            }
+        }).done(function () {
+            endSaveOperation('iconSave');
+            $('#createPermissionGroupModal').modal('hide');
+        }); // end ajax call
+    } // saveUser
+</script>

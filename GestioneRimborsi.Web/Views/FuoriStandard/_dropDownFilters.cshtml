@@ -1,0 +1,118 @@
+﻿@*@using GestioneRimborsi.Web.Models;
+
+@model  UnifiedSearchModel
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+    IRettificaFuoriStandardService _rettificaFuoriStandardService = (IRettificaFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<RettificaFuoriStandard>();
+
+    var totaleGruppi = _fuoriStandardService.GetTipologieByGrouping(RevoRequest.CurrentUser.GroupingCodes.ToList<String>());
+
+    List<String> listaGruppi = new List<String>();
+    bool check = false;
+    Dictionary<string, int> countFS = new Dictionary<string, int>();
+    Dictionary<string, int> totalCountFS = new Dictionary<string, int>();
+    string formName = Model["FormName"].ToString();
+
+    try
+    {
+
+        if (formName == "RecuperoFS") { countFS = _fuoriStandardService.GetCountFuoriStandardNonIndennizzabili(totaleGruppi); }
+        else if (formName == "StoricoFS") { countFS = _fuoriStandardService.GetCountFuoriStandardTutti(totaleGruppi); }
+        else if (formName == "ValidazioneFS") { countFS = _fuoriStandardService.GetCountFuoriStandardDaValidare(totaleGruppi); }
+        else if (formName == "RettificheFS") { countFS = _fuoriStandardService.GetCountFuoriStandard(totaleGruppi); }
+        else if (formName == "ApprovazioneFS") { countFS = _rettificaFuoriStandardService.GetCountRettificheDaApprovare(totaleGruppi); }
+        foreach (var item in totaleGruppi)
+        {
+            foreach (var itm in countFS)
+            {
+                if (item == itm.Key)
+                {
+                    totalCountFS.Add(itm.Key, itm.Value);
+                    check = true;
+                }
+            }
+            if (check == false)
+            {
+                totalCountFS.Add(item, 0);
+            }
+            check = false;
+        }
+    }
+    catch (Exception ex)
+    {
+        countFS = new Dictionary<string, int>();
+    }
+
+    var sortColumn = "nessunElemento";
+    var sortType = "nessunOrdinamento";
+    var page = 1;
+}*@
+
+@*<div class="dropdown" id="dropDownFilters">
+    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" onclick="caricaFiltriPrestazioni();" aria-expanded="false">
+        <span class="fa fa-filter"></span>
+        <span class="text-after-icon mr-r">Filtri</span><span class="text-after-icon caret"></span>
+    </button>
+    <div class="dropdown-menu dropdown-menu-left" role="menu" id="menuFiltri">
+        
+    </div>
+</div>*@
+
+<script>
+
+    @*function cercaIndicatoriGruppo(view) {
+        var _optionGruppo = $("#codGruppo option:selected").val();
+
+        if ($("#codGruppo option:selected").val() == null) {
+            _optionGruppo = $("#codGruppo").data("bind");
+        }
+
+        var _url = '@Url.Action("FiltraDatiIndicatori", "FuoriStandard", new { view = "_view_", OptionGruppo = "_optiongruppo_", firstTime = "_firstTime_" })'.replace("_view_", view).replace("_optiongruppo_", _optionGruppo).replace("_firstTime_", false);
+
+        displayModalWaiter();
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                view: view,
+                OptionGruppo: _optionGruppo,
+                firstTime: false,
+            }),
+            success: function (result) {
+                $("#containerIndicatori").html(result);
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }*@
+
+
+    function caricaFiltriPrestazioni() {
+        var _url = '@Url.Action("FiltraDropdown", "FuoriStandard")';
+        //, new { view = "_view_" })'.replace("_view_", view)
+        displayModalWaiter();
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                view: "ApprovazioneFS",                
+            }),
+            success: function (result) {
+                $("#menuFiltri").html(result);
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error + ", riprova più tardi..");
+            }
+        });
+    }
+
+</script>

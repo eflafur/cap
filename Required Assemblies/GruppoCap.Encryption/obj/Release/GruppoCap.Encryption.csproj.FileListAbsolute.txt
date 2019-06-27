@@ -1,0 +1,4 @@
+C:\Progetti\Revolution\GruppoCap.Encryption\bin\Release\GruppoCap.Encryption.dll
+C:\Progetti\Revolution\GruppoCap.Encryption\bin\Release\GruppoCap.Encryption.pdb
+C:\Progetti\Revolution\GruppoCap.Encryption\obj\Release\GruppoCap.Encryption.dll
+C:\Progetti\Revolution\GruppoCap.Encryption\obj\Release\GruppoCap.Encryption.pdb

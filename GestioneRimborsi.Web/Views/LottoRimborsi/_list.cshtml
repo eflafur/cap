@@ -1,0 +1,194 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GestioneRimborsi.Core
+
+@model ISubCollection<Rimborso>
+
+@{
+    IUser _currentUser = RevoRequest.CurrentUser;
+}
+
+@*@if (!RevoContext.IdentityManager.CurrentUser.HasPermission("GestioneRimborsi.GestionePermessi.ImpersonificaUtente"))*@
+@if (!RevoContext.IdentityManager.CurrentUser.HasPermission("gri.disposizioni.scegliUtenti"))
+{
+    <div class="info-panel">
+        <i class="fa fa-lg fa-user"></i><span class="text-after-icon">Elenco rimborsi dell'utente @ViewData["UserName"]</span>
+    </div>
+}
+<table id="gridLottoRimborsi" class="table table-condensed table-hover">
+    <thead>
+        <tr>
+            <th class="text-left" width="15%">Codice Cliente</th>
+            <th class="text-left" width="15%">ID Rimborso</th>
+            <th class="text-left" width="23%">IBAN</th>
+            <th class="text-left" width="23%">Banca di appoggio</th>
+            <th class="text-center" width="7%">ABI</th>
+            <th class="text-center" width="7%">CAB</th>
+            <th class="text-right" width="10%">Importo</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            foreach (Rimborso _r in Model.Items)
+            {
+                <tr>
+                    <td class="text-left">@_r.CodiceClienteDestinatario</td>
+                    <td class="text-left">@_r.IdRimborso</td>
+                    <td class="text-left">@_r.IbanDestinatario</td>
+                    <td class="text-left">@_r.DescrizioneBancaOrdinante</td>
+                    <td class="text-center">@_r.AbiOrdinante</td>
+                    <td class="text-center">@_r.CabOrdinante</td>
+                    <td class="text-right"> @Html.DisplayFor(model => _r.TotaleEuro)</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+<table class="table table-condensed table-hover">
+    <tr>
+        <td class="colorTransparent" colspan="7"><p></p></td>
+    </tr>
+    <tr>
+        <td colspan="6"><strong>Numero Disposizioni</strong></td>
+        <td class="text-right"><strong>@Model.Items.Count()</strong></td>
+    </tr>
+    <tr>
+        <td colspan="5"><strong>Totale Disposizioni</strong></td>
+        <td class="text-right" colspan="2"><strong>@String.Format("{0:C}", Model.Items.Sum(s => s.TotaleEuro))</strong></td>
+    </tr>
+    <tr>
+        <td colspan="4"><strong>Data Valuta</strong></td>
+        <td colspan="5">
+            <div id="calendarDiv2" class="input-group input-append date pull-right">
+                <input class="form-control" data-format="dd/MM/yyyy" type="text" id="calendar" name="calendar" value='@DateTime.Now.ToShortDateString()' />
+                <span class="input-group-btn add-on">
+                    <button class="btn btn-default h-btn-new" type="button">
+                        <i class="fa fa-lg fa-calendar"></i>
+                    </button>
+                </span>
+            </div>
+
+        </td>
+
+    </tr>
+</table>
+
+<div class="pull-right">
+    <a id="btnGeneraFileRimborsi" class="btn btn-function title-bar-entity-button pull-right" href=" javascript:void(0);" onclick="DownloadFileRimborsi()">
+        <i class=" fa fa-lg fa-file-text-o" id="iconGeneraFile"></i>
+        <span class="text-after-icon">Genera File Rimborsi</span>
+    </a>
+</div>
+
+<script>
+
+    $(function () {
+        $('#calendarDiv2').datetimepicker();
+        jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+            "currency-pre": function (a) {
+                a = (a === "-") ? 0 : a.replace(/[^\d\-\,]/g, "").replace(/,/, ".");
+                return parseFloat(a);
+            },
+
+            "currency-asc": function (a, b) {
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            },
+
+            "currency-desc": function (a, b) {
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        });
+        jQuery.extend(jQuery.fn.dataTableExt.oSort, {
+            "numeric-comma-pre": function (a) {
+                var x = (a == "-") ? 0 : a.replace(/,/, ".");
+                return parseFloat(x);
+            },
+
+            "numeric-comma-asc": function (a, b) {
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            },
+
+            "numeric-comma-desc": function (a, b) {
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        });
+
+        $('#gridLottoRimborsi').DataTable({
+            columnDefs: [
+              { type: 'currency', targets: 6 }
+            ]
+        });
+    });
+
+    function DownloadFileRimborsi() {
+        if ($("#calendar").val() == '') {
+            notifyWarning("Nessuna data valuta inserita..."); return false;
+        }
+        var _url = '@UrlFor.GeneraFileRimborsi';
+
+        startGenericOperation('iconGeneraFile', 'file-text-o');
+        displayModalWaiter();
+        @if (string.IsNullOrEmpty(ViewData["UserName"].ToString())) {
+            @:notifyError('Non è stato trovato nessun rimborso!');
+                    @:return;
+                }
+        if (_url == '') {
+            notifyError('Attenzione, url per il download del file non valido!');
+            endGenericOperation('iconSend', 'send');
+            return;
+        }
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                UserName: '@ViewData["UserName"].ToString()',
+                DataValuta: $("#calendar").val()
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    hideModalWaiter();
+                    window.location = '@UrlFor.DownloadFileRimborsi'.replace("_id_", result.data.id);
+                    $("#btnGeneraFileRimborsi").addClass("disabled");
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante la generazione del file: ' + error);
+            }
+        }).done(function () {
+            hideModalWaiter();
+            endGenericOperation('iconGeneraFile', 'file-text-o');
+        });
+    }
+
+    function setDataValuta() {
+
+        var _url = '@Url.Action("SetDataValuta", "LottoRimborsi")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                DataValuta: $("#calendar").val(),
+                Username: '@ViewData["UserName"].ToString()',
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio della data valuta: ' + error);
+            }
+        });
+    }
+
+</script>

@@ -1,0 +1,120 @@
+﻿@model ISubCollection<GestioneRimborso>
+
+@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+    IRimborsoService _rimborsoService = (IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborso>();
+
+    Double totale = 0.00;
+    if (Model != null)
+    {
+        foreach (var item in Model.Items)
+        {
+            totale = totale + Convert.ToDouble(item.ImportoTotaleRimborso);
+        }
+    }
+}
+
+<div class="panel">
+    <div class="panel-heading panel-info-cap">
+        <h4>Selezione dei rimborsi da confermare</h4>
+    </div>
+    <div class="panel-body" id="confermaRimborsiTableContainer">
+        @{
+            if (Model == null)
+            {
+                @Html.Raw(HtmlSnippets.Alert.Info("Nessun rimborso da confermare..."))
+            }
+            else
+            {
+                <table id="gridRimborsiConfermabili" class="table table-condensed table-hover">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="text-center">Sel</th>
+                            <th class="text-left">Numero</th>
+                            <th class="text-left">Tipo Rimborso</th>
+                            <th class="text-left">Tipo Documento</th>
+                            <th class="text-left">Data Inserimento</th>
+                            <th class="text-left">Utente Inserimento</th>
+                            <th class="text-left">Cliente</th>
+                            <th class="text-left">Intestazione</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                foreach (GestioneRimborso _r in Model.Items)
+                {
+                    String _trClass = String.Empty;
+                    String _trIcon = String.Empty;
+
+
+
+                    <tr class="@_trClass" onclick="selectRow(event);">
+                        <td class="text-left">@Html.Raw(_trIcon)</td>
+                        <td class="text-center"><input class="sel chkSelectRow" id="selectRimborso" name="@_r.CodiceCliente;@_r.AnnoDocumento;@_r.NumeroDocumento;@_r.TipoDocumento" value="@_r.ImportoTotaleRimborso" type="checkbox"/></td>
+                        <td class="text-left">@_r.NumeroDocumento</td>
+                        <td class="text-left">@_rimborsoService.GetTipoRimborso(_r.TipoRimborso)</td>
+                        <td class="text-left">@_rimborsoService.GetTipoDocumento(_r.TipoDocumento)</td>
+                        <td class="text-left">@_r.DataInserimento</td>
+                        <td class="text-left">@_r.UtenteInserimento</td>
+                        <td class="text-left">@_clienteService.ClienteByID(_r.CodiceCliente)</td>
+                        <td class="text-left">@_r.Intestazione</td>
+                    </tr>
+                }
+                        }
+                    </tbody>
+                </table>
+            }
+        }
+    </div>
+
+    <div class="panel-footer panel-info-cap-footer">
+
+        <a class="btn btn-function" onclick="selezionaTutto();">
+            Seleziona tutti
+        </a>
+        <a class="btn btn-function" onclick="deselezionaTutto();">
+            Deseleziona tutti
+        </a>
+
+    </div>
+</div>
+
+<script>
+
+    function selectRow(e)
+    {
+        if (e.target.type != "checkbox") {
+            var tr = $(e.target).parent();
+            $(':checkbox', tr).trigger("click");
+        }
+    }
+
+    function selezionaTutto() {
+        var allPages = _rimborsiConfermabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]').prop('checked', true);
+        $("#lblTotRimborso").text("€ " + @totale.ToString().Replace(",","."));
+        return;
+    }
+
+    function deselezionaTutto() {
+        var allPages = _rimborsiConfermabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]').prop('checked', false);
+        $("#lblTotRimborso").text("€ 0.00");
+        return;
+    }
+
+    $("input[type=checkbox]").change(function () {
+        recalculate();
+    });
+
+    function recalculate() {
+        var sum = 0;
+        var allPages = _rimborsiConfermabiliTable.cells().nodes();
+        $(allPages).find('input[type="checkbox"]:checked').each(function () {
+            sum += parseFloat($(this).val().replace(",", "."));
+        });
+        $("#lblTotRimborso").text("€ " + sum.toFixed(2));
+    }
+
+</script>

@@ -1,0 +1,250 @@
+﻿
+#myInput {
+    background-image: url('/css/searchicon.png'); /* Add a search icon to input */
+    background-position: 10px 12px; /* Position the search icon */
+    background-repeat: no-repeat; /* Do not repeat the icon image */
+    width: 100%; /* Full-width */
+    font-size: 16px; /* Increase font-size */
+    padding: 12px 20px 12px 40px; /* Add some padding */
+    border: 1px solid #ddd; /* Add a grey border */
+    margin-bottom: 12px; /* Add some space below the input */
+}
+
+#tablef1 {
+    border-collapse: collapse; /* Collapse borders */
+    width: 100%; /* Full-width */
+    border: 1px solid #ddd; /* Add a grey border */
+    font-size: 18px; /* Increase font-size */
+}
+
+    #tablef1 th, #tablef1 td {
+        text-align: left; /* Left-align text */
+        padding: 12px; /* Add padding */
+    }
+
+    #tablef1 tr {
+        /* Add a bottom border to all table rows */
+        border-bottom: 1px solid #ddd;
+    }
+
+        #tablef1 tr.header, #tablef1 tr:hover {
+            /* Add a grey background color to the table header and on hover */
+            background-color: #f1f1f1;
+        }
+
+
+
+.button {
+    background-color: #f44336; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+@keyframes pulse_animation {
+    0% {
+        transform: scale(1);
+    }
+
+    30% {
+        transform: scale(1);
+    }
+
+    40% {
+        transform: scale(1.08);
+    }
+
+    50% {
+        transform: scale(1);
+    }
+
+    60% {
+        transform: scale(1);
+    }
+
+    70% {
+        transform: scale(1.05);
+    }
+
+    80% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse {
+    animation-name: pulse_animation;
+    animation-duration: 5000ms;
+    transform-origin: 70% 70%;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+
+.panel-heading {
+    display: inline-block;
+    vertical-align: top;
+    width: 100%;
+}
+
+
+.bi-modal-lg {
+    width: 85%;
+}
+.panel-heading .accordion-toggle:after{
+    float:right;
+    font-family:"FontAwesome";
+    font-weight:normal;
+    font-style:normal;
+    content: "\f077";
+}
+.panel-heading .accordion-toggle.collapsed:after {
+    /* symbol for "collapsed" panels */
+    content: "\f078"; /* adjust as needed, taken from bootstrap.css */
+}
+
+.bi-modal-lg{
+    width:85%;
+}
+
+#btncheckstatus {
+  font-size:x-large;
+}
+
+input[type=search] {
+	-webkit-appearance: textfield;
+	-webkit-box-sizing: content-box;
+	font-family: inherit;
+	font-size: 100%;
+}
+input::-webkit-search-decoration,
+input::-webkit-search-cancel-button {
+	display: none; 
+}
+
+
+input[type=search] {
+	background: #d9edf7 url(https://static.tumblr.com/ftv85bp/MIXmud4tx/search-icon.png) no-repeat 9px center;
+	border: solid 1px #7b9da4;
+	padding: 9px 10px 9px 32px;
+	width: 55px;
+	
+	-webkit-border-radius: 0.5em;
+	-moz-border-radius: 0.5em;
+	border-radius: 0.5em;
+	
+	-webkit-transition: all .5s;
+	-moz-transition: all .5s;
+	transition: all .5s;
+}
+input[type=search]:focus {
+	width: 130px;
+	background-color: #fff;
+	border-color: #66CC75;
+	
+	-webkit-box-shadow: 0 0 5px rgba(109,207,246,.5);
+	-moz-box-shadow: 0 0 5px rgba(109,207,246,.5);
+	box-shadow: 0 0 5px rgba(109,207,246,.5);
+}
+
+
+input:-moz-placeholder {
+	color: #999;
+}
+input::-webkit-input-placeholder {
+	color: #999;
+}
+
+#mdRequestDetails input[type=search] {
+	width: 15px;
+	padding-left: 10px;
+	color: transparent;
+	cursor: pointer;
+}
+#mdRequestDetails input[type=search]:hover {
+	background-color: #fff;
+}
+#mdRequestDetails input[type=search]:focus {
+	width: 130px;
+	padding-left: 32px;
+	color: #000;
+	background-color: #fff;
+	cursor: auto;
+}
+#mdRequestDetails input:-moz-placeholder {
+	color: transparent;
+}
+#mdRequestDetails input::-webkit-input-placeholder {
+	color: transparent;
+}
+
+#tblCustomerUtenzeBody{
+   display:block;
+  overflow:auto;
+  height:40px;
+  width:100%;
+
+}
+
+#tblCustomerUtenze thead tr{
+  display:block;
+}
+
+.importoBI{
+    font-size:23px;
+    font-weight:bold;
+}
+
+.bottomDivider{
+    border-bottom:dotted 1px darkgray;
+}
+.subHeading{
+    padding-top:5px;
+}
+.navbar-label{
+    padding-top:18px;
+}
+#infolotto{
+    font-size:13px;
+    font-weight:bold;
+}
+
+input placeholder{
+  color: red;
+}
+
+#containerTipoRicerca .no-padding-right{
+    padding-right:0px !important;
+}
+
+#containerTipoRicerca .no-padding-left {
+    padding-left: 0px !important;
+}
+.btnsearch >button{
+    font-size:15px;
+}
+
+.selected {
+    background-color:#66CC75 !important;
+}
+
+#dialog {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place front is invalid - may break your css so removed */  
+    padding-top: 100px; /* Location of the box - don't know what this does?  If it is to move your modal down by 100px, then just change top below to 100px and remove this*/
+    left: 0;
+    right:0; /* Full width (left and right 0) */
+    top: 0;
+    bottom: 0; /* Full height top and bottom 0 */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    z-index: 9999; /* Sit on top - higher than any */
+}

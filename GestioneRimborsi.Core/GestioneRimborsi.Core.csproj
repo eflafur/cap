@@ -1,0 +1,215 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3B73452A-78D5-4E31-BAD8-06726E716586}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>GestioneRimborsi.Core</RootNamespace>
+    <AssemblyName>GestioneRimborsi.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'GRI_TEST|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\GRI_TEST\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'GRI_PROD|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\GRI_PROD\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Serialization" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Entities\AllegatoSospensione.cs" />
+    <Compile Include="Entities\AnnoBloccato.cs" />
+    <Compile Include="Entities\BICapLotto.cs" />
+    <Compile Include="Entities\BICapRequest.cs" />
+    <Compile Include="Entities\BICLienti.cs" />
+    <Compile Include="Entities\BIContratto.cs" />
+    <Compile Include="Entities\BIPuf.cs" />
+    <Compile Include="Entities\BiInfoNuoviClienti.cs" />
+    <Compile Include="Entities\BIRequestValidate.cs" />
+    <Compile Include="Entities\BISgateRequest.cs" />
+    <Compile Include="Entities\CategoriaSospensione.cs" />
+    <Compile Include="Entities\CausaRitardoFuoriStandard.cs" />
+    <Compile Include="Entities\BIRimbTest.cs" />
+    <Compile Include="Entities\ClienteBonusIdrico.cs" />
+    <Compile Include="Entities\Cliente.cs" />
+    <Compile Include="Entities\ClienteFuoriStandard.cs" />
+    <Compile Include="Entities\BIComAnagrafica.cs" />
+    <Compile Include="Entities\Comune.cs" />
+    <Compile Include="Entities\CoordinateBancarie.cs" />
+    <Compile Include="Entities\DisposizioneModificata.cs" />
+    <Compile Include="Entities\EccezioneFuoriStandard.cs" />
+    <Compile Include="Entities\FuoriStandardAllegato.cs" />
+    <Compile Include="Entities\GestioneRimborso.cs" />
+    <Compile Include="Entities\IBAN.cs" />
+    <Compile Include="Entities\FuoriStandard.cs" />
+    <Compile Include="Entities\Lotto.cs" />
+    <Compile Include="Entities\ReportFuoriStandard.cs" />
+    <Compile Include="Entities\RettificaSospensione.cs" />
+    <Compile Include="Entities\SepaCreditTransaction.cs" />
+    <Compile Include="Entities\SepaHeader.cs" />
+    <Compile Include="Entities\SgateRichieste.cs" />
+    <Compile Include="Entities\TestataRimborso.cs" />
+    <Compile Include="Entities\TipologiaFuoriStandard.cs" />
+    <Compile Include="Entities\RecapitoCliente.cs" />
+    <Compile Include="Entities\InsolutoBolletta.cs" />
+    <Compile Include="Entities\KeyValueEntity.cs" />
+    <Compile Include="Entities\LottoRimborso.cs" />
+    <Compile Include="Entities\RettificaFuoriStandard.cs" />
+    <Compile Include="Entities\DettaglioRimborso.cs" />
+    <Compile Include="Entities\AllegatoRimborso.cs" />
+    <Compile Include="Entities\Rimborso.cs" />
+    <Compile Include="Entities\RimborsoGestito.cs" />
+    <Compile Include="Entities\SottoCausaRitardoFS.cs" />
+    <Compile Include="Entities\TipoSospensione.cs" />
+    <Compile Include="Entities\UserOfRimborso.cs" />
+    <Compile Include="Models\QueryOptions.cs" />
+    <Compile Include="Process\BIEsito.cs" />
+    <Compile Include="Process\DbQuery.cs" />
+    <Compile Include="Process\Validazione.cs" />
+    <Compile Include="Process\Xml2Struct.cs" />
+    <Compile Include="Process\XmlProcessor.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repos\IAllegatoRimborsoRepo.cs" />
+    <Compile Include="Repos\IAnniBloccatiRepo.cs" />
+    <Compile Include="Repos\IBonusIdricoRepo.cs" />
+    <Compile Include="Repos\IEccezioniFuoriStandardRepo.cs" />
+    <Compile Include="Repos\IFuoriStandardAllegatoRepo.cs" />
+    <Compile Include="Repos\IClienteRepo.cs" />
+    <Compile Include="Repos\IFuoriStandardRepo.cs" />
+    <Compile Include="Repos\ILottoRimborsiRepo.cs" />
+    <Compile Include="Repos\Impl\AllegatoRimborsoRepo.cs" />
+    <Compile Include="Repos\Impl\AnniBloccatiRepo.cs" />
+    <Compile Include="Repos\Impl\BonusIdricoRepo.cs" />
+    <Compile Include="Repos\Impl\EccezioniFuoriStandardRepo.cs" />
+    <Compile Include="Repos\Impl\FuoriStandardAllegatoRepo.cs" />
+    <Compile Include="Repos\Impl\ClienteRepo.cs" />
+    <Compile Include="Repos\Impl\FuoriStandardRepo.cs" />
+    <Compile Include="Repos\Impl\LottoRimborsiRepo.cs" />
+    <Compile Include="Repos\Impl\RettificaFuoriStandardRepo.cs" />
+    <Compile Include="Repos\Impl\RettificaSospensioneRepo.cs" />
+    <Compile Include="Repos\Impl\RimborsoRepo.cs" />
+    <Compile Include="Repos\Impl\TipologiaFuoriStandardRepo.cs" />
+    <Compile Include="Repos\IRettificaFuoriStandardRepo.cs" />
+    <Compile Include="Repos\IRettificaSospensioneRepo.cs" />
+    <Compile Include="Repos\IRimborsoRepo.cs" />
+    <Compile Include="Repos\ITipologiaFuoriStandardRepo.cs" />
+    <Compile Include="Services\IAllegatoRimborsoService.cs" />
+    <Compile Include="Services\IAnniBloccatiService.cs" />
+    <Compile Include="Services\IBonusIdricoService.cs" />
+    <Compile Include="Services\IEccezioniFuoriStandardService.cs" />
+    <Compile Include="Services\IFuoriStandardAllegatoService.cs" />
+    <Compile Include="Services\IFuoriStandardService.cs" />
+    <Compile Include="Services\Impl\AllegatoRimborsoService.cs" />
+    <Compile Include="Services\Impl\AnniBloccatiService.cs" />
+    <Compile Include="Services\Impl\BonusIdricoService.cs" />
+    <Compile Include="Services\Impl\ClienteService.cs" />
+    <Compile Include="Services\Impl\EccezioniFuoriStandardService.cs" />
+    <Compile Include="Services\Impl\FuoriStandardAllegatoService.cs" />
+    <Compile Include="Services\Impl\FuoriStandardService.cs" />
+    <Compile Include="Services\Impl\LotProgressInfo.cs" />
+    <Compile Include="Services\Impl\LottoRimborsiService.cs" />
+    <Compile Include="Services\Impl\RettificaFuoriStandardService.cs" />
+    <Compile Include="Services\Impl\RettificaSospensioneService.cs" />
+    <Compile Include="Services\Impl\RimborsoService.cs" />
+    <Compile Include="Services\IClienteService.cs" />
+    <Compile Include="Services\ILottoRimborsiService.cs" />
+    <Compile Include="Services\Impl\TipologiaFuoriStandardService.cs" />
+    <Compile Include="Services\IRettificaFuoriStandardService.cs" />
+    <Compile Include="Services\IRettificaSospensioneService.cs" />
+    <Compile Include="Services\IRimborsoService.cs" />
+    <Compile Include="Services\ITipologiaFuoriStandardService.cs" />
+    <Compile Include="xsd\BonusIdricoModels.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Core\GruppoCap.Core.csproj">
+      <Project>{c87a3dd2-26af-4784-8850-92ac402903f7}</Project>
+      <Name>GruppoCap.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.DAL.Oracle\GruppoCap.DAL.Oracle.csproj">
+      <Project>{73f97f54-5d25-4f6e-87c7-82d1afbc0775}</Project>
+      <Name>GruppoCap.DAL.Oracle</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Required Assemblies\GruppoCap.Utils\GruppoCap.Utils.csproj">
+      <Project>{578745e5-c348-48a9-9a6d-f7896cb63050}</Project>
+      <Name>GruppoCap.Utils</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+    <None Include="xsd\01_SGATEH2O_XSD_GESTORI_v1.1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="xsd\01_SGATEH2O_XSD_PRIMITIVI_v1.1.xsd">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,1440 @@
+﻿@model GestioneRimborsi.Web.Models.SchedaFuoriStandardModel
+
+@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+    IRettificaFuoriStandardService _rettificaFuoriStandardService = (IRettificaFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<RettificaFuoriStandard>();
+
+    ISubCollection<FuoriStandardAllegato> allegati = null;
+    FuoriStandard fuoriStandard = null;
+    RettificaFuoriStandard rettificato = null;
+    Cliente cliente = null;
+    Cliente clienteRettificato = null;
+    String CodiceStandard = "";
+
+    if (Model != null)
+    {
+        allegati = _fuoriStandardService.GetElencoAllegati(Model.IDFS);
+        fuoriStandard = _fuoriStandardService.GetFuoriStandardByID(Model.IDFS);
+        rettificato = _rettificaFuoriStandardService.GetRettificaApertaByID(Model.IDFS);
+
+        if (fuoriStandard != null)
+        {
+            if (fuoriStandard.CodiceGruppo != null) { CodiceStandard = fuoriStandard.CodiceGruppo.ToString(); }
+            if (rettificato != null)
+            { if (rettificato.IDFuoriStandard == fuoriStandard.IDFS && rettificato.Esito != 2) { Model.SolaLettura = true; } }
+        }
+        else if (rettificato != null)
+        { if (rettificato.IDFuoriStandard == _rettificaFuoriStandardService.CercaStandardRettifica(Model.IDFS).IDFS) { fuoriStandard = _rettificaFuoriStandardService.CercaStandardRettifica(Model.IDFS); } }
+    }
+
+    if (rettificato != null)
+    { clienteRettificato = _clienteService.InfoCliente(rettificato.CodiceCliente); }
+
+    if (fuoriStandard != null)
+    { cliente = _clienteService.InfoCliente(fuoriStandard.CodCliente); }
+
+    if (fuoriStandard != null && fuoriStandard.DataInizio == null)
+    {
+        if (rettificato != null && rettificato.DataInizioAttivita != null && rettificato.Esito != 2)
+        { fuoriStandard.DataInizio = rettificato.DataInizioAttivita; }
+    }
+
+    if (fuoriStandard != null && fuoriStandard.DataFine == null)
+    {
+        if (rettificato != null && rettificato.DataFineAttivita != null && rettificato.Esito != 2)
+        { fuoriStandard.DataFine = rettificato.DataFineAttivita; }
+    }
+
+    String IDIndennizzi = "-1";
+    Int32 indennizzoSuccessivo = -1;
+
+    if (Model != null)
+    {
+        IDIndennizzi = Model.FuoriStandard;
+        var _arrayIndennizzi = Model.FuoriStandard.Split(',');
+        bool check = false;
+        foreach (var ind in _arrayIndennizzi)
+        {
+            if (check == true)
+            {
+                indennizzoSuccessivo = Convert.ToInt32(ind);
+                check = false;
+            }
+            if (ind == Model.IDFS)
+            { check = true; }
+        }
+    }
+}
+
+<div id="schedaIndennizzo">
+    <div class="modal fade text-left" id="schedaIndennizzoModal" tabindex="-1" role="dialog" aria-labelledby="schedaIndennizzoModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" id="containerFS">
+                @if (Model != null)
+                {
+                    @Html.Partial("~/views/FuoriStandard/_confermaModificheModal.cshtml", "Confermare l'operazione selezionata?")
+                    @Html.Partial("~/views/FuoriStandard/_confermaAnnullamento.cshtml", "Annullare la prestazione?")
+                    @Html.Partial("~/views/FuoriStandard/_nessunaRettificaModal.cshtml")
+                    @Html.Partial("~/views/FuoriStandard/_approvazioneErroreUmanoModal.cshtml", Model.IDFS)
+                    @Html.Partial("~/views/FuoriStandard/_approvaRettifica.cshtml", "Confermare l'operazione richiesta?")
+                    @Html.Partial("~/views/FuoriStandard/_clienteNonCensitoModal.cshtml", Model.IDFS)
+                }
+                <div class="modal-header header-view">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="schedaIndennizzoModalTitle">
+                        Gestione Prestazione
+                    </h4>
+                    <h5 id="titleSchedaFS">
+                        @if (Model != null && fuoriStandard != null)
+                        {
+                            @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "schedaIndennizzo")
+                            if (fuoriStandard.CodiceRintracciabilita != null && fuoriStandard.CensitoIl != null)
+                            { <span>N°: <strong>@fuoriStandard.IDFS</strong> - Codice Rintracciabilità: <strong>@fuoriStandard.CodiceRintracciabilita</strong> censito in data: <strong>@fuoriStandard.CensitoIl.Value.ToShortDateString()</strong> </span>}
+                            else if (fuoriStandard.CensitoIl != null)
+                            { <span>N°: <strong>@fuoriStandard.IDFS</strong> censito in data: <strong>@fuoriStandard.CensitoIl.Value.ToShortDateString()</strong> </span>}
+                        }
+                        <label class="pull-right notdisplayed" id="lblEsito">
+                            APPROVATO
+                        </label>
+                        <i class="fa fa-lg fa-check pull-right notdisplayed" id="imgEsito"></i>
+                    </h5>
+                </div>
+                @if (Model != null && rettificato != null)
+                {
+                    <input type="hidden" id="esitoNascosto" data-bind="@rettificato.Esito" value='@Model.SolaLettura.ToString()' readonly class="invisible notdisplayed" />
+                }
+                <div class="modal-body" id="schedaIndennizzo">
+                    <div id="container-scheda-fuoriStandard">
+                        <!--prestazione-->
+                        <div class="panel panel-success width99">
+                            <div class="panel-heading fuoriStandard-heading" id="schedaIndennizzoModalTitle">
+                                <a class="dropdown-toggle" role="button" data-toggle="collapse" href="#collapseDetails" aria-expanded="true"
+                                   aria-controls="collapseDetails">
+                                    <span class="fa fa-list pull-left paddingTop5"></span><span class="text-after-icon">Prestazione</span>
+                                    <span class="fa fa-lg collapse-chevron-icon collapseOne pull-right paddingTop5"></span>
+                                </a>
+                            </div>
+                            <div class="panel-body collapse in" role="tabpanel" id="collapseDetails">
+                                @if (Model != null && fuoriStandard != null)
+                                {
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-3">
+                                            <span class="control-label">@fuoriStandard.CodStandard</span>
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <span class="control-label">@(_fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard) != null ? _fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard).DescStandard : "N/A")</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span class="control-label" id="tipoStandard">@(_fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard) != null ? _fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard).TipoStandard : "N/A")</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span class="control-label pull-right">@((fuoriStandard.ErrTempoLavorazione != 0) ? Convert.ToDouble(fuoriStandard.ErrTempoLavorazione).ToString().Replace(",", ".") : Convert.ToDouble(fuoriStandard.EvasoIn).ToString().Replace(",", ".")) (@fuoriStandard.ValoreStandard)</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-caption-row">
+
+                                        <div class="col-sm-3">
+                                            <span for="CodiceStandard" class="control-label">Codice Standard</span>
+                                        </div>
+                                        <div class="col-sm-5">
+                                            <span for="TipFuoriStandard" class="control-label">Tipologia Fuori standard</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span for="Specifico/Generale" class="control-label">Specifico / Generale</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span for="FuoriStandard" id="valStandard" data-bind="@fuoriStandard.ValoreStandard" class="control-label pull-right">FS (Standard)</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-8">
+                                            <span class="control-label">@fuoriStandard.DescrizionePrestazione</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            @if (fuoriStandard.StadioIndennizzo == "V")
+                                            { <span class="control-label">Aperto</span> }
+                                            else
+                                            { <span class="control-label">Chiuso</span> }
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span class="control-label pull-right">@(fuoriStandard.Importo != 0 ? fuoriStandard.Importo.ToString("#.00") : "0,00") €</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-caption-row">
+                                        <div class="col-sm-8">
+                                            <span for="DescPrestazione" class="control-label">Descrizione prestazione</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span for="Stato" class="control-label">Stato</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span for="Importo" class="control-label pull-right">Importo</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-3">
+                                            <span class="control-label">@(string.IsNullOrEmpty(fuoriStandard.Esito) ? "N/A" : fuoriStandard.Esito)</span>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <span class="control-label">@fuoriStandard.DettaglioEsito</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-caption-row">
+                                        <div class="col-sm-3">
+                                            <span for="Esito" class="control-label">Esito</span>
+                                        </div>
+                                        <div class="col-sm-9">
+                                            <span for="DescEsito" class="control-label pull-right">Descrizione Esito</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-3">
+                                            @if (fuoriStandard.DataInizio != null)
+                                            {
+                                                if (Model.SolaLettura == true && rettificato != null && rettificato.DataInizioAttivita != fuoriStandard.DataInizio.Value && rettificato.Esito == 0)
+                                                { <span class="control-label fuoriStandard-valore-rettificato">@rettificato.DataInizioOriginale</span><span class="fuoriStandard-valore-rettifica dataInizioRett"> @rettificato.DataInizioAttivita</span> }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataInizioAttivita != fuoriStandard.DataInizio.Value && rettificato.Esito == 2)
+                                                { <span class="control-label fuoriStandard-valore-rettifica dataInizioRett">@rettificato.DataInizioOriginale </span><span class="fuoriStandard-valore-rettificato">@rettificato.DataInizioAttivita</span>}
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataInizioAttivita != fuoriStandard.DataInizio.Value && rettificato.Esito == 1)
+                                                { <span id="dataInizioFS" class="control-label dataInizioRett">@rettificato.DataInizioAttivita</span> }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataInizioOriginale == DateTime.MinValue && rettificato.Esito == 2)
+                                                { <span id="dataInizioFS" class="control-label fuoriStandard-valore-rettificato">@fuoriStandard.DataInizio.Value</span> }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataInizioOriginale == DateTime.MinValue)
+                                                { <span id="dataInizioFS" class="control-label dataInizioRett fontBold">@fuoriStandard.DataInizio.Value</span> }
+                                                else
+                                                { <span id="dataInizioFS" class="control-label dataInizioRett">@fuoriStandard.DataInizio.Value</span> }
+                                            }
+                                            else if (Model.SolaLettura == true && rettificato != null && rettificato.Esito == 2)
+                                            { <span id="dataInizioFS" class="control-label fuoriStandard-valore-rettificato">@rettificato.DataInizioAttivita</span> }
+                                            else
+                                            { <span id="dataInizioFS" class="control-label dataInizioRett"></span> }
+                                        </div>
+                                        <div class="col-sm-3">
+                                            @if (fuoriStandard.DataFine != null)
+                                            {
+                                                if (Model.SolaLettura == true && rettificato != null && rettificato.DataFineAttivita != fuoriStandard.DataFine.Value && rettificato.Esito == 0)
+                                                { <span class="control-label fuoriStandard-valore-rettificato">@rettificato.DataFineOriginale</span><span class="fuoriStandard-valore-rettifica dataFineRett"> @rettificato.DataFineAttivita</span> }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataFineAttivita != fuoriStandard.DataFine.Value && rettificato.Esito == 2)
+                                                { <span class="control-label fuoriStandard-valore-rettifica dataFineRett">@rettificato.DataFineOriginale </span><span class="fuoriStandard-valore-rettificato">@rettificato.DataFineAttivita</span>}
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataFineAttivita != fuoriStandard.DataFine.Value && rettificato.Esito == 1)
+                                                { <span id="dataFineFS" class="control-label dataFineRett">@rettificato.DataFineAttivita</span> }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataFineOriginale == DateTime.MinValue && rettificato.Esito == 2)
+                                                { <span id="dataFineFS" class="control-label fuoriStandard-valore-rettificato">@fuoriStandard.DataFine.Value</span> }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.DataFineOriginale == DateTime.MinValue)
+                                                { <span id="dataFineFS" class="control-label dataFineRett fontBold">@fuoriStandard.DataFine.Value</span> }
+                                                else
+                                                { <span id="dataFineFS" class="control-label dataFineRett">@fuoriStandard.DataFine.Value</span> }
+                                            }
+                                            else if (Model.SolaLettura == true && rettificato != null && rettificato.Esito == 2)
+                                            { <span id="dataFineFS" class="control-label fuoriStandard-valore-rettificato">@rettificato.DataFineAttivita</span> }
+                                            else
+                                            { <span id="dataFineFS" class="control-label dataFineRett"></span> }
+                                        </div>
+                                        <div class="col-sm-2">
+                                            @if (Model.SolaLettura == true && rettificato != null && rettificato.Quantita != fuoriStandard.EvasoIn && rettificato.Esito == 0)
+                                            { <span class="control-label fuoriStandard-valore-rettificato">@Convert.ToDouble(fuoriStandard.EvasoIn).ToString().Replace(",", ".")</span>
+                                            <span class="fuoriStandard-valore-rettifica tempoLav"> @Convert.ToDouble(rettificato.Quantita).ToString().Replace(",", ".")</span> }
+                                            else if (Model.SolaLettura == true && rettificato != null && rettificato.Quantita != fuoriStandard.EvasoIn && rettificato.Esito == 2)
+                                            { <span class="control-label fuoriStandard-valore-rettifica tempoLav">@Convert.ToDouble(fuoriStandard.EvasoIn).ToString().Replace(",", ".")</span>
+                                            <span class="fuoriStandard-valore-rettificato"> @Convert.ToDouble(rettificato.Quantita).ToString().Replace(",", ".")</span>}
+                                            else if (Model.SolaLettura == true && rettificato != null && rettificato.Quantita != fuoriStandard.EvasoIn && rettificato.Esito == 1)
+                                            { <span id="quantitaFS" class="control-label tempoLav">@Convert.ToDouble(rettificato.Quantita).ToString().Replace(",", ".")</span> }
+                                            else
+                                            { <span id="quantitaFS" class="control-label tempoLav">@((fuoriStandard.ErrTempoLavorazione != 0) ? Convert.ToDouble(fuoriStandard.ErrTempoLavorazione).ToString().Replace(",", ".") : Convert.ToDouble(fuoriStandard.EvasoIn).ToString().Replace(",", "."))</span> }
+                                        </div>
+                                        @*<div class="col-sm-2">
+                                                <span class="control-label">@(_fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard) != null ? _fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard).UnitaMisura : "")</span>
+                                            </div>*@
+                                        <div class="col-sm-2">
+                                            @if (Model.SolaLettura == true && rettificato != null && rettificato.Esito == 0)
+                                            {<span class="notdisplayed control-label fuoriStandard-valore-rettifica modSospensione qSosp @(rettificato.QuantitaSospensione == 0 ? "colorNone" : "")" id="quantitaSospensione">@rettificato.QuantitaSospensione</span>}
+                                            else if (Model.SolaLettura == true && rettificato != null && rettificato.Esito == 2)
+                                            {<span class="notdisplayed control-label qSosp @(rettificato.QuantitaSospensione == 0 ? "colorNone" : "")" id="quantitaSospensione">@rettificato.QuantitaSospensione</span>}
+                                            else if (Model.SolaLettura == true && rettificato != null && rettificato.Esito == 1)
+                                            {<span class="notdisplayed control-label qSosp" id="quantitaSospensione">@rettificato.QuantitaSospensione</span>}
+                                            else
+                                            { <span id="quantitaSospensione" class="notdisplayed control-label qSosp"></span> }
+                                        </div>
+                                        <div class="col-sm-2">
+                                            @{
+                                                var check = 0;
+                                                if (Model.SolaLettura == true && rettificato != null && rettificato.Esito == 0)
+                                                {
+                                                    if (fuoriStandard.InFuoriStandard == "FS" && rettificato.FuoriStandard == "S")
+                                                    { <span class="fuoriStandard-valore-rettifica pull-right"><hidden class="invisible">_</hidden> S</span>
+                                                    <span class="control-label fuoriStandard-valore-rettificato pull-right">FS</span>
+                                                        check = 1;
+                                                    }
+                                                    else if (fuoriStandard.InFuoriStandard == "S" && rettificato.FuoriStandard == "N")
+                                                    { <span class="fuoriStandard-valore-rettifica pull-right"><hidden class="invisible">_</hidden> FS</span>
+                                                    <span class="control-label fuoriStandard-valore-rettificato pull-right">S</span>
+                                                        check = 1;
+                                                    }
+                                                }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.Esito == 2)
+                                                {
+                                                    if (fuoriStandard.InFuoriStandard == "FS" && rettificato.FuoriStandard == "S")
+                                                    { <span class="fuoriStandard-valore-rettificato pull-right"><hidden class="invisible">_</hidden> S</span>
+                                                    <span class="control-label fuoriStandard-valore-rettifica pull-right">FS</span>
+                                                        check = 1;
+                                                    }
+                                                    else if (fuoriStandard.InFuoriStandard == "S" && rettificato.FuoriStandard == "N")
+                                                    { <span class="fuoriStandard-valore-rettificato pull-right"><hidden class="invisible">_</hidden> FS</span>
+                                                    <span class="control-label fuoriStandard-valore-rettifica pull-right">S</span>
+                                                        check = 1;
+                                                    }
+                                                }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.FuoriStandard == "S" && rettificato.Esito == 1)
+                                                { <span id="statoStandard" class="control-label pull-right">S</span>
+                                                    check = 1;
+                                                }
+                                                else if (Model.SolaLettura == true && rettificato != null && rettificato.FuoriStandard == "N" && rettificato.Esito == 1)
+                                                { <span id="statoStandard" class="control-label pull-right">FS</span>
+                                                    check = 1;
+                                                }
+
+                                                if (fuoriStandard.InFuoriStandard == "S" && check == 0)
+                                                { <span id="statoStandard" class="control-label pull-right">S</span> }
+                                                else if (check == 0)
+                                                { <span id="statoStandard" class="control-label pull-right">FS</span> }
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="row fuoriStandard-caption-row">
+                                        <div class="col-sm-3">
+                                            <span for="Dia" class="control-label">Data Inizio attività</span>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <span for="Dfa" class="control-label">Data Fine attività</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span for="Quant" class="control-label">Quantità @((_fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard) != null ? !(String.IsNullOrEmpty(_fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard).UnitaMisura)) ? String.Format("({0})", _fuoriStandardService.GetTipologiaStandard(fuoriStandard.IdStandard).UnitaMisura) : "" : ""))</span>
+                                        </div>
+                                        @*<div class="col-sm-2">
+                                                <span for="UnMis" class="control-label">U.m.</span>
+                                            </div>*@
+                                        <div class="col-sm-2">
+                                            <span for="QuantitaS" class="control-label notdisplayed">Quantità Sospensione</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span for="InFS" class="control-label pull-right">In Fuori Standard</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-12">
+                                            <span class="control-label">@(string.IsNullOrEmpty(fuoriStandard.NoteEsito) ? "N/A" : fuoriStandard.NoteEsito)</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-caption-row">
+                                        <div class="col-sm-12">
+                                            <span for="NoteEsito" class="control-label">Note Esito</span>
+                                        </div>
+                                    </div>
+                                                }
+                            </div>
+                        </div>
+                        <!--info generali-->
+                        <div class="panel panel-success width99">
+                            <div class="panel-heading fuoriStandard-heading" id="schedaIndennizzoModalTitle">
+                                <a class="dropdown-toggle" role="button" data-toggle="collapse" href="#collapseDetails2" aria-expanded="true"
+                                   aria-controls="collapseDetails2">
+                                    <span class="fa fa-info pull-left paddingTop5"></span><span class="text-after-icon">Informazioni Generali</span>
+                                    <span class="fa fa-lg collapse-chevron-icon collapseTwo pull-right paddingTop5"></span>
+                                </a>
+                            </div>
+                            <div class="panel-body collapse in" role="tabpanel" id="collapseDetails2">
+                                @if (Model != null && fuoriStandard != null)
+                                {
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-3">
+                                            @if (rettificato != null && rettificato.CodiceCliente != null && Model.SolaLettura == true && rettificato.Esito == 0)
+                                            { <span class="control-label cliente-valore-rettificato" id="codCliRet">@fuoriStandard.CodCliente</span>
+                                            <span class="control-label cliente-valore-rettifica" id="codCli">@rettificato.CodiceCliente</span> }
+                                            else if (rettificato != null && rettificato.CodiceCliente != null && Model.SolaLettura == true && rettificato.Esito == 2)
+                                            { <span class="control-label cliente-valore-rettifica" id="codCliRet">@fuoriStandard.CodCliente</span>
+                                            <span class="control-label cliente-valore-rettificato" id="codCli">@rettificato.CodiceCliente</span>}
+                                            else if (rettificato != null && rettificato.CodiceCliente != null && Model.SolaLettura == true && rettificato.Esito == 1)
+                                            { <span class="control-label" id="codCli">@rettificato.CodiceCliente</span> }
+                                            else
+                                            { <span class="control-label" id="codCli">@fuoriStandard.CodCliente</span> }
+                                        </div>
+                                        <div class="col-sm-6">
+                                            @if (rettificato != null && rettificato.CodiceCliente != null && Model.SolaLettura == true)
+                                            { <span class="control-label cliente-valore-rettificato" id="ragSocialeRet">
+                                                @if (_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente) != null)
+                                                { @_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).RagioneSociale }
+                                            </span>
+                                            <span class="control-label cliente-valore-rettifica" id="ragSociale">
+                                                @if (_fuoriStandardService.GetCliFuoriStandard(rettificato.CodiceCliente) != null)
+                                                { @_fuoriStandardService.GetCliFuoriStandard(rettificato.CodiceCliente).RagioneSociale }
+                                            </span> }
+                                            else
+                                            { <span class="control-label" id="ragSociale">
+                                                @if (_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente) != null)
+                                                { @_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).RagioneSociale }
+                                            </span> }
+                                        </div>
+                                        <div class="col-sm-3">
+                                            @if (rettificato != null && rettificato.CodiceCliente != null && Model.SolaLettura == true)
+                                            { <span class="control-label pull-right cliente-valore-rettificato" id="cellulareRet">
+                                                @if (_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente) != null)
+                                                { @_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).Cellulare }
+                                            </span>
+                                            <span class="control-label cliente-valore-rettifica pull-right" id="cellulare">
+                                                @if (_fuoriStandardService.GetCliFuoriStandard(rettificato.CodiceCliente) != null)
+                                                { @_fuoriStandardService.GetCliFuoriStandard(rettificato.CodiceCliente).Cellulare }
+                                            </span> }
+                                            else
+                                            { <span class="control-label pull-right" id="cellulare">
+                                                @if (_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente) != null)
+                                                { @_fuoriStandardService.GetCliFuoriStandard(fuoriStandard.CodCliente).Cellulare }
+                                            </span> }
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-caption-row">
+                                        <div class="col-sm-3">
+                                            <span for="CodiceCliente" class="control-label ">Codice Cliente</span>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <span for="RagioneSociale" class="control-label">Ragione Sociale</span>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <span for="Telefono" class="control-label pull-right">Recapito telefonico</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-8">
+                                            @if (rettificato != null && rettificato.CodiceContratto != null && Model.SolaLettura == true)
+                                            { <span class="control-label cliente-valore-rettificato" id="codContrRet">@fuoriStandard.CodContratto</span>
+                                            <span class="control-label cliente-valore-rettifica" id="codContr">@rettificato.CodiceContratto</span> }
+                                            else
+                                            { <span class="control-label" id="codContr">@fuoriStandard.CodContratto</span> }
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span class="control-label pull-right">@fuoriStandard.NumeroPrestazione</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-caption-row">
+                                        <div class="col-sm-8">
+                                            <span for="CodContratto" class="control-label">Codice Contratto</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span for="NPrestazione" class="control-label pull-right">N° Prestazione</span>
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-heading-row">
+                                        <div class="col-sm-3">
+                                            @if (rettificato != null && rettificato.CodicePuf != null && Model.SolaLettura == true)
+                                            { <span class="control-label cliente-valore-rettificato" id="pufCodRet">@fuoriStandard.CodPuf</span>
+                                            <span class="control-label cliente-valore-rettifica" id="pufCod">@rettificato.CodicePuf</span> }
+                                            else
+                                            { <span class="control-label" id="pufCod">@fuoriStandard.CodPuf</span> }
+                                        </div>
+                                        <div class="col-sm-4">
+                                            @if (clienteRettificato != null && Model.SolaLettura == true)
+                                            {
+                                                if (cliente != null)
+                                                { <span class="control-label cliente-valore-rettificato" id="stradaRet">@cliente.Strada</span> }
+                                                <span class="control-label cliente-valore-rettifica" id="strada">@clienteRettificato.Strada</span> }
+                                            else if (cliente != null)
+                                            { <span class="control-label" id="strada">@cliente.Strada</span> }
+                                            else
+                                            { <span class="control-label"></span> }
+                                        </div>
+                                        <div class="col-sm-2">
+                                            @if (clienteRettificato != null && Model.SolaLettura == true)
+                                            {
+                                                if (cliente != null)
+                                                { <span class="control-label cliente-valore-rettificato" id="numCivicoRet">@cliente.NumeroCivico</span> }
+                                                <span class="control-label cliente-valore-rettifica" id="numCivico">@clienteRettificato.NumeroCivico</span> }
+                                            else if (cliente != null)
+                                            { <span class="control-label" id="numCivico">@cliente.NumeroCivico</span> }
+                                            else
+                                            { <span class="control-label"></span> }
+                                        </div>
+                                        <div class="col-sm-3">
+                                            @if (clienteRettificato != null && Model.SolaLettura == true)
+                                            {
+                                                if (cliente != null)
+                                                { <span class="control-label cliente-valore-rettificato pull-right" id="comuneRet">@cliente.Comune</span> }
+                                                <span class="control-label cliente-valore-rettifica pull-right" id="comune">@clienteRettificato.Comune</span>
+                                            }
+                                            else if (cliente != null)
+                                            { <span class="control-label pull-right" id="comune">@cliente.Comune</span> }
+                                            else
+                                            { <span class="control-label"></span> }
+                                        </div>
+                                    </div>
+                                    <div class="row fuoriStandard-caption-row">
+                                        <div class="col-sm-3">
+                                            <span for="CodPUF" class="control-label">Codice PUF</span>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <span for="Indirizzo" class="control-label">Indirizzo</span>
+                                        </div>
+                                        <div class="col-sm-2">
+                                            <span for="Civico" class="control-label">Civico</span>
+                                        </div>
+                                        <div class="col-sm-3">
+                                            <span for="Localita" class="control-label pull-right">Località</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-success width99" id="panelValidazione">
+                        <div class="panel-heading fuoriStandard-heading" id="schedaIndennizzoModalTitle">
+                            <span class="fa fa-gavel pull-left paddingTop5"></span><span class="text-after-icon">Validazione</span>
+                            <span class="allegatiCollapse bordered-icon pull-right" role="button" data-toggle="collapse" href="#collapseAttachments" aria-expanded="true" id="attachment" aria-controls="collapseAttachments">
+                                <i class="fa fa-lg fa-paperclip">
+                                </i>
+                            </span>
+                            @if (Model != null)
+                            {
+                                <button class="fuoriStandard-rettifica-btn pull-right" data-bind="@Model.SolaLettura" id="btnRettifica" data-toggle="modal" data-target="#erroreUmanoModal" onclick="setModalVisible('@(Model.SolaLettura ? true : false)');">
+                                    <i class="fa fa-lg fa-edit"></i><span class="text-after-icon">Rettifica</span>
+                                </button>
+                            }
+                            @if (Model != null && Model.SolaLettura == false)
+                            {
+                                @*<button class="fuoriStandard-rettifica-btn pull-right" id="btnRettifica" data-toggle="modal" data-target="#erroreUmanoModal" onclick="setModalVisible();">
+                                        <i class="fa fa-lg fa-edit"></i><span class="text-after-icon">Rettifica</span>
+                                    </button>
+                                <button class="annulla-rettifica-btn pull-right notdisplayed" id="btnAnnRettifica" data-toggle="modal" data-target="#confermaAnnullamento" onclick='annullaPrestazione(@Model.IDFS);'>
+                                    <i class="fa fa-lg fa-close"></i><span class="text-after-icon">Annulla</span>
+                                </button>*@
+                            }
+                        </div>
+                        <div class="panel-body" id="containerValidazione">
+                            @if (Model != null)
+                            {
+                                <div class="panel-collapse collapse panelAllegatiFS pull-right" role="tabpanel" id="collapseAttachments">
+                                    @Html.Partial("~/Views/FuoriStandard/_elencoFileAllegati.cshtml", new GestioneRimborsi.Web.Models.AllegatiFSModel { IdFS = Model.IDFS, SolaLettura = Model.SolaLettura })
+                                </div>
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        @if (Model.SolaLettura == false)
+                                        {
+                                            <select class="form-control selectCaret" id="ddlCategoria" name="Categoria" onchange="filtraDatiByCategoria()">
+                                                <option id="all" value="-1">-- Seleziona una causa --</option>
+                                                @foreach (GestioneRimborsi.Core.CausaRitardoFuoriStandard item in _fuoriStandardService.GetListaCategorie().Items)
+                                                {
+                                                    if (item.CodiceCausa == "ERR")
+                                                    {
+                                                        <option value="@item.CodiceCausa" disabled>@item.Descrizione</option> }
+                                                    else if (item.CodiceCausa == "ANN")
+                                                    {
+                                                        <option value="@item.CodiceCausa" disabled>@item.Descrizione</option> }
+                                                    else
+                                                    {
+                                                        <option value="@item.CodiceCausa">@item.Descrizione</option> }
+                                                }
+                                            </select>
+                                        }
+                                        else if (_rettificaFuoriStandardService.GetRettificaApertaByID(Model.IDFS) != null)
+                                        {
+                                            <label>Causa</label>
+                                            <input type="text" class="form-control" id="causaFS" data-bind="@_fuoriStandardService.GetSottoCategoriaByCod(_rettificaFuoriStandardService.GetRettificaApertaByID(Model.IDFS).SottoCausale).CodiceCausa"
+                                                   value="@_fuoriStandardService.GetCategoriaByCod(_rettificaFuoriStandardService.GetRettificaApertaByID(Model.IDFS).Causale).Descrizione" readonly />
+                                        }
+                                    </div>
+                                    <div class="col-sm-6" id="SottoCategorieContainerIndennizzi">
+                                        @if (Model.SolaLettura == false)
+                                        {
+                                            @Html.Partial("~/Views/FuoriStandard/_filtroCategorieIndennizzi.cshtml", new GestioneRimborsi.Web.Models.CategorieFuoriStandardModel { Categoria_Id = "-1", firstTime = false })
+                                        }
+                                        else if (_rettificaFuoriStandardService.GetRettificaApertaByID(Model.IDFS) != null)
+                                        {
+                                            <label>Sottocausa</label>
+                                            <input type="text" class="form-control" id="sottoCausaFS" data-bind="@_fuoriStandardService.GetSottoCategoriaByCod(_rettificaFuoriStandardService.GetRettificaApertaByID(Model.IDFS).SottoCausale).CodiceSottoCausa"
+                                                   value="@_fuoriStandardService.GetSottoCategoriaByCod(_rettificaFuoriStandardService.GetRettificaApertaByID(Model.IDFS).SottoCausale).Descrizione" readonly />
+                                        }
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    @if (Model.SolaLettura == false)
+                                    {
+                                        <div class="col-sm-12">
+                                            <label class="p-20 fontSizeSmall" for="Note">Inserisci una breve nota di testo come commento alla validazione/rettifica</label>
+                                            <textarea type="text" class="form-control" rows="4" id="txtFileDescription" placeholder="(Inserisci un testo opzionale)" maxlength="3500"></textarea>
+                                        </div>
+                                    }
+                                    else if (fuoriStandard != null && rettificato != null && (rettificato.Note != null || rettificato.NoteApprovatore != null))
+                                    {
+                                        <div class="col-sm-12 paddingTop15">
+                                            <label class="control-label">Note</label>
+                                        </div>
+                                        <div class="col-sm-12" id="containerNoteValidatore">
+                                            @{
+                                                IUserService _userService = (IUserService)RevoContext.ServiceProvider.GetServiceFor<User>();
+                                                IUser _keyuser = _userService.GetById(rettificato.Autore);
+                                                IUser _processOwner = _userService.GetById(rettificato.ProcessOwner);
+                                                IUser _manager = _userService.GetById(rettificato.Manager);
+                                                String keyUser = string.Format("{0} {1}", _keyuser.FirstName.UppercaseFirstCharOnly(), _keyuser.LastName.UppercaseFirstCharOnly());
+                                                String processOwner = (_processOwner != null ? string.Format("{0} {1}", _processOwner.FirstName.UppercaseFirstCharOnly(), _processOwner.LastName.UppercaseFirstCharOnly()) : String.Empty);
+                                                String manager = (_manager != null ? string.Format("{0} {1}", _manager.FirstName.UppercaseFirstCharOnly(), _manager.LastName.UppercaseFirstCharOnly()) : String.Empty);
+                                            }
+                                            <i>@(rettificato.CreatoIl != null ? rettificato.CreatoIl.ToShortDateString() : "") @keyUser dice: </i><span for="commentiFS" id="commentiFS" data-bind="@rettificato.Note @(string.IsNullOrEmpty(rettificato.NoteProcessOwner) ? "" : "- " + rettificato.NoteProcessOwner)  @(string.IsNullOrEmpty(rettificato.NoteApprovatore) ? "" : "- " + rettificato.NoteApprovatore)" disabled>"<span id="noteKeyUser">@rettificato.Note</span>"</span>
+                                            @if (!String.IsNullOrEmpty(processOwner) && !String.IsNullOrEmpty(rettificato.NoteProcessOwner) && String.IsNullOrEmpty(manager))
+                                            { <br /><i>@(rettificato.DataApprovazionePO != null && rettificato.DataApprovazionePO.Year != 0001 ? rettificato.DataApprovazionePO.ToShortDateString() : "") @processOwner dice: </i><span disabled>"@rettificato.NoteProcessOwner"</span> }
+                                            else if (!String.IsNullOrEmpty(manager) && !String.IsNullOrEmpty(rettificato.NoteApprovatore))
+                                            { <br /><i> Approvatore dice: </i><span disabled>"@rettificato.NoteApprovatore"</span> }
+                                        </div>
+                                                }
+                                </div>
+                                                }
+                        </div>
+                    </div>
+                    @if (Model != null && Model.SolaLettura == true && rettificato != null && rettificato.Esito == 0 && (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.approvazione") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.annullaPrestazione")))
+                    {
+                        <div class="row notdisplayed" id="commentoApprovatore">
+                            <div class="col-sm-12">
+                                <label class="fontSizeSmall marginTop10" for="txtFileDescription">Inserisci una breve nota di testo come commento all'approvazione</label>
+                                <textarea type="text" class="form-control" rows="4" id="txtFileDescription" placeholder="(Inserisci un testo opzionale)" maxlength="3500"></textarea>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer noBorderTop">
+                    @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.validazione.update") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.approvazione.update") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.annullaPrestazione"))
+                    {
+                        <div class="row">
+                            <div class="col-sm-12">
+                                @if (Model != null)
+                                {
+                                    if (Model.SolaLettura == false)
+                                    {
+                                        <button type="button" class="btn btn-lg btn-function pull-right mr-l" onclick="approvaInd(@Model.IDFS);">
+                                            <i class="fa fa-lg fa-save">
+                                            </i>
+                                            <span class="text-after-icon">Salva</span>
+                                        </button>
+                                        <button type="button" class="btn btn-lg btn-default pull-left" data-dismiss="modal" onclick="ripristinaSospensioniCancellate(@Model.IDFS)">
+                                            <i class="fa fa-lg fa-times-circle">
+                                            </i>
+                                            <span class="text-after-icon">Annulla</span>
+                                        </button>
+                                    }
+                                    else if (rettificato != null && rettificato.Esito == 0 && (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.approvazione.update") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.annullaPrestazione")))
+                                    {
+                                        <button type="button" class="btn btn-lg btn-function pull-right mr-l notdisplayed" id="approvaRettifiche" onclick="approvaRettifica('@rettificato.IDFuoriStandard', '@rettificato.NonIndennizzabile', '@rettificato.FuoriStandard');">
+                                            <i class="fa fa-lg fa-check-square-o">
+                                            </i>
+                                            <span class="text-after-icon">Approva</span>
+                                        </button>
+                                        <button type="button" class="btn btn-lg btn-default pull-left notdisplayed" id="rifiutaRettifiche" onclick="rifiutaRettifica('@rettificato.IDFuoriStandard');">
+                                            <i class="fa fa-lg fa-times-circle colorLightRed">
+                                            </i>
+                                            <span class="text-after-icon">Rifiuta</span>
+                                        </button>
+                                        <button type="button" class="btn btn-lg btn-function pull-right mr-l notdisplayed" id="chiudiRettifica" data-dismiss="modal">
+                                            <i class="fa fa-lg fa-close">
+                                            </i>
+                                            <span class="text-after-icon">Chiudi</span>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="btn btn-lg btn-function pull-right mr-l" value="" id="btnCloseContainerReadOnly" data-dismiss="modal">
+                                            <i class="fa fa-lg fa-close">
+                                            </i>
+                                            <span class="text-after-icon">Chiudi</span>
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                    @if (Model != null)
+                    {
+                        if (Model.SolaLettura == false)
+                        {
+                            <div class="row">
+                                <div class="col-sm-12 text-center">
+                                    <div class="checkbox footer-view">
+                                        <label>
+                                            <input type="checkbox" data-bind="@indennizzoSuccessivo" id="chkIndProgressivi" /> Non chiudere il form, apri <span id="fsSuccessivo">la Prestazione successiva una volta gestita quella corrente</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else if (rettificato != null && rettificato.Esito == 0 && (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.approvazione") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.annullaPrestazione")))
+                        {
+                            <div class="row">
+                                <div id="chkFSApprovatore" class="text-center col-sm-12 notdisplayed">
+                                    <div class="checkbox footer-view">
+                                        <label>
+                                            <input type="checkbox" data-bind="@indennizzoSuccessivo" id="chkIndProgressivi" /> Non chiudere il form, apri <span id="fsSuccessivo">la Prestazione successiva una volta gestita quella corrente</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+
+    $(function () {
+        if($("#indennizziTableContainer").data("bind") == "RettificheFS") {
+            //$("#btnAnnRettifica").removeClass("notdisplayed");
+        }
+        else {
+            $("#schedaIndennizzoModalTitle").text("Gestione Fuori Standard");
+            $("#fsSuccessivo").text("il Fuori Standard successivo una volta gestito quello corrente")
+        }
+    });
+
+    function HandleBrowseClick() {
+        var fileinput = document.getElementById("filesInput");
+        fileinput.click();
+    }
+
+    function Handlechange(idFS, event) {
+        var fileinput = document.getElementById("filesInput");
+
+        displayModalWaiter("schedaIndennizzo");
+        var xhre = new XMLHttpRequest();
+        var fdata = new FormData();
+        fdata.append("file", document.getElementById('filesInput').files[0]);
+        fdata.append("IdFS", idFS);
+        xhre.open("POST", "/FuoriStandard/AggiungiAllegato/", true);
+        xhre.send(fdata);
+        var results;
+
+        xhre.onreadystatechange = function () {
+            var content = xhre.responseText;
+            if (content != undefined && content != null && content != '' && content != results) {
+                notifyInfo(content);
+            }
+            results = xhre.responseText;
+        }
+
+        if (document.getElementById('filesInput').files[0] != null) {
+            var _url;
+
+            setTimeout(function (){
+
+                _url = '@Url.Action("ElencoAllegatiFS", "FuoriStandard")';
+
+                $.ajax({
+                    url: _url,
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        IdFS: idFS,
+                    }),
+                    success: function (result) {
+                        $("#collapseAttachments").html(result);
+                        hideModalWaiter("schedaIndennizzo");
+                    },
+                    error: function (request, status, error) {
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyWarning(error);
+                    }
+                });
+            }, 500);
+        }
+        else { hideModalWaiter("schedaIndennizzo"); notifyWarning("Nessun file selezionato"); }
+    }
+
+    $('#schedaIndennizzoModal').modal({ backdrop: 'static', keyboard: true, show: false });
+
+    $(function () {
+        if ($('#rettificheAppr').val() != null)
+        {
+            $("#approvaRettifiche").removeClass("notdisplayed");
+            $("#rifiutaRettifiche").removeClass("notdisplayed");
+            $("#chkFSApprovatore").removeClass("notdisplayed");
+            $("#commentoApprovatore").removeClass("notdisplayed");
+            $("#chiudiRettifica").addClass("notdisplayed");
+        }
+    });
+
+    function approvaInd(FuoriStandard) {
+
+        var _optionSottoCategoria = $("#ddlSottoCategoria option:selected").val();
+        var _optionCategoria = $("#ddlCategoria option:selected").val();
+        var _note = $("#txtFileDescription").val();
+
+        if (($(".fuoriStandard-valore-rettificato").length == 0 @*&& $(".modSospensione").length == 0*@) && $("#indennizziTableContainer").data("bind") == "RettificheFS") {
+            $('#nessunaRettifica').modal('show');
+            $("#btnNessunaRettifica").off().click(function () {
+                hideModalWaiter("schedaIndennizzo");
+                $("#schedaIndennizzoModal").modal("hide");
+            });
+            return false;
+        }
+
+        if (_optionCategoria == "-1") {
+            notifyWarning("Nessuna causa selezionata..");
+            return false;
+        }
+
+        if (_optionSottoCategoria == "-1") {
+            notifyWarning("Nessuna sotto causa selezionata..");
+            return false;
+        }
+        
+        //if ($("#containerBtnValidaSosp").data("bind") == "N" && $('#gridSospensioni').DataTable().rows().nodes().length > 0){
+        //    notifyWarning("La prestazione presenta delle rettifiche alle sospensioni non ancora validate/salvate");
+        //    return false;
+        //}
+
+        //if ($("#txtFileDescription").val() == '') {
+        //    notifyWarning("Inserire una nota..");
+        //    return false;
+        //}
+
+        //if ($('#quantita').val() == null || $('#quantita').val() == "") {
+        //    notifyWarning("Inserire una quantità standard valida..");
+        //    return false;
+        //}
+
+        var _nonIndennizzabile = "N";
+
+        if ($("#tipoStandard").text().trim() == "Specifico") {
+            _nonIndennizzabile = "S";
+        }
+
+        //if (_optionCategoria == "ANN") {
+        //    if ($("#txtFileDescription").val() == '') {
+        //        notifyWarning("Inserire una nota per la rettifica..");
+        //        return false;
+        //    }
+        //}
+
+        if (_optionCategoria == "CAP" && _nonIndennizzabile == "S") {
+            if (_optionCategoria == "ERR" || ($(".fuoriStandard-valore-rettificato").length > 0 @*|| $(".modSospensione").length > 0*@)) {
+                if ($("#txtFileDescription").val() == '') {
+                    notifyWarning("Inserire una nota per la rettifica..");
+                    return false;
+                }
+            }
+            displayModalWaiter("schedaIndennizzo");
+            var _url = '@Url.Action("SchedaCausaCAP", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    CodiceIndennizzo: FuoriStandard,
+                }),
+                success: function (result) {
+                    if (result == "")
+                    {
+                        hideModalWaiter("schedaIndennizzo");
+                        validazioneIndennizzo(FuoriStandard);
+                    }
+                    else {
+                        hideModalWaiter("schedaIndennizzo");
+                        $('#clienteNonCensito').modal('show');
+                    }
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning(error);
+                    return false;
+                }
+            });
+        }
+        else validazioneIndennizzo(FuoriStandard);
+    }
+
+    function validazioneIndennizzo (FuoriStandard) {
+
+        var _optionSottoCategoria = $("#ddlSottoCategoria option:selected").val();
+        var _optionCategoria = $("#ddlCategoria option:selected").val();
+        var _note = $("#txtFileDescription").val();
+        var _nonIndennizzabile = "N";
+
+        if (_optionCategoria == "-1") {
+            notifyWarning("Nessuna causa selezionata..");
+            return false;
+        }
+
+        if (_optionSottoCategoria == "-1") {
+            notifyWarning("Nessuna sotto causa selezionata..");
+            return false;
+        }
+
+        //if ($('#quantita').val() == null || $('#quantita').val() == "") {
+        //    notifyWarning("Inserire una quantità standard valida..");
+        //    return false;
+        //}
+
+        if (_optionCategoria == "ERR" || ($(".fuoriStandard-valore-rettificato").length > 0 @*|| $(".modSospensione").length > 0*@)) {
+            if ($("#txtFileDescription").val() == '') {
+                notifyWarning("Inserire una nota per la rettifica..");
+                return false;
+            }
+        }
+
+
+        $('#confermaModifiche').modal('show');
+
+        var _quantita = $('#quantita').val();
+        var _fuoriStandard = "N";
+        if (!$('#inStandard').hasClass("notdisplayed")) {
+            _fuoriStandard = "S";
+        }
+
+        $("#confMod").off().click(function () {
+
+            displayModalWaiter("schedaIndennizzo");
+            debugger;
+            if (_optionCategoria == "ERR" || ($(".fuoriStandard-valore-rettificato").length > 0 @*|| $(".modSospensione").length > 0*@)) {
+                if (_optionCategoria == "ERR") {
+                    _fuoriStandard = "S";
+                }
+
+                if (parseFloat($("#quantitaAfter").text()) != null) {
+                    _quantita = parseFloat($("#quantitaAfter").text());
+                }
+                else {
+                    _quantita = $("#quantitaFS").text();
+                }
+
+                var _url;
+                _url = '@Url.Action("RettificaPrimoStep", "FuoriStandard")';
+
+                $.ajax({
+                    url: _url,
+                    type: 'POST',
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({
+                        idFuoriStandard: FuoriStandard,
+                        dataInizioAttivita: $('#calendar3').val(),
+                        dataFineAttivita: $('#calendar4').val(),
+                        quantita: $('#quantita').val(),
+                        //quantitaSosp: $("#quantitaSosp").val(),
+                        quantitaSosp: $("#durataSospensione").val(),
+                        fuoriStandard: _fuoriStandard.toString(),
+                        causale: $("#ddlCategoria option:selected").val(),
+                        sottoCausale: $("#ddlSottoCategoria option:selected").val(),
+                        note: $("#txtFileDescription").val(),
+                        nonIndennizzabile: _nonIndennizzabile,
+                        codiceCliente: null,
+                        codicePuf: null,
+                        codiceContratto: null,
+                        flgRettifica: 1
+                    }),
+                    success: function (result) {
+                        if (result == "") {
+                            var sortColumn = $(".sortColumn.sorting_asc").attr("name");
+                            var sortType = $(".sorting_desc").attr("name");
+                            var page = 1;
+                            page = $("li.paginate_button.active").text();
+
+                            if(sortType != null) {
+                                sortColumn = sortType;
+                                sortType = "desc";
+                            }
+                            else if (sortColumn != null) { sortType = "asc"; }
+
+                            cercaFuoriStandard(null, sortColumn, sortType, page);
+
+                            hideModalWaiter("schedaIndennizzo");
+                            notifySuccess("Completato");
+                            var totalNumber = $("#totalNumber").data("bind");
+                            totalNumber = totalNumber - 1;
+                            $("#totalNumber").data("bind", totalNumber);
+                            $("#totalNumber").text('Fuori Standard totali: ' + totalNumber);
+                            $('#erroreUmanoModal').modal('hide');
+                            $("#schedaIndennizzoModal").modal("hide");
+
+                            if ($('#chkIndProgressivi').prop('checked') == true) {
+                                displaySchedaIndennizzo($("#chkIndProgressivi").data("bind"), true, $("#elencoIndennizzi").data("bind"));
+                            }
+                            return false;
+                        }
+                        else {
+                            $('#erroreUmanoModal').modal('hide');
+                            hideModalWaiter("schedaIndennizzo");
+                            notifyError(result);
+                            return false;
+                        }
+                    },
+                    error: function (request, status, error) {
+                        $('#erroreUmanoModal').modal('hide');
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyWarning(error);
+                        return false;
+                    },
+                });
+                return false;
+            }
+
+            @*var _url = '@Url.Action("ValidaFuoriStandardFirstStep", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    FuoriStandardDataCliente: FuoriStandard,
+                    CodiceCausa : _optionCategoria,
+                    CodiceSottocausa : _optionSottoCategoria,
+                    Note: $("#txtFileDescription").val(),
+                    NonIndennizzabile: _nonIndennizzabile,
+                }),
+                success: function (result) {
+                    if (result == "") {
+                        var sortColumn = $(".sortColumn.sorting_asc").attr("name");
+                        var sortType = $(".sorting_desc").attr("name");
+                        var page = 1;
+                        page = $("li.paginate_button.active").text();
+
+                        if(sortType != null) {
+                            sortColumn = sortType;
+                            sortType = "desc";
+                        }
+                        else if (sortColumn != null) { sortType = "asc"; }
+
+                        cercaFuoriStandard(null, sortColumn, sortType, page);
+
+                        hideModalWaiter("schedaIndennizzo");
+                        notifySuccess("Completato");
+                        var totalNumber = $("#totalNumber").data("bind");
+                        totalNumber = totalNumber - 1;
+                        $("#totalNumber").data("bind", totalNumber);
+                        $("#totalNumber").text('Fuori Standard totali: ' + totalNumber);
+                        $("#schedaIndennizzoModal").modal("hide");
+
+                        if ($('#chkIndProgressivi').prop('checked') == true) {
+                            if('@indennizzoSuccessivo' != -1) {
+                                displaySchedaIndennizzo(@indennizzoSuccessivo, true, $("#elencoIndennizzi").data("bind"));
+                            }
+                        }
+                    }
+                    else {
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyError(result);
+                    }
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning(error);
+                }
+            });*@
+
+
+            var _url = '@Url.Action("RettificaPrimoStep", "FuoriStandard")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idFuoriStandard: FuoriStandard,
+                    dataInizioAttivita: $('#calendar3').val(),
+                    dataFineAttivita: $('#calendar4').val(),
+                    quantita: $('#quantita').val(),
+                    //quantitaSosp: $("#quantitaSosp").val(),
+                    quantitaSosp: $("#durataSospensione").val(),
+                    fuoriStandard: _fuoriStandard.toString(),
+                    causale: $("#ddlCategoria option:selected").val(),
+                    sottoCausale: $("#ddlSottoCategoria option:selected").val(),
+                    note: $("#txtFileDescription").val(),
+                    nonIndennizzabile: _nonIndennizzabile,
+                    codiceCliente: null,
+                    codicePuf: null,
+                    codiceContratto: null,
+                    flgRettifica: 0
+                }),
+                success: function (result) {
+                    if (result == "") {
+                        var sortColumn = $(".sortColumn.sorting_asc").attr("name");
+                        var sortType = $(".sorting_desc").attr("name");
+                        var page = 1;
+                        page = $("li.paginate_button.active").text();
+
+                        if(sortType != null) {
+                            sortColumn = sortType;
+                            sortType = "desc";
+                        }
+                        else if (sortColumn != null) { sortType = "asc"; }
+
+                        cercaFuoriStandard(null, sortColumn, sortType, page);
+
+                        hideModalWaiter("schedaIndennizzo");
+                        notifySuccess("Completato");
+                        var totalNumber = $("#totalNumber").data("bind");
+                        totalNumber = totalNumber - 1;
+                        $("#totalNumber").data("bind", totalNumber);
+                        $("#totalNumber").text('Fuori Standard totali: ' + totalNumber);
+                        $("#schedaIndennizzoModal").modal("hide");
+
+                        if ($('#chkIndProgressivi').prop('checked') == true) {
+                            if('@indennizzoSuccessivo' != -1) {
+                                displaySchedaIndennizzo(@indennizzoSuccessivo, true, $("#elencoIndennizzi").data("bind"));
+                            }
+                        }
+                    }
+                    else {
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyError(result);
+                    }
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter("schedaIndennizzo");
+                    notifyWarning(error);
+                }
+            });
+
+
+        });
+    }
+
+    function filtraDatiByCategoria() {
+
+        var _optionCategoria = $("#ddlCategoria option:selected").val();
+        var _url = '@Url.Action("FiltraDatiSottoCategoria", "FuoriStandard", new { OptionCategoria = "_optioncategoria_", firstTime = "_firstTime_" })'.replace("_optioncategoria_", _optionCategoria).replace("_firstTime_", false);
+
+        displayModalWaiter("schedaIndennizzo");
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                OptionCategoria: _optionCategoria,
+                firstTime: false,
+            }),
+            success: function (result) {
+                $("#SottoCategorieContainerIndennizzi").html(result);
+                hideModalWaiter("schedaIndennizzo");
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function approvatoRifiutato() {
+
+        var _optionCategoria = $("#ddlCategoria option:selected").val();
+        var _optionSottoCategoria = $("#ddlSottoCategoria option:selected").val();
+        var _url = '@Url.Action("IsApproved", "FuoriStandard", new { CodiceCategoria = "_optioncategoria_"})'.replace("_optioncategoria_", _optionCategoria);
+
+        displayModalWaiter("schedaIndennizzo");
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                CodiceCategoria: _optionCategoria,
+            }),
+            success: function (result) {
+                if (result == "True")
+                {
+                    $(".approvaRifiuta").css({
+                        "color": "green"
+                    });
+                    $(".fa-ban").addClass("fa-check");
+                    $(".fa-ban").removeClass("fa-ban");
+                    $("#innerText").text("  Approvato  ");
+                    hideModalWaiter("schedaIndennizzo");
+                }
+                else {
+                    $(".approvaRifiuta").css({
+                        "color": "red"
+                    });
+                    $(".fa-check").addClass("fa-ban");
+                    $(".fa-check").removeClass("fa-check");
+                    $("#innerText").text("  Rifiutato  ");
+                    hideModalWaiter("schedaIndennizzo");
+                }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyWarning(error);
+            }
+        });
+    }
+
+    function schedaErroreUmano(fuoriStandard) {
+
+        displayModalWaiter("schedaIndennizzo");
+        var _url = '@Url.Action("SchedaErroreUmano", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                CodiceIndennizzo: fuoriStandard,
+            }),
+            success: function (result) {
+                $("#erroreUmano").html(result);
+                hideModalWaiter("schedaIndennizzo");
+                $('#erroreUmanoModal').modal('show');
+            },
+            error: function (request, status, error) {
+                notifyWarning(error);
+                hideModalWaiter("schedaIndennizzo");
+            }
+        });
+    }
+
+    $(document).keyup(function(e) {
+        if (e.keyCode === 27) $(".modal-backdrop").addClass("invisible");
+    });
+
+    if ($('#esitoNascosto').data("bind") == 1) {
+        $("#ragSocialeRet").remove();
+        $("#ragSociale").removeClass("cliente-valore-rettifica");
+        $("#comuneRet").remove();
+        $("#comune").removeClass("cliente-valore-rettifica");
+        $("#numCivicoRet").remove();
+        $("#numCivico").removeClass("cliente-valore-rettifica");
+        $("#codContrRet").remove();
+        $("#codContr").removeClass("cliente-valore-rettifica");
+        $("#pufCodRet").remove();
+        $("#pufCod").removeClass("cliente-valore-rettifica");
+        $("#stradaRet").remove();
+        $("#strada").removeClass("cliente-valore-rettifica");
+        $("#cellulareRet").remove();
+        $("#cellulare").removeClass("cliente-valore-rettifica");
+
+        $("#lblEsito").removeClass("notdisplayed");
+        $("#imgEsito").removeClass("notdisplayed");
+    }
+
+    if ($('#esitoNascosto').data("bind") == 2 && $('#esitoNascosto').val() == "True") {
+        $("#lblEsito").text("RIFIUTATO");
+        $("#lblEsito").css("color","red");
+        $("#lblEsito").removeClass("notdisplayed");
+        $("#imgEsito").css("color","red");
+        $("#imgEsito").removeClass("fa-check");
+        $("#imgEsito").addClass("fa-ban");
+        $("#imgEsito").removeClass("notdisplayed");
+        $("#imgEsito").removeClass("notdisplayed");
+    }
+
+    if($("#lblEsito").hasClass("notdisplayed")){
+        if($("#btnCloseContainerReadOnly").val() != null && !($("#Pend").hasClass("actived"))){
+            $("#lblEsito").text("ANNO COMPETENZA BLOCCATO");
+            $("#lblEsito").css("color","red");
+            $("#container-scheda-fuoriStandard").css({"min-height": "415px"});
+            $("#lblEsito").removeClass("notdisplayed");
+        }
+        else if($("#btnCloseContainerReadOnly").val() != null){
+            $("#lblEsito").text("IN ATTESA DI APPROVAZIONE..");
+            $("#lblEsito").css("color","orange");
+            $("#lblEsito").removeClass("notdisplayed");
+        }
+    }
+
+    if ($('#esitoNascosto').data("bind") == 2 && $("#codCliRet").text() != null && $("#codCliRet").text() != "") {
+        $("#ragSocialeRet").removeClass("cliente-valore-rettificato");
+        $("#ragSociale").removeClass("cliente-valore-rettifica");
+        $("#comuneRet").removeClass("cliente-valore-rettificato");
+        $("#comune").removeClass("cliente-valore-rettifica");
+        $("#numCivicoRet").removeClass("cliente-valore-rettificato");
+        $("#numCivico").removeClass("cliente-valore-rettifica");
+        $("#codContrRet").removeClass("cliente-valore-rettificato");
+        $("#codContr").removeClass("cliente-valore-rettifica");
+        $("#pufCodRet").removeClass("cliente-valore-rettificato");
+        $("#pufCod").removeClass("cliente-valore-rettifica");
+        $("#stradaRet").removeClass("cliente-valore-rettificato");
+        $("#strada").removeClass("cliente-valore-rettifica");
+        $("#cellulareRet").removeClass("cliente-valore-rettificato");
+        $("#cellulare").removeClass("cliente-valore-rettifica");
+
+        $("#ragSocialeRet").addClass("cliente-valore-rettifica");
+        $("#ragSociale").addClass("cliente-valore-rettificato");
+        $("#comuneRet").addClass("cliente-valore-rettifica");
+        $("#comune").addClass("cliente-valore-rettificato");
+        $("#numCivicoRet").addClass("cliente-valore-rettifica");
+        $("#numCivico").addClass("cliente-valore-rettificato");
+        $("#codContrRet").addClass("cliente-valore-rettifica");
+        $("#codContr").addClass("cliente-valore-rettificato");
+        $("#pufCodRet").addClass("cliente-valore-rettifica");
+        $("#pufCod").addClass("cliente-valore-rettificato");
+        $("#stradaRet").addClass("cliente-valore-rettifica");
+        $("#strada").addClass("cliente-valore-rettificato");
+        $("#cellulareRet").addClass("cliente-valore-rettifica");
+        $("#cellulare").addClass("cliente-valore-rettificato");
+    }
+
+    function setModalVisible(solaLettura) {        
+        var checkReadOnly = $("#btnRettifica").data("bind");
+        if (checkReadOnly == 'True'){
+            $(".sospensioneModificata").addClass("editSospColor");
+            $(".sospensioneNuova").addClass("newSospColor");
+            $("#resetRettificaFS").attr("onclick", "dismissModalErrSospensioni()");
+            $(".righeSospensioni").attr("ondblclick", "");
+            $("#resetRettificaFS").text("Chiudi");
+            $("#resetRettificaFS").removeClass("btn-default");
+            $("#resetRettificaFS").addClass("btn-function");
+            $("#confErr").addClass("notdisplayed");
+            $("#confSosp").addClass("notdisplayed");
+            $("#calendarDiv3").datetimepicker('disable');
+            $("#calendarDiv4").datetimepicker('disable');
+            $("#quantita").prop("disabled", "disabled");
+            $("#durataSospensione").prop("disabled", "disabled");
+            $("#closeModalRettifica").addClass("notdisplayed");
+            $("#annullaSospensioneEvt").addClass("notdisplayed");
+            $("#nuovaSospensioneEvt").addClass("notdisplayed");
+            $(".btnEliminaAllegatoSosp").addClass("notdisplayed");
+            $(".fakeBrowseSosp").addClass("notdisplayed");
+            //var someArray = $('#gridSospensioni').DataTable().column(3).data().toArray();
+            //var total = 0;
+            //for (var i = 0; i < someArray.length; i++) {
+            //    total += someArray[i] << 0;
+            //}
+
+            $("#durataSospensione").text($("#quantitaSospensione").text());
+            $("#durataSospensione").val($("#quantitaSospensione").text());
+            $("#txtInfoSospensioniDue").addClass("notdisplayed");
+        }
+        $("#erroreUmanoModal").removeClass("invisible");
+    }
+
+    function dismissModalErrSospensioni(){
+        $('#erroreUmanoModal').modal('hide');
+    }
+
+    if ($("#approvaRettifiche").hasClass("notdisplayed"))
+    {
+        if ($("#causaFS").data("bind") == 'ANN') {
+            $("#lblEsito").text("IN ATTESA DI ANNULLAMENTO..");
+            $("#lblEsito").css("color","orange");
+            $("#lblEsito").removeClass("notdisplayed");
+            $("#imgEsito").css("color","orange");
+            $("#imgEsito").removeClass("fa-check");
+            $("#imgEsito").addClass("fa-danger");
+            $("#imgEsito").removeClass("notdisplayed");
+            $("#chiudiRettifica").removeClass("notdisplayed");
+        }
+        else {
+            $("#lblEsito").text("IN ATTESA DI APPROVAZIONE..");
+            $("#lblEsito").css("color","orange");
+            $("#lblEsito").removeClass("notdisplayed");
+            $("#imgEsito").css("color","orange");
+            $("#imgEsito").removeClass("fa-check");
+            $("#imgEsito").addClass("fa-danger");
+            $("#imgEsito").removeClass("notdisplayed");
+            $("#chiudiRettifica").removeClass("notdisplayed");
+        }
+    }
+
+    function annullaPrestazione(idFS) {
+        $("#confAnn").off().click(function () {
+            var _fuoriStandard = "N";
+            if (!$('#inStandard').hasClass("notdisplayed")) {
+                _fuoriStandard = "S";
+            }
+            var _nonIndennizzabile = "N";
+            if ($("#tipoStandard").text().trim() == "Specifico") {
+                _nonIndennizzabile = "S";
+            }
+            if ($("#txtFileDescriptions").val() == "") {
+                notifyWarning("inserire una nota di annullamento..");
+                return;
+            }
+            displayModalWaiter("schedaIndennizzo");
+            var _url = '@Url.Action("AnnullaPrestazione", "FuoriStandard")';
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idFuoriStandard: idFS,
+                    dataInizioAttivita: $('#calendar3').val(),
+                    dataFineAttivita: $('#calendar4').val(),
+                    quantita: $('#quantita').val(),
+                    //quantitaSosp: $('#quantitaSosp').val(),
+                    quantitaSosp: $("#durataSospensione").val(),
+                    fuoriStandard: _fuoriStandard.toString(),
+                    causale: 'ANN',
+                    sottoCausale: 'ANN001',
+                    note: $("#txtFileDescriptions").val(),
+                    nonIndennizzabile: _nonIndennizzabile,
+                    codiceCliente: null,
+                    codicePuf: null,
+                    codiceContratto: null
+                }),
+                success: function (result) {
+                    if (result == "") {
+                        var sortColumn = $(".sortColumn.sorting_asc").attr("name");
+                        var sortType = $(".sorting_desc").attr("name");
+                        var page = 1;
+                        page = $("li.paginate_button.active").text();
+
+                        if(sortType != null) {
+                            sortColumn = sortType;
+                            sortType = "desc";
+                        }
+                        else if (sortColumn != null) { sortType = "asc"; }
+
+                        cercaFuoriStandard(null, sortColumn, sortType, page);
+
+                        notifySuccess("Operazione completata con successo..");
+                        $("#schedaIndennizzoModal").modal("hide");
+                        hideModalWaiter("schedaIndennizzo");
+                        if ($('#chkIndProgressivi').prop('checked') == true) {
+                            if('@indennizzoSuccessivo' != -1) {
+                                displaySchedaIndennizzo(@indennizzoSuccessivo, true, $("#elencoIndennizzi").data("bind"));
+                            }
+                        }
+                    }
+                    else if (result != null) {
+                        hideModalWaiter("schedaIndennizzo");
+                        notifyError(result);
+                    }
+                    hideModalWaiter("schedaIndennizzo");
+                },
+                error: function (request, status, error) {
+                    notifyWarning(error);
+                    hideModalWaiter("schedaIndennizzo");
+                }
+            });
+        });
+    }
+
+    function reloadDropDownFilters() {
+        var _tipologia = $("#Tipologia option:selected").val();
+        var _indicatore = $("#Indicatore option:selected").val();
+        var _codRintracciabilita = $("#codRintracciabilita").val().trim();
+        var _codCliente = $("#codiceCliente").val().trim();
+        var _dataInizio = $("#censitoDal").val();
+        var _dataFine = $("#censitoAl").val();
+        var _inStandard = $("#flgInStandard option:selected").val();
+
+        displayModalWaiter();
+        var _url = '@Url.Action("DropDownFilters", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                view : "RettificheFS"
+            }),
+            success: function (result) {
+                $("#dropDownFilters").html(result);
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+</script>

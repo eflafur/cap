@@ -1,0 +1,74 @@
+﻿@model ISubCollection<FuoriStandard>
+
+@{
+    if (Model == null)
+    {
+        @Html.Raw(HtmlSnippets.Alert.Info("Nessun fuoriStandard da visualizzare..."))
+    }
+    else
+    {
+        <table id="gridIndennizziPagabili" class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th class="text-left">Sel</th>
+                    <th class="text-left">ID</th>
+                    <th class="text-left">Provenienza</th>
+                    <th class="text-left">Codice Cliente</th>
+                    <th class="text-left">Data Decorrenza</th>
+                    <th class="text-right">Importo</th>
+                    <th class="text-center">Stato</th>
+                    <th class="text-left">Data Inserimento</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    foreach (FuoriStandard _fs in Model.Items)
+                    {
+                        String _trClass = String.Empty;
+                        String _trIcon = String.Empty;
+
+                        <tr onclick="selectRow(event);" class="@_trClass">
+                            <td class="text-left">@Html.Raw(_trIcon)</td>
+                            <td class="text-left chk">
+                                <input value="@_fs.IDFS;@_fs.DataInserimento;@_fs.CodCliente" class="sel text-after-icon chkSelectRow" type="checkbox" />
+                            </td>
+                            <td class="text-left">@_fs.IDFS</td>
+                            <td class="text-left">@_fs.Provenienza</td>
+                            <td class="text-left">@_fs.CodCliente</td>
+                            <td class="text-left">@_fs.CensitoIl.Value.ToShortDateString()</td>
+                            <td class="text-right">@_fs.Importo €</td>
+                            <td class="text-center">@_fs.Stato</td>
+                            <td class="text-left">@_fs.DataInserimento.Value.ToShortDateString()</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+
+        <div class="input-group col-sm-1 pull-left">
+            <a class="btn btn-function notdisplayed" id="btnSelezionaTutti" onclick="selezionaTutto();">
+                Seleziona tutti
+            </a>
+        </div>
+        <div class="input-group col-sm-1 pull-left mr-l">
+            <a class="btn btn-function notdisplayed" id="btnDeseleziona" onclick="deselezionaTutto();">
+                Deseleziona tutti
+            </a>
+        </div>
+    }
+}
+
+<script>
+
+    function selectRow(e) {
+        if (e.target.type != "checkbox") {
+            var tr = $(e.target).parent();
+            $(':checkbox', tr).trigger("click");
+        }
+    }
+
+    $('#btnSelezionaTutti').removeClass("notdisplayed");
+    $('#btnDeseleziona').removeClass("notdisplayed");
+
+</script>

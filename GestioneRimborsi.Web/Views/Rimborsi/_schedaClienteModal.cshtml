@@ -1,0 +1,313 @@
+﻿@model String
+
+@{
+    IClienteService _clienteService = (IClienteService)RevoContext.ServiceProvider.GetServiceFor<Cliente>();
+    IRimborsoService _rimborsoService = (IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<ClienteBonusIdrico>();
+
+    Cliente cliente = new Cliente();
+    if (!String.IsNullOrEmpty(Model))
+    {
+        cliente = _clienteService.InfoCliente(Model);
+    }
+    IBAN iban = _clienteService.GetIBAN(Model);
+
+    ClienteBonusIdrico clienteBonusIdrico = _rimborsoService.GetClienteBonusIdricoRimborsi(Model);
+
+    if (Model != "")
+    {
+        cliente = _clienteService.InfoCliente(Model);
+    }
+
+    IBAN ibanEntity = _clienteService.GetIBAN(Model);
+    CoordinateBancarie DatiIBAN = new CoordinateBancarie();
+
+    string IBAN = "";
+    string IBANAnag = "";
+
+    if (ibanEntity != null)
+    {
+        IBAN = ibanEntity.CodiceIBAN;
+    }
+    DatiIBAN = _clienteService.GetIBANCliente(Model);
+    if (DatiIBAN != null)
+    {
+        if (string.IsNullOrEmpty(DatiIBAN.ABI)) { DatiIBAN.ABI = ""; }
+        if (string.IsNullOrEmpty(DatiIBAN.CAB)) { DatiIBAN.CAB = ""; }
+        if (string.IsNullOrEmpty(DatiIBAN.ContoCorrente)) { DatiIBAN.ContoCorrente = ""; }
+        if (string.IsNullOrEmpty(DatiIBAN.CheckDigit)) { DatiIBAN.CheckDigit = ""; }
+        if (string.IsNullOrEmpty(DatiIBAN.CIN)) { DatiIBAN.CIN = ""; }
+
+        if (!string.IsNullOrEmpty(DatiIBAN.ABI) && string.IsNullOrEmpty(IBAN))
+        {
+            var IBANHelper = new IBANHelper();
+            var CIN = IBANHelper.CalcolaCIN(DatiIBAN.ABI, DatiIBAN.CAB, DatiIBAN.ContoCorrente);
+            DatiIBAN.CIN = CIN.ToString();
+            IBAN = IBANHelper.CalcolaIBAN(DatiIBAN.ABI, DatiIBAN.CAB, DatiIBAN.ContoCorrente, CIN);
+        }
+        else if (!string.IsNullOrEmpty(DatiIBAN.ABI))
+        {
+            var IBANHelper = new IBANHelper();
+            var CIN = IBANHelper.CalcolaCIN(DatiIBAN.ABI, DatiIBAN.CAB, DatiIBAN.ContoCorrente);
+            DatiIBAN.CIN = CIN.ToString();
+            IBANAnag = IBANHelper.CalcolaIBAN(DatiIBAN.ABI, DatiIBAN.CAB, DatiIBAN.ContoCorrente, CIN);
+        }
+    }
+    else
+    {
+        DatiIBAN = new CoordinateBancarie();
+        DatiIBAN.ABI = "";
+        DatiIBAN.CAB = "";
+        DatiIBAN.ContoCorrente = "";
+        DatiIBAN.CheckDigit = "";
+        DatiIBAN.CIN = "";
+    }
+
+}
+
+@if (!String.IsNullOrEmpty(Model) && cliente != null)
+{
+    @Html.Partial("~/views/Rimborsi/_gestioneIBAN.cshtml", Model)
+}
+
+<div id="scheda" class="schedaCliente">
+    @if (Model != "" && Model != null && cliente != null)
+    {
+        <div class="form-group">
+            <button class="btn btn-default dropdown-toggle pull-right" type="button" data-toggle="collapse" href="#collapseDetails" aria-expanded="true" aria-controls="collapseDetails">
+                Nascondi/Mostra i dettagli del cliente
+                <span class="caret"></span>
+            </button>
+            <div class="container-information panel-collapse width100 collapse in" role="tabpanel" id="collapseDetails">
+                <div class="col-sm-12 pad15">
+                    <div class="row paddingLeftRight">
+                        <div class="col-sm-6">
+                            <div class="controlValue">
+                                <label>@cliente.ragioneSocialeCliente</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="controlValue">
+                                <label>@cliente.DataInserimento.Value.ToShortDateString()</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="controlValue textAlignRight">
+                                <label>@cliente.codiceFiscale</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row separatorRow">
+                    </div>
+
+                    <div class="row paddingLeftRight">
+                        <div class="col-sm-6">
+                            <div class="caption textTypeItalic">
+                                <span for="RagioneSociale">Ragione Sociale</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="caption textTypeItalic"><span for="DataAttivazione">Data di attivazione</span></div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="caption textTypeItalic textAlignRight"><span for="CodiceFiscale">Codice Fiscale/P. IVA</span></div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="containerIbanAnagrafica">
+                        <div class="col-sm-6">
+                            <div class="controlValue">
+                                <label id="txtIBAN">
+                                    <strong id="ibanValue">
+                                        @IBAN
+                                    </strong>
+                                    <span id="iconIBAN" data-container="body" data-toggle="popover"
+                                          onmouseover="mousePopover();" data-placement="bottom" data-original-title=""
+                                          data-content="@IBANAnag" title="IBAN Predefinito:" class="fa fa-lg fa-check-circle colorGreen text-after-icon"></span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="controlValue">
+                                <label>@cliente.Telefono</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="controlValue textAlignRight">
+                                <label>@cliente.Email</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row separatorRow">
+                    </div>
+
+                    <div class="row paddingLeftRight">
+                        <div class="col-sm-6">
+                            <div class="caption textTypeItalic">
+                                <span for="ibanValue">IBAN</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="caption textTypeItalic">
+                                <span>Numero di Telefono</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="caption textAlignRight textTypeItalic"><span for="Email">Email</span></div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="containerClienteAnagrafica">
+                        <div class="col-sm-6">
+                            <div class="controlValue">
+                                <label>@cliente.Strada</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="controlValue">
+                                <label>@cliente.NumeroCivico</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="controlValue textAlignRight">
+                                <label>@cliente.Comune</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row separatorRow">
+                    </div>
+
+                    <div class="row paddingLeftRight">
+                        <div class="col-sm-6">
+                            <div class="caption textTypeItalic">
+                                <span for="Strada">Via/Piazza</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="caption textTypeItalic">
+                                <span>N° civico</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+                            <div class="caption textAlignRight textTypeItalic"><span for="Comune">Città</span></div>
+                        </div>
+                    </div>
+
+
+                    <div class="row" id="containerClienteBonusIdrico">
+                        <div class="col-sm-12">
+
+                            <div class="controlValue">
+
+                                @{ if (clienteBonusIdrico != null)
+                                    {
+                                        <label>Il @clienteBonusIdrico.DataEmissione.ToShortDateString()</label>
+
+                                        <label>di @(clienteBonusIdrico.ImportoBonus != 0 ? clienteBonusIdrico.ImportoBonus.ToString("#.00") : "0,00")<span>€</span></label>
+                                    }
+                                    else
+                                    {
+                                        <label>Nessuno</label>
+                                    }
+
+                                }
+                            </div>
+
+                        </div>
+                        @*<div class="col-sm-2">
+                                <div class="controlValue">
+
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="controlValue textAlignRight">
+
+                                </div>
+                            </div>*@
+                    </div>
+
+                    <div class="row separatorRow">
+                    </div>
+
+                    <div class="row paddingLeftRight">
+                        <div class="col-sm-6">
+                            <div class="caption textTypeItalic">
+                                <span for="Strada">Ultimo Bonus Idrico</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="caption textTypeItalic">
+                                <span></span>
+                            </div>
+                        </div>
+                        <div class="col-sm-4">
+
+                        </div>
+                    </div>
+
+
+                    <br />
+                    @*@if (CurrentUser.HasPermissionOrIsPrivileged("GestioneRimborsi.GestionePermessi.GestoreCliente"))*@
+                    @if (CurrentUser.HasPermissionOrIsPrivileged("gri.iban.update"))
+                    {
+                        <button class="btn btn-function pull-right mt-10" id="bottoneIBAN" type="button" onclick="setIBAN();">
+                            <i class="fa fa-lg fa-bank"></i>
+                            <span class="text-after-icon">Gestione IBAN</span>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+                                    }
+</div>
+
+<script>
+
+    $(document).ready(function () {
+        activaTab('iban');
+    });
+
+    function activaTab(tab) {
+        $('.nav-tabs a[href="#' + tab + '"]').tab('show');
+    };
+
+    function setIBAN() {
+        $('#gestioneIBANCliente').modal({ backdrop: 'static', show: true });
+        checkiban();
+    }
+
+    if ($('#IBAN').val() != null && $('#IBAN').val().trim() != "" && $('#IBANAna').val() != null && $('#IBANAna').val().trim() != "") {
+        if ($('#IBAN').val().trim() != $('#IBANAna').val().trim()) {
+            $('#iconIBAN').removeClass("colorGreen");
+            $('#iconIBAN').addClass("colorGoldenRod");
+            $('#iconIBAN').removeClass("fa-check-circle");
+            $('#iconIBAN').addClass("fa-warning");
+        }
+    }
+
+    if (($('#IBANAna').val() == null || $('#IBANAna').val().trim() == "") && ($('#IBAN').val() == null || $('#IBAN').val().trim() == "")) {
+        $('#iconIBAN').removeClass("colorGreen");
+        $('#iconIBAN').removeClass("fa-check-circle");
+    }
+
+    $('[data-toggle="popover"]').popover();
+
+    $('body').on('click', function (e) {
+        $('[data-toggle="popover"]').each(function () {
+            if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+                $(this).popover('hide');
+            }
+        });
+    });
+
+    function mousePopover() {
+        if ($('#IBANAna').val() != null && $('#IBANAna').val().trim() != "" && $('#IBAN').val() != null && $('#IBAN').val().trim() != "") {
+            if ($('#IBAN').val().trim() != $('#IBANAna').val().trim()) {
+                $('#iconIBAN').popover('show');
+            }
+        }
+    }
+
+</script>

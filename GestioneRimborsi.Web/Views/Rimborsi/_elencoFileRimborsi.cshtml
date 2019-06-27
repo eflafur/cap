@@ -1,0 +1,83 @@
+﻿@model ISubCollection<AllegatoRimborso>
+
+@{
+    if (Model == null)
+    {
+        @Html.Raw(HtmlSnippets.Alert.Info("Nessun documento allegato..."))
+    }
+    else
+    {
+        <table id="grigliaDocAllegati" class="table table-responsive">
+            <thead>
+                <tr>
+                    <th class="text-left">Nome</th>
+                    <th class="text-left">Descrizione</th>
+                    <th class="text-left">Data</th>
+                    <th class="text-right">Dimensione</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+        foreach (AllegatoRimborso _doc in Model.Items)
+        {
+            var dim = 1;
+            if (!((Convert.ToInt32(_doc.Dimensione) / 1024) < 1))
+            {
+                dim = (Convert.ToInt32(_doc.Dimensione) / 1024);
+            }
+            <tr class="">
+                <td class="text-left">@_doc.NomeFile</td>
+                <td class="text-left">@_doc.Note</td>
+                <td class="text-left">@_doc.DataInserimento.Value.ToShortDateString()</td>
+                <td class="text-right">@dim KB</td>
+                <td class="text-left">
+                    <a class="deleteButtonInList" href="javascript:void(0);" onclick="deleteFile('@_doc.AnnoDocumento', '@_doc.NumeroDocumento', '@_doc.NomeFile', '@_doc.TipoFile');">
+                        <i class="fa fa-lg fa-fw fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+        }
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<script>
+
+    function deleteFile(annoDocumento, numeroDocumento, nomeFile, tipoFile) {
+
+        var _url;
+        $('#confermaModifiche').modal('show');
+
+        $("#confMod").off().click(function () {
+            displayModalWaiter();
+
+            _url = '@Url.Action("DeleteFile", "Rimborsi")';
+
+            $.ajax({
+                url: _url,
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    FileName: nomeFile,
+                    TipoFile: tipoFile,
+                    AnnoDocumento: annoDocumento,
+                    NumeroDocumento: numeroDocumento,
+                }),
+                success: function (result) {
+                    $("#gridDocAllegatiTableContainer").html(result);
+                    setDocRimbDataTable();
+                    hideModalWaiter();
+                    notifySuccess("File cancellato");
+                },
+                error: function (request, status, error) {
+                    hideModalWaiter();
+                    notifyWarning(error);
+                }
+            });
+        });
+    }
+
+</script>

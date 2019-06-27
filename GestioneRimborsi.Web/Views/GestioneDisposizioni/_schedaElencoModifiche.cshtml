@@ -1,0 +1,77 @@
+﻿@model long
+
+@{
+    ILottoRimborsiService _lottoService = (ILottoRimborsiService)RevoContext.ServiceProvider.GetServiceFor<Rimborso>();
+
+    ISubCollection<DisposizioneModificata> disposizioni = null;
+    SepaCreditTransaction transaction = new SepaCreditTransaction();
+
+    if (Model != null && Model != 0)
+    {
+        disposizioni = _lottoService.GetDisposizioniModificate(Model);
+        transaction = _lottoService.GetTransactionByID(Model);
+    }
+}
+
+<div id="schedaElencoModifiche">
+    <div class="modal fade text-left" id="elencoModifiche" tabindex="-1" role="dialog" aria-labelledby="elencoModificheModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="elencoModificheModalTitle">
+                        <i class="fa fa-lg fa-list"></i>
+                        <span class="text-after-icon">Elenco Modifiche</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    @if (Model != null && Model != 0 && disposizioni != null)
+                    {
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h5><span id="d1"></span><label id="d2"></label><span id="d3"></span><label id="d4"></label>
+                                    <span id="d5"></span><label id="d6"></label></h5>
+                                <h5><span id="datiCliente">Cliente <label>@transaction.CreditorName</label> (@transaction.CreditorTaxId)</span></h5>
+                            </div>
+                        </div>
+                        <div class="row margine-sup">
+                            <div class="col-sm-5">
+                                <div class="row">
+                                    <div class="col-sm-6 storico-header">
+                                        <span class="">Autore</span>
+                                    </div>
+                                    <div class="col-sm-6 storico-header">
+                                        <span class="">Data</span>
+                                    </div>
+                                </div>
+                                <div class="row" id="storico-cambiamenti">
+                                    <ul id="storicoCambiamentiList" class="list-group">
+                                        @Html.Partial("~/Views/GestioneDisposizioni/_storicoCambiamenti.cshtml", disposizioni)
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-sm-7" id="containerCambiamenti">
+                                @Html.Partial("~/Views/GestioneDisposizioni/_modificheIbanBeneficiario.cshtml", new DisposizioneModificata())
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer mt-10">
+                    <button type="button" data-dismiss="modal" class="btn btn-lg btn-function">
+                        <span>Ok</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(function () {
+        $("#d1").text("Disposizione "); $("#d2").text("#: " + $("#t2").text());
+        $("#d3").text(" creata in data "); $("#d4").text($("#t4").text());
+        $("#d5").text(" generata da: "); $("#d6").text($("#t6").text());        
+    });   
+
+</script>

@@ -1,0 +1,1213 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xs:schema xmlns:sgate="http://www.sgate.ancitel.it/idrico/xsd/" elementFormDefault="qualified"
+	targetNamespace="http://www.sgate.ancitel.it/idrico/xsd/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:include schemaLocation="01_SGATEH2O_XSD_PRIMITIVI_v1.1.xsd" />
+
+	<!-- Elementi e tipi x WEB-FILE -->
+	<xs:element name="richiesteSgate" type="sgate:tipoFileRichiesteSgate">
+		<xs:annotation>
+			<xs:documentation>
+				FILE che contiene i messaggi, reso disponibile da SGAte per la presa in carico da parte del gestore tramite download sul sistema WEB.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="esitiGestore" type="sgate:tipoFileEsitiGestore">
+		<xs:annotation>
+			<xs:documentation>
+				FILE che contiene gli esiti relativi ai messaggi presi in carico, inviato dal gestore tramite upload sul sistema WEB.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ricezioniEsitiSGATE" type="sgate:tipoFileRicezioniEsitiSGATE">
+		<xs:annotation>
+			<xs:documentation>
+				FILE che contiene le ricevute della ricezione degli esiti inviati dal gestore, ovvero il controesito di SGAte, disponibile per il download del gestore sul sistema WEB.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="segnalazioniGestore" type="sgate:tipoFileSegnalazioniGestore">
+		<xs:annotation>
+			<xs:documentation>
+				FILE prodotto dal gestore che contiene le segnalazioni, inviato a SGAte tramite upload sul sistema WEB.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ricevuteSegnalazioniSGATE" type="sgate:tipoFileRicevuteSegnalazioniSGATE">
+		<xs:annotation>
+			<xs:documentation>
+				FILE prodotto da SGAte che contiene le ricevute delle segnalazioni inviate dal gestore, reso disponibile tramite download sul sistema WEB.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="tipoFileRichiesteSgate">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta il file che contiene i messaggi, reso disponibile da SGAte per la presa in carico da parte del gestore.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="messaggio" type="sgate:tipoMessaggio" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoFileEsitiGestore">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta il file che contiene gli esiti relativi ai messaggi presi in carico, inviato dal gestore.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="esitoMessaggio" type="sgate:tipoEsitoMessaggio" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoFileRicezioniEsitiSGATE">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta il file che contiene informazioni circa la ricezione degli esiti inviati dal gestore, ovvero il controesito di SGAte.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="ricezioneMessaggio" type="sgate:tipoRicezioneMessaggio" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoFileSegnalazioniGestore">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta il file prodotto dal gestore contenente le segnalazioni per SGAte.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="segnalazione" type="sgate:tipoSegnalazioneInviata" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoFileRicevuteSegnalazioniSGATE">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta il file prodotto da SGAte contenente le ricevute delle segnalazioni inviate dal gestore.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element maxOccurs="unbounded" name="ricevutaSegnalazione" type="sgate:tipoRicevutaSegnalazioneInviata" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Elementi x WS -->
+	<xs:element name="richiestaPresaInCaricoLotto" type="sgate:tipoRichiestaPresaInCaricoLotto">
+		<xs:annotation>
+			<xs:documentation>
+				Dati della richiesta del gestore a SGATE di un lotto di messaggi, elemento di input all'operation PresaInCaricoLotto del WEB SERVICES.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="rispostaPresaInCaricoLotto" type="sgate:tipoRispostaPresaInCaricoLotto">
+		<xs:annotation>
+			<xs:documentation>
+				Dati della risposta al gestore da parte di SGATE contenente il lotto di messaggi richiesto, elemento di output dell'operation PresaInCaricoLotto del WEB SERVICES.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="invioEsiti" type="sgate:tipoInvioEsiti">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta l'input dell'operation InvioEsiti del WEB SERVICES che il gestore utilizza per inviare a SGATE gli esiti relativi ai messaggi presi in carico precedentemente.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ricezioneEsiti" type="sgate:tipoRicezioneEsiti">
+		<xs:annotation>
+			<xs:documentation>
+				Risposta da parte di SGATE relativa alla ricezione degli esiti del gestore, che contiene la lista dei controesiti SGAte, 
+				elemento di output dell'operation InvioEsiti del WEB SERVICES.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="segnalazioniInviate" type="sgate:tipoSegnalazioniInviate">
+		<xs:annotation>
+			<xs:documentation>
+				Dati delle segnalazioni di rettifica dell'esito, inviate dal gestore a SGAte, elemento di input dell'operation InvioSegnalazioni del WEB SERVICES.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+	<xs:element name="ricevuteSegnalazioniInviate" type="sgate:tipoRicevuteSegnalazioniInviate">
+		<xs:annotation>
+			<xs:documentation>
+				Risposta da parte di SGATE relativa alla ricezione delle segnalazioni del gestore, che contiene la lista delle ricevute di SGAte, 
+				elemento di output dell'operation InvioSegnalazioni del WEB SERVICES.
+			</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+
+	<xs:complexType name="tipoRichiestaPresaInCaricoLotto">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta la richiesta del gestore a SGATE di un lotto di messaggi.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="mittente" type="sgate:tipoMittente" />
+			<xs:element name="idUltimoLottoRicevutoCorrettamente" nillable="true">
+				<xs:annotation>
+					<xs:documentation>
+						Il gestore deve indicare l'id dell'ultimo lotto, se ricevuto correttamente.
+						Per La prima richiesta o per richiedere il lotto precedente, se non lo ha ricevuto correttamente, deve valorizzare l'elemento vuoto, 
+						con l'attributo nill impostato a true.
+						Se vuole solo ricevere informazioni in merito alla coda dei messaggi disponibili in SGAte può valorizzare l'elemento vuoto, 
+						con l'attributo nill impostato a true, impostando inoltre l'elemento "numeroMessaggi" a zero, in modo da non ottenere un lotto nella risposta.
+						Le informazioni che verranno restituite da SGAte sono la data di disponibilità del messaggio più vecchio e il numero di messaggi presenti in coda. 
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="20" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="numeroMessaggi" type="xs:int">
+				<xs:annotation>
+					<xs:documentation>
+						Il gestore deve indicare il numero di messaggi che SGAte deve inserire nel lotto.
+						Se vuole ricevere informazioni in merito alla coda dei messaggi disponibili in SGAte può valorizzare l'elemento a zero.
+						In questo caso se non vorrà confermare un lotto ricevuto precedentemente potrà valorizzare l'elemento "idUltimoLottoRicevutoCorrettamente" a vuoto, 
+						con l'attributo nill impostato a true.
+						Le informazioni che verranno restituite da SGAte sono la data di disponibilità del messaggio più vecchio e il numero di messaggi presenti in coda.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoRispostaPresaInCaricoLotto">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta la risposta di SGAte alla richiesta di un lotto di messaggi da parte del gestore.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="lottoMessaggi" nillable="true" type="sgate:tipoLottoMessaggi" >
+				<xs:annotation>
+					<xs:documentation> 
+						Contiene il lotto di messaggi più vecchi disponibili, escludendo quelli associati ai lotti già presi in carico e poi confermati.
+						Se non sono presenti messaggi in coda l'elemento sarà presente ma vuoto e con l'attributo nill impostato a true.
+						L'elemento sarà presente ma vuoto e con l'attributo nill impostato a true se:
+							- si è verificato un errore ( sarà valorizzato l'elemento "erroreGenerale"),
+							- il gestore vuole solo ricevere informazioni in merito alla coda ed ha valorizzato a zero l'elemento "numeroMessaggi" nella richiesta,
+							- non sono presenti messaggi disponibili per il gestore in coda.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dataMessaggioPiuVecchioInCoda" nillable="true" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta la data del messaggio più vecchio presente in coda, esclusi quelli presenti nel lotto restituito nella risposta corrente.
+						In presenza di un errore generale l'elemento sarà presente ma vuoto e con l'attributo nill impostato a true.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="numeroMessaggiInCoda" nillable="true" type="xs:int">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta il numero di messaggi disponibili in coda, esclusi quelli presenti nel lotto restituito nella risposta corrente. 
+						In presenza di un errore generale l'elemento sarà presente ma vuoto e con l'attributo nill impostato a true.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:choice>
+				<xs:element name="erroreGenerale" nillable="true" type="sgate:tipoErrore">
+					<xs:annotation>
+						<xs:documentation>
+							L'elemento verrà valorizzato se si presenta un errore tecnico.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="ricezionePreseInCarico">
+					<xs:annotation>
+						<xs:documentation>
+							Se il gestore ha indicato nella richiesta l'identificativo di un lotto precedente ricevuto correttamente, l'elemento verrà valorizzato
+							con l'elenco degli esiti prodotti da SGATE nel registrare la presa in carico dei messaggi del lotto da parte del gestore.
+							L'elemento sarà vuoto se il gestore non ha indicato un lotto da confermare o se non esiste un lotto precedente ricevuto correttamente confermato.
+							L'elemento non sarà presente se si presenta un errore tecnico.
+						</xs:documentation>
+					</xs:annotation>
+					<xs:complexType>
+						<xs:sequence>
+							<xs:element minOccurs="0" maxOccurs="unbounded" name="ricezionePresaInCarico" type="sgate:tipoRicezioneMessaggio">
+								<xs:annotation>
+									<xs:documentation>
+										Rappresenta l'elenco degli esiti prodotti da SGATE nel registrare la presa in carico dei messaggi del lotto da parte del gestore.
+									</xs:documentation>
+								</xs:annotation>
+							</xs:element>
+						</xs:sequence>
+					</xs:complexType>
+				</xs:element>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoInvioEsiti">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta l'input del metodo del web services che il gestore utilizza per inviare a SGATE gli esiti relativi ai messaggi presi in carico precedentemente.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="mittente" type="sgate:tipoMittente" />
+			<xs:element name="listaEsiti">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta la lista di esiti relativi all'elaborazione da parte del gestore dei messaggi ricevuti da SGAte, 
+						ovvero delle richieste di agevolazione e/o delle segnalazioni.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence maxOccurs="unbounded">
+						<xs:element name="esito" type="sgate:tipoEsitoMessaggio">
+						<xs:annotation>
+								<xs:documentation>
+									Rappresenta lo specifico esito dell'elaborazione del messaggio da parte del gestore, ovvero di una richiesta di agevolazione o di una segnalazione.
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoRicezioneEsiti">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta la risposta da parte di SGATE relativa alla ricezione degli esiti del gestore, 
+				ovvero la struttura che contiene la lista dei controesiti SGAte, a meno di errori tecnici.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element minOccurs="0" name="erroreGenerale" type="sgate:tipoErrore">
+				<xs:annotation>
+					<xs:documentation>
+						L'elemento verrà valorizzato se si presenta un errore tecnico.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="risultatiRicezioni">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta la lista dei controesiti di SGAte, relativi agli esiti dei messaggi inviati dal gestore.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element minOccurs="0" maxOccurs="unbounded" name="risultatoRicezione" type="sgate:tipoRicezioneMessaggio">
+							<xs:annotation>
+								<xs:documentation>
+									Rappresenta lo specifico controesito di SGAte alla ricezione di un esito del gestore, 
+									relativo ad una richiesta di agevolazione o ad una segnalazione.
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+
+	<xs:complexType name="tipoSegnalazioniInviate">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta l'elenco delle segnalazioni di rettifica dell'esito inviate dal gestore a SGAte, ovvero la richiesta nell'operazione di invio segnalazioni mediante web service.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="mittente" type="sgate:tipoMittente" />
+			<xs:element name="segnalazioni">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta la lista delle segnalazioni di rettifica dell'esito inviate dal gestore.
+						L'esito che il gestore può rettificare è quello relativo alle richieste di agevolazione.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element maxOccurs="unbounded" name="segnalazione" type="sgate:tipoSegnalazioneInviata">
+							<xs:annotation>
+								<xs:documentation>
+									Rappresenta la singola segnalazione di rettifica dell'esito inviata dal gestore.
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoRicevuteSegnalazioniInviate">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta la risposta di SGATE relativa alle segnalazioni inviate dal gestore, 
+				ovvero la risposta nell'operazione di invio segnalazioni mediante web service.
+				A meno di un errore tecnico consiste in una lista di ricevute.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element minOccurs="0" name="erroreGenerale" type="sgate:tipoErrore">
+				<xs:annotation>
+					<xs:documentation>
+						L'elemento verrà valorizzato se si presenta un errore tecnico.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="ricevuteSegnalazioni">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta la lista delle ricevute delle segnalazioni di rettifica dell'esito.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element minOccurs="0" maxOccurs="unbounded" name="ricevutaSegnalazione" type="sgate:tipoRicevutaSegnalazioneInviata">
+							<xs:annotation>
+								<xs:documentation>
+									Rappresenta la singola ricevuta della segnalazione di rettifica dell'esito.
+								</xs:documentation>
+							</xs:annotation>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:complexType>
+
+	<xs:complexType name="tipoMittente">
+		<xs:annotation>
+			<xs:documentation>
+				Credenziali del mittente che sta effettuando la chiamata al web services
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="login" type="xs:string" />
+			<xs:element name="password" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<!-- Tipi common -->
+	<xs:complexType name="tipoEsitoAgevolazione">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta l'esito del gestore relativo alla validazione della richiesta di agevolazione inviata dal comune, comunità montana o CAF.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="protocolloRichiesta" type="sgate:tipoProtocollo">
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo della richiesta di agevolazione che si sta esitando.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="esito">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="OK|KO|ERR" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:choice minOccurs="0">
+				<xs:element name="difformita" type="sgate:tipoDifformita">
+					<xs:annotation>
+						<xs:documentation>
+							Rappresenta le difformità dei dati in posseso del gestore rispetto ai dati inviati da SGAte.
+							Nel caso il gestore verifichi la presenza di una difformità, se non riscontra motivazioni di KO, deve comunque restituire un OK e procedere all’erogazione del bonus.
+							SGAte restituirà un ERR nel contro-esito se l'elemento "esito" non è valorizzato con "OK" e questo elemento è valorizzato in alternativa agli altri in choice.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element maxOccurs="unbounded" name="motivazioneKo" type="sgate:tipoCodiceDettaglio">
+					<xs:annotation>
+						<xs:documentation>
+							Rappresenta la lista delle motivazioni di KO che il gestore riscontra e che ritorna a SGAte nell'esito dell'agevolazione.
+							SGAte restituirà un ERR nel contro-esito se l'elemento "esito" non è valorizzato con "KO" e questo elemento è valorizzato in alternativa agli altri in choice.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="errore" type="sgate:tipoErrore">
+					<xs:annotation>
+						<xs:documentation>
+							Rappresenta l'errore riscontrato dal gestore nell'elaborare la richiesta di agevolazione.
+							SGAte restituirà un ERR nel contro-esito se l'elemento "esito" non è valorizzato con "ERR" e questo elemento è valorizzato in alternativa agli altri in choice.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="tipoDifformita">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta le difformità dei dati in posseso del gestore rispetto ai dati inviati da SGAte.
+				Nel caso il gestore verifichi la presenza di una difformità, se non riscontra motivazioni di KO, deve comunque restituire un OK e procedere all’erogazione del bonus.
+				Le casistiche di difformità sono le seguenti:
+				
+				CASO 1: 
+					La numerosità della famiglia anagrafica comunicata da SGAte è difforme rispetto a quella presente nella banca dati del gestore,
+					perché quest'ultima e stata aggiornata successivamente alla data di ammissione della domanda di bonus.
+					La difformità deve essere comunicata dal gestore valorizzando la numerosità nota al gestore e la data di aggiornamento.
+					SGAte restituirà un KO nel contro-esito se la data di aggiornamento è antecedente la data di ammissione della domanda da parte del comune.
+				
+				CASO 2: 
+					il codice identificativo della fornitura o codice utente non ha ne una composizione ne una denominazione univoca, la mancata coincidenza non è causa di KO, 
+					ritornando un OK e il codice corretto il gestore conferma che procede comunque al riconoscimento del bonus e contemporanemente segnala la difformità.
+				
+				Almeno una delle due difformità deve essere valorizzata, altrimenti SGAte restituirà un ERR nel contro-esito.
+				Le due difformità possono coesistere, ovvero possono essere valorizzati entrambi gli elementi "anagraficaDifforme" e "codiceUtenteDifforme".
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="anagraficaDifforme" type="sgate:tipoDifformitaAnagrafica" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Anagrafica difforme (numerosità della famiglia anagrafica).
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		
+			<xs:element name="codiceUtenteDifforme" type="sgate:tipoCodiceUtente" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Codice identificativo della fornitura difforme.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+    </xs:complexType>
+	
+	<xs:complexType name="tipoDifformitaAnagrafica">
+		 <xs:sequence>
+	       	<xs:element name="componentiFamigliaAnagrafica" type="xs:int">
+				<xs:annotation>
+					<xs:documentation>
+						Numero dei componenti della famiglia anagrafica, dato presente sulla banca dati del gestore,
+						difforme da quanto comunicato da SGAte ma più aggiornato considerando come data di riferimento quella di ammissione della domanda.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dataAggiornamento" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Data in cui la numerosità della famiglia anagrafica è stata aggiornata sulla banca dati del gestore.
+						Questa data deve essere maggiore della data di ammissione della domanda da parte del comune, altrimenti SGAte restituirà un KO nel contro-esito.
+						Il contro-esito KO non implica una mancata registrazione dell'esito, OK in caso di difformità.
+						Il gestore è comunque tenuto a verificare ed eventualmente procedere con una rettifica dell'esito. 
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+
+	<xs:complexType name="tipoEsitoSegnalazioneCessazione">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta l'esito del gestore relativo all'elaborazione della segnalazione di cessazione inviata dal comune o comunità montana.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="protocolloSegnalazioneCessazione" type="sgate:tipoProtocollo">
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo della segnalazione di cessazione che si sta esitando.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="esito">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="OK|KO|ERR" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:choice minOccurs="0">
+				<xs:sequence>
+					<xs:element minOccurs="1" maxOccurs="unbounded" name="motivazioneKoCessazione" type="sgate:tipoCodiceDettaglio" />
+				</xs:sequence>
+				<xs:element name="errore" type="sgate:tipoErrore" />
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoLottoMessaggi">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta un lotto di messaggi destinati al gestore.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="idLotto">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta l'identificativo univoco assegnato da SGAte al lotto di messaggi.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="sgate:tipoNumerico">
+						<xs:length value="20" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="numeroMessaggi" type="xs:int">
+				<xs:annotation>
+					<xs:documentation>
+						Numero dei messaggi contenuti nel lotto.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="listaMessaggi">
+				<xs:annotation>
+					<xs:documentation>
+						Lista dei messaggi contenuti nel lotto: il singolo messaggio può essere sia una richiesta di agevolazione 
+						che una segnalazione di cessazione di una richiesta di agevolazione precedentemente ricevuta.   
+					</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element minOccurs="0" maxOccurs="unbounded" name="messaggio" type="sgate:tipoMessaggio" />
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoRicezioneMessaggio">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta la risposta contente:
+				- l'esito prodotto da SGATE nel registrare la presa in carico del messaggio da parte del gestore.
+				- il controesito prodotto da SGATE nel registrare l'esito del gestore relativo ad una richiesta di agevolazione o ad una segnalazione.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice minOccurs="1">
+				<xs:element name="protocolloRichiesta" type="sgate:tipoProtocollo">
+					<xs:annotation>
+						<xs:documentation>
+							Rappresenta il protocollo della richiesta di agevolazione, presente nel messaggio,
+							inviata da SGAte al gestore nel lotto precedentemente preso in carico da quest'ultimo.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="protocolloSegnalazioneCessazione" type="sgate:tipoProtocollo">
+					<xs:annotation>
+						<xs:documentation>
+							Rappresenta il protocollo della segnalazione di cessazione o revoca dell'agevolazione, presente nel messaggio, 
+							inviata da SGAte al gestore nel lotto precedentemente preso in carico da quest'ultimo.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+			<xs:element name="esito">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta il dettaglio dell'esito prodotto da SGATE nel registrare la presa in carico del messaggio da parte del gestore, 
+						ovvero il dettaglio del controesito prodotto da SGATE nel registrare l'esito del gestore relativo ad una richiesta di agevolazione o ad una segnalazione.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="OK|KO|ERR" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:choice minOccurs="0">
+				<xs:element name="motivazioneKo" type="sgate:tipoCodiceDettaglio" />
+				<xs:element name="errore" type="sgate:tipoErrore" />
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoEsitoMessaggio">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta l'esito relativo ad un messaggio che il gestore ha preso in carico da SGATE. 
+				Può contenere l'esito di una richiesta di agevolazione oppure l'esito di una segnalazione.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="esitoAgevolazione" type="sgate:tipoEsitoAgevolazione" />
+			<xs:element name="esitoSegnalazioneCessazione" type="sgate:tipoEsitoSegnalazioneCessazione" />
+		</xs:choice>
+	</xs:complexType>
+
+	<xs:complexType name="tipoCodiceDettaglio">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta una generica motivazione legata ad un'operazione o ad un evento, costruita attraverso un codice e una descrizione.
+				Fare riferimento alla documentazione per la classificazione dei codici.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="codice" type="xs:int" />
+			<xs:element minOccurs="0" name="dettaglio" type="sgate:tipoCharMax255" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="tipoErrore">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta una casistica di errore, fare riferimento alla documentazione per la classificazione dei codici.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="tipologia">
+				<xs:annotation>
+					<xs:documentation>
+						Le tipologie di errore sono le seguenti:
+							a.	errore temporaneo, per indicare una indisponibilità tecnica momentanea che ha impedito l'elaborazione del flusso di dati scambiato;
+							b.	errore permanente, per indicare la presenza di una anomalia nei dati scambiati che impediscono il completamento dell'elaborazione.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="TEMPORANEO|PERMANENTE" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="codice" type="xs:int" />
+			<xs:element minOccurs="0" name="dettaglio" type="sgate:tipoCharMax255" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoFornituraIdrica">
+		<xs:annotation>
+			<xs:documentation>
+				Dati della fornitura idrica, individuale o condominiale.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:choice>
+			<xs:element name="fornituraIndividuale" type="sgate:tipoFornituraIndividualeIdrico" />
+			<xs:element name="fornituraCentralizzata" type="sgate:tipoFornituraCentralizzataIdrico" />
+		</xs:choice>
+	</xs:complexType>
+
+	<xs:complexType name="tipoFornituraIndividualeIdrico">
+		<xs:annotation>
+			<xs:documentation>
+				Dati della fornitura idrica individuale.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="codiceUtente" type="sgate:tipoCodiceUtente">
+				<xs:annotation>
+					<xs:documentation>
+						Codice utente della fornitura, sempre presente nell'individuale.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="intestatario" type="sgate:tipoPersonaFisicaRiconosciuta" >
+				<xs:annotation>
+					<xs:documentation>
+						Dati dell'intestatario della fornitura, può essere differente rispetto al richiedente. 
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="indirizzo" type="sgate:tipoIndirizzoPostale">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta l'indirizzo di fornitura, il quale, in considerazione del vincolo di coincidenza, corrisponde con l'indirizzo di residenza del richiedente.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoFornituraCentralizzataIdrico">
+		<xs:annotation>
+			<xs:documentation>
+				Dati della fornitura idrica condominiale.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="0" name="codiceUtente" type="sgate:tipoCodiceUtente">
+				<xs:annotation>
+					<xs:documentation>
+						Codice utente della fornitura, opzionale nel condominiale.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="codiceIban" type="sgate:tipoIBAN">
+				<xs:annotation>
+					<xs:documentation>
+						IBAN del richiedente, opzionale.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="denominazioneCondominio">
+				<xs:annotation>
+					<xs:documentation>
+						Denominazione o identificativo del condominio, opzionale.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="255" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="edificioPlurifamiliare" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Indica se l'utente indiretto ha autocertificato di risiedere in un'abitazione plurifamiliare nella quale l'utenza idrica non riconducibile a un condominio o ad un amministratore.
+						- true = l'utente indiretto ha autocertificato di risiedere in un'abitazione plurifamiliare
+						- false o elemento non presente = l'utente indiretto non ha autocertificato di risiedere in un'abitazione plurifamiliare
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="indirizziCentralizzata" type="sgate:tipoIndirizziCentralizzata">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta l'elenco degli indirizzi associati alla fornitura idrica condominiale: un massimo di 2 oltre all'indirizzo di residenza del richiedente.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoIndirizziCentralizzata">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta l'elenco degli indirizzi associati alla fornitura idrica condominiale: un massimo di 2 oltre all'indirizzo di residenza del richiedente.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element minOccurs="1" maxOccurs="3" name="indirizzoFornituraCentralizzata" type="sgate:tipoIndirizzoPostale" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoIndirizzoPostale">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta un generico indirizzo.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="comune" type="sgate:tipoCodiceIstatComune" >
+				<xs:annotation>
+					<xs:documentation>
+						Codice istat del comune.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="areaDiCircolazione">
+				<xs:simpleType>
+					<xs:annotation>
+						<xs:documentation>
+							Toponimo stradale, costituito dalla specie che identifica la tipologia di area di circolazione
+							(via, piazza, ecc.) e dalla denominazione
+						</xs:documentation>
+					</xs:annotation>
+					<xs:restriction base="xs:token">
+						<xs:minLength value="1" />
+						<xs:maxLength value="250" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="numeroCivico" type="sgate:tipoNumeroCivico" />
+			<xs:element minOccurs="0" name="edificio" type="sgate:tipoCharMax80" />
+			<xs:element minOccurs="0" name="scala" type="sgate:tipoCharMax80" />
+			<xs:element minOccurs="0" name="interno" type="sgate:tipoCharMax80" />
+			<xs:element name="cap" type="sgate:tipoCap" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoBonus">
+		<xs:annotation>
+			<xs:documentation>
+				Dati del bonus e del relativo periodo di agevolazione
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="componentiFamigliaAnagrafica" type="xs:int">
+				<xs:annotation>
+					<xs:documentation>
+						Numero dei componenti della famiglia anagrafica.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dataDisponibilita" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Data di disponibilità per il gestore della richiesta di accesso al bonus.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dataAmmissione" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Data di ammissione da parte del comune.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dataPresentazione" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Data di presentazione della domanda da parte del cittadino o dell'ente delegato.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dataInizioAgevolazione" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Data di inizio dell'agevolazione, calcolata da SGAte. 
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="dataFineAgevolazione" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Data di fine dell'agevolazione, calcolata da SGAte. 
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="allineamento" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Indica se il periodo di agevolazione è stato allineato con quello di una domanda di bonus ELT e/o GAS preesistente:
+						- true = domanda allineata
+						- false o elemento non presente = domanda non allineata
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fruizioneContinuativa" type="xs:boolean" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						Indica se l'utente ha autocertificato di aver fruito in modo continuativo del servizio di acquedotto dal 01/01/2018.
+						- true = l'utente ha autocertificato di aver fruito in modo continuativo del servizio di acquedotto
+						- false o elemento non presente = l'utente non ha autocertificato di aver fruito in modo continuativo del servizio di acquedotto
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoDocumentoRiconoscimento">
+		<xs:annotation>
+			<xs:documentation>
+				Documento di identità o di riconoscimento, ad esempio:
+				- carta d'identità
+				- passaporto,
+				- patente di guida,
+				- patente nautica,
+				- libretto di pensione,
+				- patentino di abilitazione alla conduzione di impianti termici,
+				- tessere di riconoscimento.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="sgate:tipoProtocolloEnte">
+				<xs:sequence>
+					<xs:element name="enteRilascio" type="sgate:tipoCharMax80" />
+				</xs:sequence>
+				<xs:attribute name="tipo" use="required">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:enumeration value="CARTA_IDENTITA" />
+							<xs:enumeration value="PASSAPORTO" />
+							<xs:enumeration value="PATENTE_GUIDA" />
+							<xs:enumeration value="PATENTE_NAUTICA" />
+							<xs:enumeration value="LIBRETTO_PENSIONE" />
+							<xs:enumeration value="PATENTINO_ABILITAZIONE_CONDUZIONE_IMPIANTI_TERMICI" />
+							<xs:enumeration value="TESSERA_RICONOSCIMENTO" />
+							<xs:enumeration value="ALTRO" />
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:attribute>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="tipoProtocolloEnte">
+		<xs:annotation>
+			<xs:documentation>
+				Protocollo o numero assegnato ad una pratica o ad un documento, composto da un codice univo e una
+				data di emissione.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="numero">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:minLength value="1" />
+						<xs:maxLength value="35" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="data" type="xs:date" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoPersonaFisicaRiconosciuta">
+		<xs:annotation>
+			<xs:documentation>
+				Persona fisica, opzionali i dati del documento di riconoscimento.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="sgate:tipoPersonaFisica">
+				<xs:sequence>
+					<xs:element minOccurs="0" name="documentoRiconoscimento" type="sgate:tipoDocumentoRiconoscimento" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="tipoRichiestaIdrico">
+		<xs:annotation>
+			<xs:documentation>
+				Dati relativi alla richiesta di agevolazione inviata da SGAte al gestore, 
+				generata in base alla domanda del cittadino, inserita su SGAte dal comune, comunita montana o CAF. 
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="protocolloDomanda" type="sgate:tipoProtocollo">
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo assegnato da SGAte alla domanda del cittadino, al momento dell'inserimento della stessa da parte dell'ente (comune, comunità o CAF).
+						SGAte comunica questo protocollo sia all'ente che al cittadino.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="protocolloRichiesta" type="sgate:tipoProtocollo">
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo assegnato da SGAte alla richiesta di agevolazione inviata da SGAte al gestore.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="tipologiaDomanda">
+				<xs:annotation>
+					<xs:documentation>
+						Rappresenta la tipologia di domanda, può assumere i seguenti valori:
+							- NUOVA: domanda inserita per la prima volta nel sistema
+							- RINNOVO: rinnovo di una domanda preesistente
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="NUOVA|RINNOVO" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="richiedente" type="sgate:tipoPersonaFisicaRiconosciuta">
+				<xs:annotation>
+					<xs:documentation>
+						Dati del cittadino che richiede l'agevolazione (può non coincidere con l'intestatario della fornitura).
+						Nel caso di fornitura condominiale è l'unica persona fisica riferita all'interno della domanda.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="residenza" type="sgate:tipoIndirizzoPostale">
+				<xs:annotation>
+					<xs:documentation>
+						Residenza del cittadino che richiede l'agevolazione.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="fornitura" type="sgate:tipoFornituraIdrica">
+				<xs:annotation>
+					<xs:documentation>
+						Dati della fornitura.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="bonus" type="sgate:tipoBonus">
+				<xs:annotation>
+					<xs:documentation>
+						Dati utili al calcolo ed al riconoscimento del bonus. 
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoSegnalazioneCessazione">
+		<xs:annotation>
+			<xs:documentation>				
+				Dati relativi alla segnalazione di cessazione di un'agevolazione, inviata da SGAte al gestore, 
+				comunicata a SGAte dal comune o comunità montana.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="protocolloSegnalazione" type="sgate:tipoProtocollo" >
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo assegnato da SGAte alla segnalazione di cessazione di un'agevolazione, inviata da SGAte al gestore.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>	
+			<xs:element name="protocolloRichiestaDiRiferimento" type="sgate:tipoProtocollo">
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo assegnato da SGAte alla richiesta dell'agevolazione da cessare.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="0" name="dataInizioDecorrenzaCessazione" type="xs:date">
+				<xs:annotation>
+					<xs:documentation>
+						Data di decorrenza della cessazione.
+						Di norma se l'ente (comune o comunità) dichiara la perdita di un requisito la cessazione è totale (revoca), 
+						ovvero la decorrenza coincide con l'inizio del periodo di agevolazione.
+						Nel periodo transitorio del 2018 gli importi revocabili comprendono anche la quota compensativa una tantum dal 01/01/2018 al giorno precedente a quello di inizio agevolazione.
+						Nel caso di revoca totale la "dataInizioDecorrenzaCessazione", l'elemento corrente, opzionale, non sarà presente.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="codiceFiscaleRichiedente" type="sgate:tipoCodiceFiscale">
+				<xs:annotation>
+					<xs:documentation>
+						Codice fiscale del cittadino che ha richiesto l'agevolazione da cessare (può non coincidere con l'intestatario della fornitura).
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+
+			<xs:element minOccurs="0" name="codiceFiscaleIntestatario" type="sgate:tipoCodiceFiscale">
+				<xs:annotation>
+					<xs:documentation>
+						Codice fiscale dell'intestatario della fornitura per la quale è stata richiesta l'agevolazione da cessare.
+						Nel caso di fornitura condominiale il dato non è presente.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element minOccurs="1" maxOccurs="unbounded" name="motivazioneCessazione" type="sgate:tipoCodiceDettaglio">
+				<xs:annotation>
+					<xs:documentation>
+						Elenco delle motivazioni che determinano la cessazione, riportate con un codice e una descrizione.
+						Fare riferimento alla documentazione per la classificazione dei codici.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="tipoMessaggio">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta il singolo messaggio destinato al gestore.
+				Un messaggio può essere sia una richiesta di agevolazione 
+				che una segnalazione di cessazione di una richiesta di agevolazione precedentemente ricevuta. 
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:choice>
+				<xs:element name="richiesta" type="sgate:tipoRichiestaIdrico">
+					<xs:annotation>
+						<xs:documentation>
+							Richiesta di agevolazione.
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+				<xs:element name="segnalazioneCessazione" type="sgate:tipoSegnalazioneCessazione">
+					<xs:annotation>
+						<xs:documentation>
+							Segnalazione di cessazione di una richiesta di agevolazione precedentemente ricevuta. 
+						</xs:documentation>
+					</xs:annotation>
+				</xs:element>
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="tipoPersonaFisica">
+		<xs:annotation>
+			<xs:documentation>
+				Persona fisica, identificata da nome, cognome e codice fiscale
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="nome" type="sgate:tipoCharMax80" />
+			<xs:element name="cognome" type="sgate:tipoCharMax80" />
+			<xs:element name="codiceFiscale" type="sgate:tipoCodiceFiscale" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoRettificaEsito">
+		<xs:annotation>
+			<xs:documentation>
+				Rettifica dell'esito da parte del gestore alla richiesta di agevolazione di SGAte
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="nuovoEsito" type="sgate:tipoEsitoAgevolazione">
+				<xs:annotation>
+					<xs:documentation>
+						Nuovo esito inviato dal gestore.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:complexType name="tipoSegnalazioneInviata">
+		<xs:annotation>
+			<xs:documentation>
+				Rappresenta la segnalazione di rettifica dell'esito inviata dal gestore a SGAte.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="protocolloSegnalazione" type="sgate:tipoProtocollo">
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo assegnato dal gestore alla segnalazione di rettifica dell'esito.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="rettificaEsito" type="sgate:tipoRettificaEsito">
+				<xs:annotation>
+					<xs:documentation>
+						Rettifica dell'esito.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="tipoRicevutaSegnalazioneInviata">
+		<xs:annotation>
+			<xs:documentation>
+				Ricevuta di SGAte ad una segnalazione inviata dal gestore.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="protocolloSegnalazione" type="sgate:tipoProtocollo">
+				<xs:annotation>
+					<xs:documentation>
+						Protocollo assegnato dal gestore alla segnalazione di rettifica dell'esito.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="esito">
+				<xs:annotation>
+					<xs:documentation>
+						Controesito di SGAte alla rettifica dell'esito.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:pattern value="OK|KO|ERR" />
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:choice minOccurs="0">
+				<xs:element name="motivazioneKo" type="sgate:tipoCodiceDettaglio" />
+				<xs:element name="errore" type="sgate:tipoErrore" />
+			</xs:choice>
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>

@@ -1,0 +1,17 @@
+﻿@model System.Web.Mvc.HandleErrorInfo
+
+@{
+    Layout = "~/Views/Shared/_LayoutWithoutLogin.cshtml";
+    ViewBag.Title = "Accesso negato";
+}
+
+<div class="jumbotron alert-danger text-center">
+    <h1>
+        <span class="fa-stack">
+            <i class="fa fa-user fa-stack-1x text-info"></i>
+            <i class="fa fa-ban fa-stack-2x"></i>
+        </span>
+    </h1>
+    <p><strong>Accesso negato!</strong></p>
+    <p>La tua utenza non risulta abilitata all'utilizzo di questa funzionalità</p>
+</div>

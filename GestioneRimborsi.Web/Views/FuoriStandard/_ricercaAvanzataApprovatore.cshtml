@@ -1,0 +1,137 @@
+﻿@model string
+
+@{
+    GestioneRimborsi.Core.IRimborsoService _rimborsoService = (GestioneRimborsi.Core.IRimborsoService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborsi.Core.GestioneRimborso>();
+}
+
+<div class="modal fade text-left" id="ricercaAvanzataApprovatore" tabindex="-1" role="dialog" aria-labelledby="ricercaAvanzataApprovatoreModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h3 class="modal-title" id="ricercaAvanzataApprovatoreModalTitle">
+                    <i class="fa fa-lg fa-search"></i>
+                    <span class="text-after-icon">Ricerca prestazioni</span>
+                </h3>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        @Html.Hidden("Utente", Model)
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="col-sm-5">
+                                                <label for="codCliente" class="control-label marginTop10">Codice Cliente / Ragione Sociale</label>
+                                                @Html.TextBox("codCliente", "", new { @class = "form-control" })
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <label for="caseID" class="control-label marginTop15">Codice Rintracciabilità</label>
+                                                @Html.TextBox("caseID", "", new { @class = "form-control" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-sm-12">
+                                            <div class="col-sm-5">
+                                                <label for="DataInizio" class="control-label marginTop15">Censito tra il</label>
+                                                <div id="calendarioDiv" class="input-group input-append date">
+                                                    @{var _data = new DateTime(DateTime.Now.Year, 1, 1).ToShortDateString();}
+                                                    <input class="form-control" data-format="dd/MM/yyyy" type="text" id="calendario" name="calendario" value="@_data" />
+                                                    <span class="input-group-btn add-on">
+                                                        <button class="btn btn-default h-btn-new" type="button">
+                                                            <i class="fa fa-lg fa-calendar"></i>
+                                                        </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-5">
+                                                <label for="DataFine" class="control-label marginTop15">e il</label>
+                                                <div id="calendarioDiv2" class="input-group input-append date">
+                                                    <input class="form-control" data-format="dd/MM/yyyy" type="text" id="calendario2" name="calendario2" value='@DateTime.Now.ToShortDateString()' />
+                                                    <span class="input-group-btn add-on">
+                                                        <button class="btn btn-default h-btn-new" type="button">
+                                                            <i class="fa fa-lg fa-calendar"></i>
+                                                        </button>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer marginTop15">
+                            <a class="btn btn-lg btn-default pull-left" data-dismiss="modal">
+                                <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Annulla</span>
+                            </a>
+                            <a class="btn btn-lg btn-function" onclick="ricercaAvanzata();">
+                                <i class="fa fa-lg fa-search"></i><span class="text-after-icon">Ricerca</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $(function () {
+        $('#calendarioDiv').datetimepicker();
+    });
+
+    $(function () {
+        $('#calendarioDiv2').datetimepicker();
+    });
+
+    function ricercaAvanzata() {
+        if ($('#calendario').val() == '') {
+            notifyWarning("Data inizio non inserita..."); return false;
+        }
+        if ($('#calendario2').val() == '') {
+            notifyWarning("Data fine non inserita..."); return false;
+        }
+
+        var tuttiAperti = "A";
+
+        if (!$('#checkMeOut').prop('checked')) {
+            tuttiAperti = "T";
+        }
+
+        $('#ricercaAvanzataApprovatore').modal('hide');
+        displayModalWaiter();
+
+        var _url;
+        _url = '@Url.Action("RicercaAvanzataApprovatore", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                calendar: $('#calendario').val(),
+                calendar2: $('#calendario2').val(),
+                CodiceRintracciabilita: $('#caseID').val(),
+                Cliente: $('#codCliente').val(),
+                CodGruppo: $('#Tipologia').val(),
+                TuttiAperti: tuttiAperti
+            }),
+            success: function (result) {
+                $("#indennizziTableContainer").html(result);
+                setIndennizziDataTable();
+                hideModalWaiter();
+
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            },
+        });
+    }
+
+</script>
+

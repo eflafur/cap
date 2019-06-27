@@ -1,0 +1,61 @@
+﻿@using GruppoCap
+@using GruppoCap.Core.Data
+@using GruppoCap.Authentication.Core
+
+@model ISubCollection<User>
+
+@{
+    if (Model == null)
+    {
+        @Html.Raw(HtmlSnippets.Alert.Info("Nessun utente trovato..."))
+    }
+    else
+    {
+        <table id="gridUsers" class="table table-condensed table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Account</th>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Società</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+        foreach (User _u in Model.Items)
+        {
+            String _trClass = String.Empty;
+            String _trIcon = String.Empty;
+
+            if (_u.IsActive == false)
+            {
+                _trClass += "danger";
+                _trIcon += CommonSnippets.IsNotActive;
+            }
+
+            if (_u.IsPrivileged)
+            {
+                _trIcon += CommonSnippets.IsPrivileged;
+            }
+
+            <tr onclick="loadUserDetail('@_u.UserId');" class="@_trClass">
+                <td>@Html.Raw(_trIcon)</td>
+                <td>@_u.UserId</td>
+                <td>@_u.FirstName</td>
+                <td>@_u.LastName</td>
+                <td>@_u.Company.GetDescriptionOr(String.Empty)</td>
+            </tr>
+        }
+                }
+            </tbody>
+        </table>
+    }
+}
+
+<script>
+    function loadUserDetail(userId) {
+        var _url = "@CommonUrls.UserDetail("_userId_")".replace('_userId_', userId);
+        window.location.href = _url;
+    }
+</script>

@@ -1,0 +1,96 @@
+﻿@using GruppoCap
+@using GruppoCap.Core
+
+@*<div class="row breath-on-top-32 buttons-row col-sm-offset-1 col-sm-10 gestioneRimborsiHomePage">*@
+<div class="row">
+    @Html.Partial("~/views/rimborsi/_newModalWaiter.cshtml", "")
+    <div class="col-sm-4 text-center home-block">
+        @if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard") || CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.storico"))
+        {
+            <div class="text-center home-block">
+                <div class="inner-home-block" style="background-color: #9CCD7B; border: 5px solid #9CCD7B">
+                    <a href="@UrlFor.HomeFuoriStandard" style="color:#3E7819" onclick="displayWaiter();">
+                        <h1>
+                            <i class="fa fa-check fa-2x"></i>
+                            <i class="fa fa-arrow-right text-after-icon"></i>
+                            <i class="fa fa-thumbs-o-up fa-2x text-after-icon"></i>
+                        </h1>
+                        <h2>Gestione Fuori Standard</h2>
+                        <small>Acquisizione e gestione dei fuori standard</small>
+                    </a>
+                </div>
+            </div>
+        }
+        @*else if (CurrentUser.HasPermissionOrIsPrivileged("gfs.fuoriStandard.storico"))
+            {
+                <div class="text-center home-block">
+                    <div class="inner-home-block" style="background-color: #9CCD7B; border: 5px solid #9CCD7B">
+                        <a href="@UrlFor.HomeFuoriStandard/VisualizzaStorico" style="color:#3E7819" onclick="displayWaiter();">
+                            <h1><i class="fa fa-list fa-2x"></i></h1>
+                            <h2>Gestione Fuori Standard</h2>
+                            <small>Acquisizione e gestione dei fuori standard</small>
+                        </a>
+                    </div>
+                </div>
+            }*@
+    </div>
+    @if (CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi") || CurrentUser.HasPermissionOrIsPrivileged("gri.disposizioni"))
+    {
+        <div class="col-sm-4 text-center home-block">
+            <div class="text-center home-block">
+                <div class="inner-home-block" style="background-color: #3E7819; border: 5px solid #3E7819">
+                    <a href="@UrlFor.HomeRimborsi" style="color:#FFF" onclick="displayWaiter();">
+                        <h1>
+                            <i class="fa fa-list-ul fa-2x"></i>
+                            <i class="fa fa-arrow-right text-after-icon"></i>
+                            <i class="fa fa-credit-card fa-2x text-after-icon"></i>
+                        </h1>
+                        <h2>Gestione Rimborsi - DisposizioniBancarie</h2>
+                        <small>Acquisizione e gestione dei rimborsi - disposizioni bancarie</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="col-sm-4 text-center home-block">
+        @if (CurrentUser.HasPermissionOrIsPrivileged("gri.rimborsi") || CurrentUser.HasPermissionOrIsPrivileged("bi.bonusIdrico"))
+        {
+            @*@if (CurrentUser.HasPermissionOrIsPrivileged("bi.bonusIdrico"))
+                {*@
+            <div class="text-center home-block">
+                <div class="inner-home-block" style="background-color: #9CCD7B; border: 5px solid #9CCD7B">
+                    <a href="@UrlFor.BonusIdrico" style="color:#3E7819" onclick="displayWaiter();">
+                        <h1>
+                            <i class="fa fa-check fa-2x"></i>
+                            <i class="fa fa-arrow-right text-after-icon"></i>
+                            <i class="fa fa-list-ul fa-2x text-after-icon"></i>
+                        </h1>
+                        <h2>Bonus Idrico</h2>
+                        <small>Gestione bonus idrico</small>
+                    </a>
+                </div>
+            </div>
+            @*}*@
+        }
+    </div>
+</div>
+
+<script>
+    $(function () {
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+
+        // INIT JQUERY DATEPICKER
+        $('.datepicker').datepicker({
+            format: 'dd/mm/yyyy'
+            , weekStart: 1
+        });
+
+        $('.gestioneRimborsiHomePage .home-block:odd').addClass('col-sm-6 col-md-4 col-lg-4').addClass('home-block-odd');
+        $('.gestioneRimborsiHomePage .home-block:even').addClass('col-sm-6 col-md-4 col-lg-4').addClass('home-block-even');
+    });
+
+    function displayWaiter() {
+        displayModalWaiter();
+    }
+</script>

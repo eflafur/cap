@@ -1,0 +1,43 @@
+﻿@model ISubCollection<DisposizioneModificata>
+
+@{
+    foreach (DisposizioneModificata _h in Model.Items)
+    {
+        <li class="item-storico list-group-item" id='@_h.InternalId' role="button" onclick="selectRow('@_h.InternalId')">
+            <div class="row">
+                <div class="col-sm-6">
+                    <span>@_h.Autore</span>
+                </div>
+                <div class="col-sm-6">
+                    <span>@_h.ModificatoIl.ToShortDateString()</span>
+                </div>
+            </div>
+        </li>
+    }
+}
+
+<script>
+
+    function selectRow(internalId) {
+        displayModalWaiter();
+        var _url = '@Url.Action("GetStoricoModifica", "GestioneDisposizioni", new { internalId = "_id_" })'.replace('_id_', encodeURIComponent(internalId));
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                internalId: internalId
+            }),
+            success: function (result) {
+                $("#containerCambiamenti").html(result);                
+                hideModalWaiter();
+            },
+            error: function (request, status, error) {
+                hideModalWaiter();
+                notifyWarning(error);
+            }
+        });
+    }
+
+</script>

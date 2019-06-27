@@ -1,0 +1,31 @@
+﻿@model GestioneRimborsi.Web.Models.CategorieFuoriStandardModel
+
+@{
+    IFuoriStandardService _fuoriStandardService = (IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<FuoriStandard>();
+
+    var sottocategorie = _fuoriStandardService.GetListaSottoCategorieByCategoria("4");
+
+    if (Model.Categoria_Id != "-1")
+    {
+        sottocategorie = _fuoriStandardService.GetListaSottoCategorieByCategoria(Model.Categoria_Id);
+    }    
+}
+
+<select class="form-control selectCaret" id="ddlSottoCategoria" name="sottoCategoria" disabled:false>
+    <option id="all" value="-1">-- Seleziona una sottocausa --</option>
+    @if (Model.Categoria_Id != "-1")
+    {
+        foreach (SottoCausaRitardoFS item in sottocategorie.Items)
+        {
+            if (Model.firstTime == true)
+            {
+                <option value="@item.CodiceSottoCausa" selected>@item.Descrizione</option>
+            }
+            else
+            {
+                <option value="@item.CodiceSottoCausa">@item.Descrizione</option>
+            }
+        }
+    }
+</select>
+

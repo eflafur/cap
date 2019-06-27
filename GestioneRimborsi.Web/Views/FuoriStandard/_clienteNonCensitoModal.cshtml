@@ -1,0 +1,95 @@
+﻿@model String
+
+@{
+    ViewBag.Title = "CausaCAP";
+}
+
+<div class="modal fade text-left" id="clienteNonCensito" tabindex="-1" role="dialog" aria-labelledby="clienteNonCensitoModalTitle" aria-hidden="true">
+    @Html.Partial("~/views/FuoriStandard/_causaCAPModal.cshtml", Model)
+    @Html.Partial("~/views/FuoriStandard/_FuoriStandardNonIndennizzabile.cshtml", Model)
+    @Html.Partial("~/views/rimborsi/_cercaClienteModal.cshtml")
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="modalNote">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="dismissModalCensito();" aria-label="Close"><span class="timesSize" aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="clienteNonCensitoModalTitle">
+                    <i class="fa fa-lg fa-exclamation-triangle text-danger"></i>
+                    <span class="text-after-icon sizeXLarge">Cliente non valido</span>
+                </h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <span class="lead">
+                            Questo Fuori Standard ha un dato identificativo del cliente non corretto.
+                            Pertanto, prima di procedere con la gestione del Fuori Standard è necessario identificare un cliente, oppure contrassegnare il documento come "non indennizzabile".
+                        </span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12" id="chooseOperationContainer">
+                        <span class="lead">
+                            Quale operazione si desidera intraprendere?
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-sm-4">
+                            <button type="button" class="btn-lg btn-default height120" onclick="dismissModalCensito();">
+                                <i class="fa fa-lg fa-arrow-circle-left"></i>
+                                <span class="text-after-icon fontSizeMedium">Annulla e ritorna al dettaglio</span>
+                            </button>
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="button" id="btnNonIndennizzabile" class="btn-lg btn-warning alert-warning height120" data-target="#fsNonIndennizzabile" data-toggle="modal" @*onclick="dismissModalCensito();"*@>
+                                <span class="fontSizeMedium">Il Fuori Standard non prevede alcun cliente, o non è possibile classificare il cliente</span>
+                            </button>
+                        </div>
+                        <div class="col-sm-4">
+                            <button type="button" id="" class="btn-lg btn-function height120" onclick="clienteEsistente('@Model');">
+                                <i class="fa fa-lg fa-user-plus"></i>
+                                <span class="text-after-icon fontSizeMedium">Assegna un cliente esistente</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+    function dismissModalCensito() {
+        $('#clienteNonCensito').modal('hide');
+    }
+
+    function clienteEsistente(FuoriStandard) {
+        displayModalWaiter("schedaIndennizzo");
+
+        var _url = '@Url.Action("SchedaCausaCAP", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                CodiceIndennizzo: @Model,
+            }),
+            success: function (result) {
+                if (result != null) {
+                    hideModalWaiter("schedaIndennizzo");
+                    $('#causaCAPModal').modal('show');
+                }
+            },
+            error: function (request, status, error) {
+                hideModalWaiter("schedaIndennizzo");
+                notifyWarning(error);
+                return false;
+            }
+        });
+    }
+
+</script>

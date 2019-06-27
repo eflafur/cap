@@ -1,0 +1,55 @@
+﻿@model GestioneRimborsi.Web.Models.SospensioniViewModel
+
+<table id="gridSospensioni" class="table table-condensed table-hover">
+    <thead>
+        <tr>
+            <th class="text-center" id="headerOneSosp" style="width: 5%;"></th>
+            <th class="text-left" id="headerTwoSosp" style="width: 12%;">Data Inizio</th>
+            <th class="text-left" id="headerThreeSosp" style="width: 11%;">Data Fine</th>
+            <th class="text-left" id="headerFourSosp" style="width: 9%;">Durata</th>            
+            <th class="text-left" id="headerSixSosp" style="width: 19%;">Categoria</th>
+            <th class="text-left" id="headerSevenSosp" style="width: 20%;">Tipologia</th>
+            <th class="text-left" id="headerFiveSosp" style="width: 14%;">Comunicato il</th>
+            <th class="text-center" id="headerEightSosp" style="width: 10%;">Allegati</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.sospensioni != null)
+        {
+            @Html.TextBoxFor(m => m.durataPrestazione, new { id = "durataSospensioneCalcolata", @class = "notdisplayed" })
+            @Html.TextBoxFor(m => m.durataTotaleSospensioni, new { id = "durataTotaleSospensioni", @class = "notdisplayed" })
+            foreach (RettificaSospensione _s in Model.sospensioni.Items)
+            {
+                <tr onclick="selectedRow(this, '@_s.ROW_ID', '@_s.ID_SOSPENSIONE', '@_s.ID_INDENNIZZO')" ondblclick="mostraPannelloModifica('@_s.ROW_ID', '@_s.ID_INDENNIZZO');" class="righeSospensioni @(_s.STATO_SOSPENSIONE == "R" ? "sospensioneModificata" : _s.STATO_SOSPENSIONE == "N" ? "sospensioneNuova" : "")">
+                    <td class="text-center" id="rowOneSosp" style="width: 5%;" title="@(_s.STATO_SOSPENSIONE == "R" ? "Sospensione modificata" : _s.STATO_SOSPENSIONE == "N" ? "Nuova Sospensione" : "")">
+                        @{ string indicatoreSospensione = String.Empty;
+                            indicatoreSospensione = (_s.STATO_SOSPENSIONE == "R" ? "fa-pencil imgColorEdit" : _s.STATO_SOSPENSIONE == "N" ? "fa-plus imgColorNew" : "");
+                            }
+                        <span class="fa @indicatoreSospensione"></span>
+                    </td>
+                    <td class="text-left" id="rowTwoSosp" style="width: 12%;">@_s.DATA_INIZIO_SOSPENSIONE.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-left" id="rowThreeSosp" style="width: 11%;">@_s.DATA_FINE_SOSPENSIONE.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-left" id="rowFourSosp" style="width: 9%;">@_s.DURATA_SOSPENSIONE</td>                    
+                    <td class="text-left" id="rowSixSosp" style="width: 19%;">@_s.CATEGORIA_SOSPENSIONE</td>
+                    <td class="text-left" id="rowSevenSosp" style="width: 20%;">@_s.TIPO_SOSPENSIONE</td>
+                    <td class="text-left" id="rowFiveSosp" style="width: 14%;">@(_s.DATA_COMUNICAZIONE == DateTime.MinValue ? "" : _s.DATA_COMUNICAZIONE.ToShortDateString())</td>
+                    <td class="text-center" id="rowEightSosp" style="width: 10%;">
+                        <button class="allegatiSospensioni" role="button" data-toggle="collapse" data-bind="@String.Format("firstTimeSosp")" href="#attachmentsSosp_@_s.ROW_ID" aria-expanded="true" id="attachSosp_@_s.ROW_ID" aria-controls="attachmentsSosp_@_s.ROW_ID" onclick="getAllegatiSospensione('@_s.ID_SOSPENSIONE','@_s.ID_INDENNIZZO','@_s.ROW_ID', event )"><span class="fa fa-lg fa-paperclip paperclipAllegati"></span><span class="caretAllegatoSosp caret"></span></button>
+                        <div class="panel-collapse panelAllegatiSosp pull-right showPanelAllegati collapse" role="tabpanel" id="attachmentsSosp_@_s.ROW_ID">
+                            @Html.Partial("~/Views/FuoriStandard/_elencoAllegatiSospensione.cshtml", new GestioneRimborsi.Web.Models.AllegatiSospensione { IdSospensione = _s.ID_SOSPENSIONE, IdFs = _s.ID_INDENNIZZO.ToString(), RowId = _s.ROW_ID, SolaLettura = false })
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<script>
+    function selectedRow(row, rowID, idSospensione, idIndennizzo) {
+        var allPages = $('#gridSospensioni').DataTable().rows().nodes();
+        $(allPages).removeClass("selected");        
+        $(row).addClass("selected");
+        $("#annullaSospensioneEvt").attr("onclick", "cancellaSospensione('" + rowID + "', '" + idSospensione + "', '" + idIndennizzo + "')");
+    }
+</script>

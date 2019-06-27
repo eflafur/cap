@@ -1,0 +1,44 @@
+﻿@using GruppoCap
+@using GruppoCap.Core
+
+@model ITrackedEntity
+
+@{
+    IUser _currentUser = RevoRequest.CurrentUser;
+
+    String _creationUser = Model.CreationUserId.ToLower().Replace("gruppocap\\", "");
+    String _lastUpdateUser = Model.LastUpdateUserId.IsNullOrWhiteSpace() ? String.Empty : Model.LastUpdateUserId.ToLower().Replace("gruppocap\\", "");
+
+    if (_currentUser.HasPermissionOrIsPrivileged("tracking.view"))
+    {
+
+        <div class="panel panel-info panel-tracking">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    <i class="fa fa-list"></i><span class="text-after-icon">Tracking</span>
+                </h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-sm-6">Creato/a da <strong>@_creationUser</strong> in data <strong>@Model.CreationMoment.ToEuropeanString(true)</strong></div>
+                    @{
+                        if (_lastUpdateUser.IsNullOrWhiteSpace() == false)
+                        {
+                            <div class="col-sm-6">
+                                Modificato/a da <strong>@_lastUpdateUser</strong>
+                                @{
+                                    if (@Model.LastUpdateMoment.HasValue)
+                                    {
+                                        @Html.Raw("in data <strong>{0}</strong>".FormatWith(@Model.LastUpdateMoment.Value.ToEuropeanString(true)))
+                                    }
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+    }
+
+}

@@ -1,0 +1,156 @@
+﻿
+@model CapGrouping
+@{
+    ViewBag.Title = Model.CapGroupingCode;
+
+    IUser _currentUser = RevoRequest.CurrentUser;
+}
+
+<div class="row">
+
+    <div class="col-sm-12">
+
+        <div class="row grid-title">
+            <div class="col-sm-12">
+                <h1>
+                    <a href="@CommonUrls.Groupings"><i class="fa fa-fw fa-sitemap"></i></a>
+                    /
+                    @ViewBag.Title
+                </h1>
+            </div>
+        </div>
+
+        @Html.Partial("_trackedEntity", Model)
+
+        <div class="row">
+
+            <div class="col-sm-12">
+
+                <form role="form" class="breath-on-top-8">
+
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="txtCapGroupingId" class="control-label">Id</label>
+                                <input type="text" class="form-control input-lg" id="txtCapGroupingId" value="@Model.CapGroupingId" disabled>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label for="txtCapGroupingCode" class="control-label">Codice</label>
+                                <input type="text" class="form-control input-lg" id="txtCapGroupingCode" value="@Model.CapGroupingCode" disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="txtDescription" class="control-label">Descrizione</label>
+                                <input type="text" class="form-control" id="txtDescription" placeholder="inserisci il titolo / descrizione" value="@Model.Description">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="well" style="margin-top: 20px;">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <h3 class="well-title"><i class="fa fa-unlock-alt"></i><span class="text-after-icon">Abilitazioni</span></h3>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <label class="control-label">Attivazione dell'applicazione</label>
+                                    @{
+                                        String _isActiveDescription, _isActiveClass;
+                                        String _applicationActiveText = "Raggruppamento attivo";
+                                        String _applicationNotActiveText = "Raggruppamento NON attivo";
+
+                                        _isActiveDescription = @Model.IsActive ? _applicationActiveText : _applicationNotActiveText;
+                                        _isActiveClass = @Model.IsActive ? "text-primary" : "text-danger";
+                                    }
+
+                                    @Html.FontAwesomeCheckbox(
+                                        "chkIsActive",
+                                        Model.IsActive,
+                                        _applicationActiveText,
+                                        _applicationNotActiveText,
+                                        "text-primary",
+                                        "text-danger",
+                                        _isActiveClass,
+                                        _isActiveDescription
+                                    )
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-6 col-sm-offset-6 text-right">
+                            <a class="btn btn-lg btn-default" href="@CommonUrls.Groupings">
+                                <i class="fa fa-lg fa-arrow-circle-o-left"></i><span class="text-after-icon">Torna alla lista raggrupamenti</span>
+                            </a>
+                            <a class="btn btn-lg btn-primary" href="javascript:void(0);" onclick="saveCapGrouping('@Model.CapGroupingId');">
+                                <i id="iconSave" class="fa fa-lg fa-save"></i><span class="text-after-icon">Salva</span>
+                            </a>
+                        </div>
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section scripts {
+<script>
+    $(function () {
+        // INIT BOOTSTRAP TOOLTIP
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
+    function saveCapGrouping(capGroupingId) {
+        var _url;
+        var _id, _description, _isActive;
+        
+        startSaveOperation('iconSave');
+
+        _url = '@Url.Action("Update", "CapGrouping")';
+        _id = capGroupingId;
+
+        _description = $("#txtDescription").val();
+        _isActive = isFontAwesomeChecked('#chkIsActive');
+        
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                capGroupingId: _id,
+                description: _description,
+                isActive: _isActive
+            }),
+            success: function (result) {
+                var _resultStatus = result.status;
+                if (_resultStatus == 'success') {
+                    notifySuccess(result.data.message);
+                }
+                else {
+                    notifyError(result.data.message);
+                }
+            },
+            error: function (request, status, error) {
+                notifyError('Qualcosa è andato storto durante il salvataggio dei dati');
+            }
+        }).done(function () {
+            endSaveOperation('iconSave');
+        }); // end ajax call
+    } // saveUser
+</script>
+}

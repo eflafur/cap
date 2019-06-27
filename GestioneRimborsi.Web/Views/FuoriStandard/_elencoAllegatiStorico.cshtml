@@ -1,0 +1,77 @@
+﻿@model String
+
+@{
+    GestioneRimborsi.Core.IFuoriStandardService _fuoriStandardService = (GestioneRimborsi.Core.IFuoriStandardService)RevoContext.ServiceProvider.GetServiceFor<GestioneRimborsi.Core.FuoriStandard>();
+
+    var allegati = _fuoriStandardService.GetElencoAllegati("-1");
+
+    if (Model != null)
+    {
+        allegati = _fuoriStandardService.GetElencoAllegati(Model);
+    }
+}
+
+@if (allegati != null)
+{
+    <div class="tab-pane" id="tabAllegati">
+        <div class="infoStoricoContainerAllegati">
+            <div class="row infoRowStyleAllegati">
+                <div class="col-sm-6 divColumnTitleAllegati">
+                    <label class="labelInfoTitle">Titolo</label>
+                </div>
+                <div class="col-sm-3 divColumnTitleAllegatiNext">
+                    <label class="labelInfo">Upload in data</label>
+                </div>
+                <div class="col-sm-3 divColumnTitleAllegatiLast">
+                    <label class="labelInfo">Scarica</label>
+                </div>
+            </div>
+
+            @foreach (var item in allegati.Items)
+            {
+                <div class="row infoRowStyleNext">
+                    <div class="col-sm-6 divColumnTitleAllegati">
+                        <label class="labelInfoTitle">@item.NomeFile@item.TipoFile</label>
+                    </div>
+                    <div class="col-sm-3 divColumnTitleAllegatiNext">
+                        <span>@(item.DataInserimento != null ? item.DataInserimento.Value.ToShortDateString() : "n/a")</span>
+                    </div>
+                    <div class="col-sm-3 text-center divColumnTitleAllegatiLast">
+                        <a class="listaAllegati" role="button" onclick="return getAllegato('@item.NomeFile', '@item.TipoFile');"><span id="downloadAllegato" class="fa fa-lg fa-download" title="scarica file"></span></a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<script>
+
+    function getAllegato(nome, tipo) {
+
+        var _url = '@Url.Action("DownloadFile", "FuoriStandard")';
+
+        $.ajax({
+            url: _url,
+            type: 'POST',
+            contentType: "application/json; charset=utf-8",
+            data: JSON.stringify({
+                Filename: nome,
+                Extension: tipo
+            }),
+            success: function (result) {
+                if (result == "Error") {
+                    notifyWarning("Errore nel recuperare il file...");
+                }
+                else {
+                    window.location.href = '@Html.Raw(Url.Action("DownloadFileStorico", "FuoriStandard", new { Filename = "_nome_", Extension = "_tipo_" }))'.replace("_nome_", nome).replace("_tipo_", tipo);
+                }
+            },
+            error: function (request, status, error) {
+                notifyWarning(error);
+            }
+        });
+    }
+
+</script>
+

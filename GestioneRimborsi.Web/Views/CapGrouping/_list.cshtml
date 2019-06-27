@@ -1,0 +1,58 @@
+﻿
+@model ISubCollection<CapGrouping>
+
+<table id="gridCapGrouping" class="table table-condensed table-hover">
+    <thead>
+        <tr>
+            <th></th>
+            <th>Codice</th>
+            <th>Descrizione</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            foreach (CapGrouping _g in Model.Items)
+            {
+                String _trClass = String.Empty;
+                String _trIcon = String.Empty;
+
+                if (_g.IsActive == false)
+                {
+                    _trClass += "danger";
+                    _trIcon += CommonSnippets.IsNotActive;
+                }
+
+                <tr onclick="loadCapGroupingDetail('@_g.CapGroupingId');" class="@_trClass">
+                    <td>@Html.Raw(_trIcon)</td>
+                    <td>@_g.CapGroupingCode</td>
+                    <td>@_g.Description.Truncate(80, true)</td>
+                    <td>
+                        @{
+                            if (_g.IsActive)
+                            {
+                                <a class="deleteButtonInList" href="javascript:void(0);" onclick="loadCapGroupingDeletePreview('@_g.CapGroupingId');"><i class="fa fa-lg fa-fw fa-trash"></i></a>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<script>
+    $('.deleteButtonInList').click(function (event) {
+        event.stopPropagation();
+    });
+
+    function loadCapGroupingDeletePreview(capGroupingId) {
+        var _url = "@CommonUrls.CapGroupingDelete("_capGroupingId_")".replace('_capGroupingId_', capGroupingId);
+        window.location.href = _url;
+    }
+
+    function loadCapGroupingDetail(capGroupingId) {
+        var _url = "@CommonUrls.CapGroupingDetail("_capGroupingId_")".replace('_capGroupingId_', capGroupingId);
+        window.location.href = _url;
+    }
+</script>
